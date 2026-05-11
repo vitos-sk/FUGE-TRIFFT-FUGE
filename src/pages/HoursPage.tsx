@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import styled from 'styled-components';
 import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, format } from 'date-fns';
 import { de } from 'date-fns/locale';
+import * as XLSX from 'xlsx';
 import { AddHoursForm } from '../components/hours/AddHoursForm';
 import { HoursTable } from '../components/hours/HoursTable';
 import { Button } from '../components/ui/Button';
@@ -101,6 +102,38 @@ const SectionTitle = styled.h2`
 
 type RangePreset = 'week' | 'month' | 'all' | 'custom';
 
+const exportExcel = (entries: WorkHourEntry[], monthLabel: string) => {
+  const totalMins = entries.reduce((acc, e) => acc + (e.totalMinutes || 0), 0);
+  const totalH = Math.floor(totalMins / 60);
+  const totalM = totalMins % 60;
+
+  const rows = entries.map((e) => {
+    const h = Math.floor(e.totalMinutes / 60);
+    const m = e.totalMinutes % 60;
+    return {
+      'Mitarbeiter': e.userName,
+      'Objekt': e.objectTitle ?? '—',
+      'Datum': e.date,
+      'Stunden': `${h}:${String(m).padStart(2, '0')}`,
+    };
+  });
+
+  rows.push({
+    'Mitarbeiter': 'GESAMT',
+    'Objekt': '',
+    'Datum': '',
+    'Stunden': `${totalH}:${String(totalM).padStart(2, '0')}`,
+  });
+
+  const ws = XLSX.utils.json_to_sheet(rows);
+  ws['!cols'] = [{ wch: 24 }, { wch: 28 }, { wch: 14 }, { wch: 12 }];
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Stunden');
+
+  XLSX.writeFile(wb, `Bericht_${monthLabel}.xlsx`);
+};
+
 const exportCSV = (entries: WorkHourEntry[]) => {
   const header = 'Datum,Mitarbeiter,Objekt,Beginn,Ende,Pause (min),Gesamt (h)\n';
   const rows = entries.map((e) => {
@@ -134,6 +167,7 @@ const HoursPage: React.FC = () => {
   const [customFrom, setCustomFrom] = useState('');
   const [customTo, setCustomTo] = useState('');
   const [loading, setLoading] = useState(true);
+  const [exportMonth, setExportMonth] = useState(() => format(new Date(), 'yyyy-MM'));
 
   useEffect(() => {
     if (isAdmin) {
@@ -241,6 +275,36 @@ const HoursPage: React.FC = () => {
                 <Label>&nbsp;</Label>
                 <Button onClick={() => exportCSV(entries)} $variant="secondary">Export CSV</Button>
               </FormGroup>
+            )}
+
+            {isAdmin && (
+              <>
+                <FormGroup>
+                  <Label>Monat für Excel</Label>
+                  <Input
+                    type="month"
+                    value={exportMonth}
+                    onChange={(e) => setExportMonth(e.target.value)}
+                    style={{ minWidth: 160 }}
+                  />
+                </FormGroup>
+                <FormGroup>
+                  <Label>&nbsp;</Label>
+                  <Button
+                    $variant="secondary"
+                    onClick={async () => {
+                      const [year, month] = exportMonth.split('-').map(Number);
+                      const from = startOfMonth(new Date(year, month - 1));
+                      const to = endOfMonth(new Date(year, month - 1));
+                      const all = await getAllHours(from, to);
+                      const label = format(new Date(year, month - 1), 'MMMM_yyyy', { locale: de });
+                      exportExcel(all, label);
+                    }}
+                  >
+                    Excel-Export
+                  </Button>
+                </FormGroup>
+              </>
             )}
           </Controls>
 

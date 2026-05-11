@@ -1,10 +1,16 @@
-import React from 'react';
-import styled, { css } from 'styled-components';
+import React, { useEffect, useRef, useState } from 'react';
+import styled, { css, keyframes } from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import { format, isPast, differenceInDays } from 'date-fns';
 import { de } from 'date-fns/locale';
-import { FiMapPin, FiAlertTriangle, FiMessageSquare, FiCheckSquare, FiCalendar } from 'react-icons/fi';
+import { FiMapPin, FiAlertTriangle, FiMessageSquare, FiCheckSquare, FiCalendar, FiMoreVertical, FiArchive, FiEdit2 } from 'react-icons/fi';
+import { archiveObject, restoreObject } from '../../services/objectsService';
+import { useToast } from '../ui/Toast';
+import { useConfirm } from '../ui/ConfirmDialog';
+import { useAuth } from '../../hooks/useAuth';
 import type { CRMObject } from '../../types';
+
+// ─── Status helpers ────────────────────────────────────────────────────────────
 
 const statusColor: Record<string, string> = {
   new: '#2563eb',
@@ -20,18 +26,26 @@ const statusLabels: Record<string, string> = {
   done: 'Fertig',
 };
 
-const Card = styled.div<{ $status: string }>`
+// ─── Animations ───────────────────────────────────────────────────────────────
+
+const fadeSlideOut = keyframes`
+  0%   { opacity: 1; transform: scale(1);    max-height: 400px; margin-bottom: 0; }
+  60%  { opacity: 0; transform: scale(0.96); max-height: 400px; }
+  100% { opacity: 0; transform: scale(0.96); max-height: 0;     margin-bottom: -14px; padding: 0; }
+`;
+
+// ─── Styled ───────────────────────────────────────────────────────────────────
+
+const Card = styled.div<{ $status: string; $archiving: boolean }>`
   background: ${({ theme }) => theme.colors.bgCard};
   border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.borderRadius};
   cursor: pointer;
   transition: all ${({ theme }) => theme.transitions.spring};
   position: relative;
-  overflow: hidden;
   display: flex;
   flex-direction: column;
 
-  /* colored top accent bar */
   &::before {
     content: '';
     position: absolute;
@@ -50,9 +64,14 @@ const Card = styled.div<{ $status: string }>`
     box-shadow: 0 12px 40px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.3);
   }
 
-  &:active {
-    transform: translateY(-1px);
-  }
+  &:active { transform: translateY(-1px); }
+
+  ${({ $archiving }) => $archiving && css`
+    animation: ${fadeSlideOut} 0.5s ease forwards;
+    pointer-events: none;
+    cursor: default;
+    &:hover { transform: none; box-shadow: none; border-color: inherit; background: inherit; }
+  `}
 `;
 
 const CardHeader = styled.div`
@@ -63,7 +82,7 @@ const CardTop = styled.div`
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 10px;
+  gap: 8px;
   margin-bottom: 8px;
 `;
 
@@ -88,6 +107,67 @@ const StatusPill = styled.span<{ $status: string }>`
   white-space: nowrap;
   flex-shrink: 0;
   margin-top: 2px;
+`;
+
+const MenuWrapper = styled.div`
+  position: relative;
+  flex-shrink: 0;
+`;
+
+const MenuBtn = styled.button`
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: ${({ theme }) => theme.borderRadiusSm};
+  color: ${({ theme }) => theme.colors.textMuted};
+  transition: all ${({ theme }) => theme.transitions.fast};
+  margin-top: 1px;
+  flex-shrink: 0;
+
+  &:hover {
+    color: ${({ theme }) => theme.colors.textPrimary};
+    background: rgba(255,255,255,0.08);
+  }
+`;
+
+const Dropdown = styled.div`
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  background: ${({ theme }) => theme.colors.bgCard};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.borderRadius};
+  box-shadow: 0 8px 32px rgba(0,0,0,0.7), 0 2px 8px rgba(0,0,0,0.4);
+  min-width: 200px;
+  z-index: 500;
+  overflow: hidden;
+`;
+
+const DropdownItem = styled.button<{ $danger?: boolean; $success?: boolean }>`
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: ${({ $success, $danger, theme }) =>
+    $success ? theme.colors.success : $danger ? theme.colors.accent : theme.colors.textSecondary};
+  transition: all ${({ theme }) => theme.transitions.fast};
+  text-align: left;
+
+  &:hover {
+    background: ${({ $success, $danger, theme }) =>
+      $success ? `${theme.colors.success}14` : $danger ? theme.colors.accentDim : theme.colors.bgElevated};
+    color: ${({ $success, $danger, theme }) =>
+      $success ? theme.colors.success : $danger ? theme.colors.accent : theme.colors.textPrimary};
+  }
+
+  & + & {
+    border-top: 1px solid ${({ theme }) => theme.colors.border};
+  }
 `;
 
 const Location = styled.p`
@@ -146,9 +226,7 @@ const NoteCount = styled.div`
   padding: 3px 10px;
   transition: all ${({ theme }) => theme.transitions.fast};
 
-  ${Card}:hover & {
-    border-color: ${({ theme }) => theme.colors.borderHover};
-  }
+  ${Card}:hover & { border-color: ${({ theme }) => theme.colors.borderHover}; }
 `;
 
 const ChecklistBar = styled.div`
@@ -202,12 +280,67 @@ const LastNoteAuthor = styled.span`
   margin-right: 4px;
 `;
 
+// ─── Component ─────────────────────────────────────────────────────────────────
+
 interface Props {
   object: CRMObject;
 }
 
 export const ObjectCard: React.FC<Props> = ({ object }) => {
   const navigate = useNavigate();
+  const toast = useToast();
+  const confirm = useConfirm();
+  const { isAdmin } = useAuth();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [archiving, setArchiving] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const close = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', close);
+    return () => document.removeEventListener('mousedown', close);
+  }, [menuOpen]);
+
+  const handleArchive = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setMenuOpen(false);
+
+    const ok = await confirm({
+      title: 'Objekt archivieren?',
+      message: `Das Objekt „${object.title}" wird ins Archiv verschoben. Alle Daten (Stunden, Notizen, Checklisten) bleiben erhalten. Du kannst es jederzeit wiederherstellen.`,
+      confirmLabel: 'Archivieren',
+      cancelLabel: 'Abbrechen',
+      success: true,
+    });
+    if (!ok) return;
+
+    setArchiving(true);
+
+    setTimeout(async () => {
+      await archiveObject(object.id);
+      toast.success('Objekt archiviert', {
+        duration: 5000,
+        action: {
+          label: 'Rückgängig',
+          onClick: async () => {
+            await restoreObject(object.id);
+            toast.info('Wiederhergestellt');
+          },
+        },
+      });
+    }, 450);
+  };
+
+  const handleStatusChange = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setMenuOpen(false);
+    navigate(`/objects/${object.id}`);
+  };
 
   const deadline = object.deadline?.toDate?.();
   const isOverdue = deadline ? isPast(deadline) && object.status !== 'done' : false;
@@ -222,12 +355,43 @@ export const ObjectCard: React.FC<Props> = ({ object }) => {
   const allDone = checkTotal > 0 && checkDone === checkTotal;
 
   return (
-    <Card $status={object.status} onClick={() => navigate(`/objects/${object.id}`)}>
+    <Card
+      $status={object.status}
+      $archiving={archiving}
+      onClick={() => !archiving && navigate(`/objects/${object.id}`)}
+    >
       <CardHeader>
         <CardTop>
           <Title>{object.title}</Title>
-          <StatusPill $status={object.status}>{statusLabels[object.status]}</StatusPill>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, marginTop: 2 }}>
+            <StatusPill $status={object.status}>{statusLabels[object.status]}</StatusPill>
+
+            {isAdmin && object.status === 'done' && (
+              <MenuWrapper ref={menuRef}>
+                <MenuBtn
+                  onClick={(e) => { e.stopPropagation(); setMenuOpen((v) => !v); }}
+                  title="Optionen"
+                >
+                  <FiMoreVertical size={15} />
+                </MenuBtn>
+                {menuOpen && (
+                  <Dropdown>
+                    <DropdownItem $success onClick={handleArchive}>
+                      <FiArchive size={14} />
+                      In Archiv verschieben
+                    </DropdownItem>
+                    <DropdownItem onClick={handleStatusChange}>
+                      <FiEdit2 size={14} />
+                      Status ändern
+                    </DropdownItem>
+                  </Dropdown>
+                )}
+              </MenuWrapper>
+            )}
+          </div>
         </CardTop>
+
         <Location>
           <FiMapPin size={12} style={{ flexShrink: 0 }} />
           {object.address}, {object.city}
@@ -241,15 +405,11 @@ export const ObjectCard: React.FC<Props> = ({ object }) => {
           <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
             {deadline && (
               <MetaItem $warn={isOverdue} $ok={!isOverdue && !isSoon && object.status === 'done'}>
-                {isOverdue
-                  ? <FiAlertTriangle size={12} />
-                  : <FiCalendar size={12} />
-                }
+                {isOverdue ? <FiAlertTriangle size={12} /> : <FiCalendar size={12} />}
                 {format(deadline, 'dd. MMM yy', { locale: de })}
               </MetaItem>
             )}
           </div>
-
           {(object.noteCount ?? 0) > 0 && (
             <NoteCount>
               <FiMessageSquare size={11} />

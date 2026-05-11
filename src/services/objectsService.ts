@@ -61,3 +61,26 @@ export const updateMaterials = async (id: string, materials: Material[]) =>
 
 export const updateChecklist = async (id: string, checklist: ChecklistItem[]) =>
   updateDoc(doc(db, 'objects', id), { checklist });
+
+export const archiveObject = async (id: string) =>
+  updateDoc(doc(db, 'objects', id), { archived: true, archivedAt: Timestamp.now() });
+
+export const restoreObject = async (id: string) =>
+  updateDoc(doc(db, 'objects', id), { archived: false, archivedAt: null });
+
+export const subscribeToArchivedObjects = (
+  onData: (objects: CRMObject[]) => void,
+  onError?: (e: Error) => void
+) => {
+  const q = query(collection(db, 'objects'), orderBy('archivedAt', 'desc'));
+  return onSnapshot(
+    q,
+    (snap) => {
+      const objects = snap.docs
+        .map((d) => ({ id: d.id, ...d.data() } as CRMObject))
+        .filter((o) => o.archived === true);
+      onData(objects);
+    },
+    onError
+  );
+};

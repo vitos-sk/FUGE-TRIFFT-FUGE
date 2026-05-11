@@ -63,7 +63,7 @@ interface Props {
 export const NoteItem: React.FC<Props> = ({ note }) => (
   <Item>
     <Header>
-      <Badge tag={note.tag} style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+      <Badge $tag={note.tag} style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
         {tagMeta[note.tag].icon}{tagMeta[note.tag].label}
       </Badge>
       <Author>{note.authorName}</Author>

@@ -6,16 +6,28 @@ import { FiCheck, FiX, FiInfo } from 'react-icons/fi';
 
 type ToastType = 'success' | 'error' | 'info';
 
+interface ToastAction {
+  label: string;
+  onClick: () => void;
+}
+
+interface ToastOptions {
+  action?: ToastAction;
+  duration?: number;
+}
+
 interface ToastItem {
   id: string;
   message: string;
   type: ToastType;
+  action?: ToastAction;
+  duration: number;
 }
 
 interface ToastContextValue {
-  success: (message: string) => void;
-  error: (message: string) => void;
-  info: (message: string) => void;
+  success: (message: string, opts?: ToastOptions) => void;
+  error: (message: string, opts?: ToastOptions) => void;
+  info: (message: string, opts?: ToastOptions) => void;
 }
 
 // ─── Context ──────────────────────────────────────────────────────────────────
@@ -23,7 +35,7 @@ interface ToastContextValue {
 const ToastContext = createContext<ToastContextValue>({
   success: () => {},
   error: () => {},
-  info: () => {},
+  info:    () => {},
 });
 
 export const useToast = () => useContext(ToastContext);
@@ -140,30 +152,47 @@ const DismissBtn = styled.button`
   &:hover { color: #999; }
 `;
 
+const ActionBtn = styled.button<{ $type: ToastType }>`
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: ${({ $type }) => toastColors[$type].progress};
+  background: ${({ $type }) => toastColors[$type].progress}18;
+  border: 1px solid ${({ $type }) => toastColors[$type].progress}33;
+  border-radius: 5px;
+  padding: 4px 10px;
+  flex-shrink: 0;
+  transition: all 0.15s;
+  &:hover {
+    background: ${({ $type }) => toastColors[$type].progress}2e;
+    border-color: ${({ $type }) => toastColors[$type].progress}66;
+  }
+`;
+
 // ─── Provider ─────────────────────────────────────────────────────────────────
 
-const DURATION = 4000;
+const DEFAULT_DURATION = 4000;
 
 export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [toasts, setToasts] = useState<(ToastItem & { exiting: boolean })[]>([]);
 
   const dismiss = useCallback((id: string) => {
     setToasts((prev) => prev.map((t) => t.id === id ? { ...t, exiting: true } : t));
-    setTimeout(() => {
-      setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 280);
+    setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 280);
   }, []);
 
-  const addToast = useCallback((message: string, type: ToastType) => {
+  const addToast = useCallback((message: string, type: ToastType, opts?: ToastOptions) => {
     const id = Math.random().toString(36).slice(2);
-    setToasts((prev) => [...prev.slice(-4), { id, message, type, exiting: false }]);
-    setTimeout(() => dismiss(id), DURATION);
+    const duration = opts?.duration ?? DEFAULT_DURATION;
+    setToasts((prev) => [...prev.slice(-4), { id, message, type, action: opts?.action, duration, exiting: false }]);
+    setTimeout(() => dismiss(id), duration);
   }, [dismiss]);
 
   const value: ToastContextValue = {
-    success: (msg) => addToast(msg, 'success'),
-    error:   (msg) => addToast(msg, 'error'),
-    info:    (msg) => addToast(msg, 'info'),
+    success: (msg, opts) => addToast(msg, 'success', opts),
+    error:   (msg, opts) => addToast(msg, 'error',   opts),
+    info:    (msg, opts) => addToast(msg, 'info',    opts),
   };
 
   return (
@@ -174,8 +203,13 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           <ToastEl key={t.id} $type={t.type} $exiting={t.exiting}>
             <IconCircle $type={t.type}>{toastColors[t.type].icon}</IconCircle>
             <Message>{t.message}</Message>
+            {t.action && (
+              <ActionBtn $type={t.type} onClick={() => { t.action!.onClick(); dismiss(t.id); }}>
+                {t.action.label}
+              </ActionBtn>
+            )}
             <DismissBtn onClick={() => dismiss(t.id)}><FiX size={13} /></DismissBtn>
-            {!t.exiting && <ProgressBar $type={t.type} $duration={DURATION} />}
+            {!t.exiting && <ProgressBar $type={t.type} $duration={t.duration} />}
           </ToastEl>
         ))}
       </Container>

@@ -373,7 +373,7 @@ const ObjectDetailPage: React.FC = () => {
             <Meta><FiMapPin size={12} style={{ marginRight: 5, flexShrink: 0 }} />{object.address}, {object.city}</Meta>
           </div>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-            <Badge status={object.status}>{statusLabels[object.status]}</Badge>
+            <Badge $status={object.status}>{statusLabels[object.status]}</Badge>
           </div>
         </TitleRow>
       </PageHeader>
@@ -482,7 +482,7 @@ const ObjectDetailPage: React.FC = () => {
               <InfoItem>
                 <InfoLabel>Status</InfoLabel>
                 <InfoValue>
-                  <Badge status={object.status}>{statusLabels[object.status]}</Badge>
+                  <Badge $status={object.status}>{statusLabels[object.status]}</Badge>
                 </InfoValue>
               </InfoItem>
               <InfoItem>

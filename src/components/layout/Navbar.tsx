@@ -4,6 +4,7 @@ import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { FiPower } from 'react-icons/fi';
 import { logoutUser } from '../../services/authService';
 import { useAuth } from '../../hooks/useAuth';
+import { useArchivedCount } from '../../hooks/useObjects';
 import { NotifBell } from '../notifications/NotifBell';
 
 const Nav = styled.nav`
@@ -73,6 +74,22 @@ const Divider = styled.div`
   height: 18px;
   background: ${({ theme }) => theme.colors.border};
   margin: 0 6px;
+`;
+
+const NavBadge = styled.span`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  font-size: 9px;
+  font-weight: 800;
+  border-radius: 9999px;
+  background: ${({ theme }) => theme.colors.bgElevated};
+  color: ${({ theme }) => theme.colors.textMuted};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  margin-left: 2px;
 `;
 
 const NavRight = styled.div`
@@ -145,6 +162,7 @@ const LogoutBtn = styled.button`
 export const Navbar: React.FC = () => {
   const { user, uid, isAdmin } = useAuth();
   const navigate = useNavigate();
+  const archivedCount = useArchivedCount();
 
   const handleLogout = async () => {
     await logoutUser();
@@ -164,9 +182,13 @@ export const Navbar: React.FC = () => {
       <NavLinks>
         <NavItem to="/" end>Objekte</NavItem>
         <NavItem to="/hours">Stunden</NavItem>
+        <NavItem to="/archiv">
+          Archiv{archivedCount > 0 && <NavBadge>{archivedCount}</NavBadge>}
+        </NavItem>
         {isAdmin && (
           <>
             <Divider />
+            <NavItem to="/dashboard">Dashboard</NavItem>
             <NavItem to="/admin/users">Benutzer</NavItem>
           </>
         )}

@@ -41,6 +41,8 @@ export interface CRMObject {
   noteCount?: number;
   materials: Material[];
   checklist: ChecklistItem[];
+  archived?: boolean;
+  archivedAt?: Timestamp | null;
 }
 
 export type NoteTag = 'material' | 'garbage' | 'problem' | 'delivery' | 'general';

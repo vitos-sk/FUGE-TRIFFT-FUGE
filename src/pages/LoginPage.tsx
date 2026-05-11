@@ -239,7 +239,7 @@ const LoginPage: React.FC = () => {
             <Button
               type="submit"
               disabled={loading}
-              fullWidth
+              $fullWidth
               $size="lg"
               style={{ marginTop: 10 }}
             >

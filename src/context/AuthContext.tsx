@@ -1,8 +1,7 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { onAuthStateChanged, type User } from 'firebase/auth';
-import { Timestamp } from 'firebase/firestore';
-import { auth } from '../services/firebase';
-import { getUserProfile } from '../services/authService';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
+import { onAuthStateChanged, signOut, type User } from 'firebase/auth';
+import { doc, onSnapshot, Timestamp } from 'firebase/firestore';
+import { auth, db } from '../services/firebase';
 import type { AppUser } from '../types';
 
 interface AuthContextValue {
@@ -21,6 +20,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [firebaseUser, setFirebaseUser] = useState<User | null>(null);
   const [appUser, setAppUser] = useState<AppUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const profileUnsubRef = useRef<(() => void) | null>(null);
 
   const buildFallback = (user: User): AppUser => ({
     uid: user.uid,
@@ -32,22 +32,53 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   });
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async (user) => {
+    const unsubAuth = onAuthStateChanged(auth, (user) => {
+      // Cancel previous profile subscription when auth state changes
+      profileUnsubRef.current?.();
+      profileUnsubRef.current = null;
+
       setFirebaseUser(user);
-      if (user) {
-        try {
-          const profile = await getUserProfile(user.uid);
-          setAppUser(profile ?? buildFallback(user));
-        } catch (err) {
-          console.error('[AuthContext] getUserProfile failed, using fallback:', err);
-          setAppUser(buildFallback(user));
-        }
-      } else {
+
+      if (!user) {
         setAppUser(null);
+        setLoading(false);
+        return;
       }
-      setLoading(false);
+
+      // Subscribe to profile in real-time — detects disabled flag immediately
+      const profileUnsub = onSnapshot(
+        doc(db, 'users', user.uid),
+        (snap) => {
+          if (!snap.exists()) {
+            setAppUser(buildFallback(user));
+            setLoading(false);
+            return;
+          }
+
+          const profile = { uid: user.uid, ...snap.data() } as AppUser;
+
+          if (profile.disabled) {
+            // Account was deactivated — sign out immediately
+            signOut(auth);
+            return;
+          }
+
+          setAppUser(profile);
+          setLoading(false);
+        },
+        () => {
+          setAppUser(buildFallback(user));
+          setLoading(false);
+        }
+      );
+
+      profileUnsubRef.current = profileUnsub;
     });
-    return unsub;
+
+    return () => {
+      unsubAuth();
+      profileUnsubRef.current?.();
+    };
   }, []);
 
   return (

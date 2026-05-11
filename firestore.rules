@@ -2,66 +2,64 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper functions
     function isAuthenticated() {
       return request.auth != null;
     }
 
-    function getUserRole() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    function userDoc() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isActive() {
+      return isAuthenticated() && userDoc().disabled != true;
     }
 
     function isAdmin() {
-      return isAuthenticated() && getUserRole() == 'admin';
-    }
-
-    function isWorker() {
-      return isAuthenticated() && getUserRole() == 'worker';
+      return isActive() && userDoc().role == 'admin';
     }
 
     // Users collection
+    // Read own profile always (even if disabled — so AuthContext can detect the flag)
     match /users/{userId} {
       allow read: if isAuthenticated();
       allow create: if isAdmin();
-      allow update: if isAdmin() || request.auth.uid == userId;
+      allow update: if isAdmin() || (isActive() && request.auth.uid == userId);
       allow delete: if isAdmin();
     }
 
     // Objects collection
     match /objects/{objectId} {
-      allow read: if isAuthenticated();
+      allow read: if isActive();
       allow create: if isAdmin();
-      allow update: if isAuthenticated();
+      allow update: if isActive();
       allow delete: if isAdmin();
 
-      // Notes subcollection — everyone can read/write
       match /notes/{noteId} {
-        allow read: if isAuthenticated();
-        allow create: if isAuthenticated();
+        allow read: if isActive();
+        allow create: if isActive();
         allow update, delete: if isAdmin();
       }
 
-      // Photos subcollection — everyone can read/write
       match /photos/{photoId} {
-        allow read: if isAuthenticated();
-        allow create: if isAuthenticated();
+        allow read: if isActive();
+        allow create: if isActive();
         allow delete: if isAdmin();
       }
     }
 
     // Work hours — workers can only access their own entries
     match /workHours/{entryId} {
-      allow read: if isAdmin() || (isAuthenticated() && resource.data.userId == request.auth.uid);
-      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow read: if isAdmin() || (isActive() && resource.data.userId == request.auth.uid);
+      allow create: if isActive() && request.resource.data.userId == request.auth.uid;
       allow update: if isAdmin();
-      allow delete: if isAdmin() || (isAuthenticated() && resource.data.userId == request.auth.uid);
+      allow delete: if isAdmin() || (isActive() && resource.data.userId == request.auth.uid);
     }
 
-    // Notifications — each user can only read their own; anyone authenticated can create (for worker→admin requests)
+    // Notifications
     match /notifications/{userId}/items/{notifId} {
-      allow read, update: if isAuthenticated() && request.auth.uid == userId;
-      allow create: if isAuthenticated();
-      allow delete: if isAuthenticated() && request.auth.uid == userId;
+      allow read, update: if isActive() && request.auth.uid == userId;
+      allow create: if isActive();
+      allow delete: if isActive() && request.auth.uid == userId;
     }
   }
 }

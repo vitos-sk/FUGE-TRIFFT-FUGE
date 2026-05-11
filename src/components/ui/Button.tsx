@@ -1,9 +1,9 @@
 import styled, { css } from 'styled-components';
 
 interface ButtonProps {
-  $variant?: 'primary' | 'secondary' | 'danger' | 'ghost';
+  $variant?: 'primary' | 'secondary' | 'danger' | 'ghost' | 'success';
   $size?: 'sm' | 'md' | 'lg';
-  fullWidth?: boolean;
+  $fullWidth?: boolean;
 }
 
 export const Button = styled.button<ButtonProps>`
@@ -33,7 +33,7 @@ export const Button = styled.button<ButtonProps>`
     return css`padding: 9px 18px; font-size: 11px;`;
   }}
 
-  ${({ fullWidth }) => fullWidth && css`width: 100%;`}
+  ${({ $fullWidth }) => $fullWidth && css`width: 100%;`}
 
   ${({ $variant = 'primary', theme }) => {
     switch ($variant) {
@@ -89,6 +89,21 @@ export const Button = styled.button<ButtonProps>`
           }
           &:active:not(:disabled) {
             background: rgba(255,255,255,0.03);
+          }
+        `;
+      case 'success':
+        return css`
+          background: ${theme.colors.success};
+          color: #fff;
+          border-color: ${theme.colors.success};
+          &:hover:not(:disabled) {
+            background: #27ae60;
+            border-color: #27ae60;
+            box-shadow: 0 4px 20px rgba(34,163,90,0.35), 0 1px 4px rgba(0,0,0,0.3);
+            transform: translateY(-1px);
+          }
+          &:active:not(:disabled) {
+            transform: translateY(0);
           }
         `;
     }

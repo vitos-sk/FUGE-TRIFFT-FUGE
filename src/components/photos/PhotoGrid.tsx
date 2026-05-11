@@ -137,7 +137,7 @@ export const PhotoGrid: React.FC<Props> = ({ objectId }) => {
             <PhotoCard key={photo.id} onClick={() => setLightbox(photo)}>
               <Img src={photo.url} alt={photo.caption || 'Foto'} loading="lazy" />
               <Overlay>
-                <Badge photoType={photo.type}>{photoTypeLabels[photo.type]}</Badge>
+                <Badge $photoType={photo.type}>{photoTypeLabels[photo.type]}</Badge>
                 {photo.caption && <Caption>{photo.caption}</Caption>}
               </Overlay>
             </PhotoCard>

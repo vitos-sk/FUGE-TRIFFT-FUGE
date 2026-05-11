@@ -18,6 +18,8 @@ const BoardPage        = lazy(() => import("./pages/BoardPage"));
 const ObjectDetailPage = lazy(() => import("./pages/ObjectDetailPage"));
 const HoursPage        = lazy(() => import("./pages/HoursPage"));
 const AdminUsersPage   = lazy(() => import("./pages/AdminUsersPage"));
+const DashboardPage    = lazy(() => import("./pages/DashboardPage"));
+const ArchivePage      = lazy(() => import("./pages/ArchivePage"));
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { firebaseUser, loading } = useAuth();
@@ -106,6 +108,22 @@ const AppRoutes: React.FC = () => {
           element={
             <ProtectedRoute>
               <AppShell><AdminUsersPage /></AppShell>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <AppShell><DashboardPage /></AppShell>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/archiv"
+          element={
+            <ProtectedRoute>
+              <AppShell><ArchivePage /></AppShell>
             </ProtectedRoute>
           }
         />

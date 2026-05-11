@@ -10,6 +10,7 @@ interface ConfirmOptions {
   confirmLabel?: string;
   cancelLabel?: string;
   danger?: boolean;
+  success?: boolean;
 }
 
 type ConfirmFn = (options: ConfirmOptions) => Promise<boolean>;
@@ -112,7 +113,7 @@ export const ConfirmProvider: React.FC<{ children: React.ReactNode }> = ({ child
                 {pending.options.cancelLabel ?? 'Abbrechen'}
               </Button>
               <Button
-                $variant={pending.options.danger ? 'danger' : 'primary'}
+                $variant={pending.options.danger ? 'danger' : pending.options.success ? 'success' : 'primary'}
                 onClick={() => handleResponse(true)}
               >
                 {pending.options.confirmLabel ?? 'Bestätigen'}

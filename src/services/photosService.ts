@@ -32,7 +32,7 @@ export const uploadPhoto = async (
   uploadedByName: string
 ): Promise<Photo> => {
   const compressed = await imageCompression(file, {
-    maxSizeMB: 2,
+    maxSizeMB: 0.5,
     maxWidthOrHeight: 1920,
     useWebWorker: true,
   });

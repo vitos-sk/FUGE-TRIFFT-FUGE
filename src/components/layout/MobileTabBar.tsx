@@ -1,8 +1,9 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Link, useMatch } from 'react-router-dom';
-import { FiGrid, FiClock, FiSettings } from 'react-icons/fi';
+import { FiGrid, FiClock, FiSettings, FiBarChart2, FiInbox } from 'react-icons/fi';
 import { useAuth } from '../../hooks/useAuth';
+import { useArchivedCount } from '../../hooks/useObjects';
 
 const Bar = styled.nav`
   display: none;
@@ -62,36 +63,71 @@ const TabLabel = styled.span`
   text-transform: uppercase;
 `;
 
+const TabIconWrapper = styled.div`
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const TabBadge = styled.span`
+  position: absolute;
+  top: -5px;
+  right: -7px;
+  min-width: 14px;
+  height: 14px;
+  padding: 0 3px;
+  font-size: 8px;
+  font-weight: 800;
+  border-radius: 9999px;
+  background: ${({ theme }) => theme.colors.textMuted};
+  color: ${({ theme }) => theme.colors.bgPrimary};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid ${({ theme }) => theme.colors.bgPrimary};
+`;
+
 interface TabProps {
   to: string;
   icon: React.ReactNode;
   label: string;
   active: boolean;
+  badge?: number;
 }
 
-const Tab: React.FC<TabProps> = ({ to, icon, label, active }) => (
+const Tab: React.FC<TabProps> = ({ to, icon, label, active, badge }) => (
   <TabItem to={to} $active={active}>
     <ActiveBar $visible={active} />
-    <TabIcon>{icon}</TabIcon>
+    <TabIconWrapper>
+      <TabIcon>{icon}</TabIcon>
+      {badge != null && badge > 0 && <TabBadge>{badge > 99 ? '99+' : badge}</TabBadge>}
+    </TabIconWrapper>
     <TabLabel>{label}</TabLabel>
   </TabItem>
 );
 
 export const MobileTabBar: React.FC = () => {
   const { isAdmin } = useAuth();
+  const archivedCount = useArchivedCount();
 
-  // Objekte is active on / and any /objects/* route
-  const onRoot    = !!useMatch({ path: '/', end: true });
-  const onObjects = !!useMatch('/objects/*');
-  const onHours   = !!useMatch('/hours');
-  const onAdmin   = !!useMatch('/admin/*');
+  const onRoot      = !!useMatch({ path: '/', end: true });
+  const onObjects   = !!useMatch('/objects/*');
+  const onHours     = !!useMatch('/hours');
+  const onArchiv    = !!useMatch('/archiv');
+  const onDashboard = !!useMatch('/dashboard');
+  const onAdmin     = !!useMatch('/admin/*');
 
   return (
     <Bar>
-      <Tab to="/"           icon={<FiGrid size={20} />}     label="Objekte"  active={onRoot || onObjects} />
-      <Tab to="/hours"      icon={<FiClock size={20} />}    label="Stunden"  active={onHours} />
+      <Tab to="/"       icon={<FiGrid size={20} />}    label="Objekte"   active={onRoot || onObjects} />
+      <Tab to="/hours"  icon={<FiClock size={20} />}   label="Stunden"   active={onHours} />
+      <Tab to="/archiv" icon={<FiInbox size={20} />}   label="Archiv"    active={onArchiv} badge={archivedCount} />
       {isAdmin && (
-        <Tab to="/admin/users" icon={<FiSettings size={20} />} label="Benutzer" active={onAdmin} />
+        <>
+          <Tab to="/dashboard"   icon={<FiBarChart2 size={20} />} label="Dashboard" active={onDashboard} />
+          <Tab to="/admin/users" icon={<FiSettings size={20} />}  label="Benutzer"  active={onAdmin} />
+        </>
       )}
     </Bar>
   );

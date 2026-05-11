@@ -2,9 +2,9 @@ import styled, { css } from 'styled-components';
 import type { ObjectStatus, NoteTag, PhotoType } from '../../types';
 
 interface BadgeProps {
-  status?: ObjectStatus;
-  tag?: NoteTag;
-  photoType?: PhotoType;
+  $status?: ObjectStatus;
+  $tag?: NoteTag;
+  $photoType?: PhotoType;
 }
 
 const statusColors: Record<ObjectStatus, string> = {
@@ -41,28 +41,28 @@ export const Badge = styled.span<BadgeProps>`
   letter-spacing: 0.06em;
   white-space: nowrap;
 
-  ${({ status }) =>
-    status &&
+  ${({ $status }) =>
+    $status &&
     css`
-      background: ${statusColors[status]}20;
-      color: ${statusColors[status]};
-      border: 1px solid ${statusColors[status]}40;
+      background: ${statusColors[$status]}20;
+      color: ${statusColors[$status]};
+      border: 1px solid ${statusColors[$status]}40;
     `}
 
-  ${({ tag }) =>
-    tag &&
+  ${({ $tag }) =>
+    $tag &&
     css`
-      background: ${tagColors[tag]}20;
-      color: ${tagColors[tag]};
-      border: 1px solid ${tagColors[tag]}40;
+      background: ${tagColors[$tag]}20;
+      color: ${tagColors[$tag]};
+      border: 1px solid ${tagColors[$tag]}40;
     `}
 
-  ${({ photoType }) =>
-    photoType &&
+  ${({ $photoType }) =>
+    $photoType &&
     css`
-      background: ${photoTypeColors[photoType]}20;
-      color: ${photoTypeColors[photoType]};
-      border: 1px solid ${photoTypeColors[photoType]}40;
+      background: ${photoTypeColors[$photoType]}20;
+      color: ${photoTypeColors[$photoType]};
+      border: 1px solid ${photoTypeColors[$photoType]}40;
     `}
 `;
 
