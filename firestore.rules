@@ -1,0 +1,67 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function getUserRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && getUserRole() == 'admin';
+    }
+
+    function isWorker() {
+      return isAuthenticated() && getUserRole() == 'worker';
+    }
+
+    // Users collection
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isAdmin();
+      allow update: if isAdmin() || request.auth.uid == userId;
+      allow delete: if isAdmin();
+    }
+
+    // Objects collection
+    match /objects/{objectId} {
+      allow read: if isAuthenticated();
+      allow create: if isAdmin();
+      allow update: if isAuthenticated();
+      allow delete: if isAdmin();
+
+      // Notes subcollection — everyone can read/write
+      match /notes/{noteId} {
+        allow read: if isAuthenticated();
+        allow create: if isAuthenticated();
+        allow update, delete: if isAdmin();
+      }
+
+      // Photos subcollection — everyone can read/write
+      match /photos/{photoId} {
+        allow read: if isAuthenticated();
+        allow create: if isAuthenticated();
+        allow delete: if isAdmin();
+      }
+    }
+
+    // Work hours — workers can only access their own entries
+    match /workHours/{entryId} {
+      allow read: if isAdmin() || (isAuthenticated() && resource.data.userId == request.auth.uid);
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAdmin();
+      allow delete: if isAdmin() || (isAuthenticated() && resource.data.userId == request.auth.uid);
+    }
+
+    // Notifications — each user can only read their own; anyone authenticated can create (for worker→admin requests)
+    match /notifications/{userId}/items/{notifId} {
+      allow read, update: if isAuthenticated() && request.auth.uid == userId;
+      allow create: if isAuthenticated();
+      allow delete: if isAuthenticated() && request.auth.uid == userId;
+    }
+  }
+}
