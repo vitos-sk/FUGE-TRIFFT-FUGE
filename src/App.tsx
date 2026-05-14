@@ -13,13 +13,13 @@ import { MobileTabBar } from "./components/layout/MobileTabBar";
 import { PageWrapper } from "./components/layout/PageWrapper";
 import { FullPageSpinner, Spinner } from "./components/ui/Spinner";
 
-const LoginPage        = lazy(() => import("./pages/LoginPage"));
-const BoardPage        = lazy(() => import("./pages/BoardPage"));
+const LoginPage = lazy(() => import("./pages/LoginPage"));
+const BoardPage = lazy(() => import("./pages/BoardPage"));
 const ObjectDetailPage = lazy(() => import("./pages/ObjectDetailPage"));
-const HoursPage        = lazy(() => import("./pages/HoursPage"));
-const AdminUsersPage   = lazy(() => import("./pages/AdminUsersPage"));
-const DashboardPage    = lazy(() => import("./pages/DashboardPage"));
-const ArchivePage      = lazy(() => import("./pages/ArchivePage"));
+const HoursPage = lazy(() => import("./pages/HoursPage"));
+const AdminUsersPage = lazy(() => import("./pages/AdminUsersPage"));
+const DashboardPage = lazy(() => import("./pages/DashboardPage"));
+const ArchivePage = lazy(() => import("./pages/ArchivePage"));
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { firebaseUser, loading } = useAuth();
@@ -83,7 +83,9 @@ const AppRoutes: React.FC = () => {
           path="/"
           element={
             <ProtectedRoute>
-              <AppShell><BoardPage /></AppShell>
+              <AppShell>
+                <BoardPage />
+              </AppShell>
             </ProtectedRoute>
           }
         />
@@ -91,7 +93,9 @@ const AppRoutes: React.FC = () => {
           path="/objects/:id"
           element={
             <ProtectedRoute>
-              <AppShell><ObjectDetailPage /></AppShell>
+              <AppShell>
+                <ObjectDetailPage />
+              </AppShell>
             </ProtectedRoute>
           }
         />
@@ -99,7 +103,9 @@ const AppRoutes: React.FC = () => {
           path="/hours"
           element={
             <ProtectedRoute>
-              <AppShell><HoursPage /></AppShell>
+              <AppShell>
+                <HoursPage />
+              </AppShell>
             </ProtectedRoute>
           }
         />
@@ -107,7 +113,9 @@ const AppRoutes: React.FC = () => {
           path="/admin/users"
           element={
             <ProtectedRoute>
-              <AppShell><AdminUsersPage /></AppShell>
+              <AppShell>
+                <AdminUsersPage />
+              </AppShell>
             </ProtectedRoute>
           }
         />
@@ -115,7 +123,9 @@ const AppRoutes: React.FC = () => {
           path="/dashboard"
           element={
             <ProtectedRoute>
-              <AppShell><DashboardPage /></AppShell>
+              <AppShell>
+                <DashboardPage />
+              </AppShell>
             </ProtectedRoute>
           }
         />
@@ -123,7 +133,9 @@ const AppRoutes: React.FC = () => {
           path="/archiv"
           element={
             <ProtectedRoute>
-              <AppShell><ArchivePage /></AppShell>
+              <AppShell>
+                <ArchivePage />
+              </AppShell>
             </ProtectedRoute>
           }
         />

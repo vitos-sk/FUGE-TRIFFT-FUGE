@@ -36,13 +36,19 @@ export const createUser = async (
     const cred = await createUserWithEmailAndPassword(secondaryAuth, email, password);
     const uid = cred.user.uid;
 
-    await setDoc(doc(db, 'users', uid), {
-      name,
-      email,
-      role,
-      createdAt: Timestamp.now(),
-      disabled: false,
-    });
+    try {
+      await setDoc(doc(db, 'users', uid), {
+        name,
+        email,
+        role,
+        createdAt: Timestamp.now(),
+        disabled: false,
+      });
+    } catch (firestoreError) {
+      // Firestore failed — roll back the Auth account to avoid an orphaned user.
+      await cred.user.delete().catch(() => {});
+      throw firestoreError;
+    }
 
     return uid;
   } finally {

@@ -19,9 +19,10 @@ service cloud.firestore {
     }
 
     // Users collection
-    // Read own profile always (even if disabled — so AuthContext can detect the flag)
+    // Workers may only read their own profile (AuthContext needs it even when disabled).
+    // Admin reads all profiles.
     match /users/{userId} {
-      allow read: if isAuthenticated();
+      allow read: if request.auth.uid == userId || isAdmin();
       allow create: if isAdmin();
       allow update: if isAdmin() || (isActive() && request.auth.uid == userId);
       allow delete: if isAdmin();

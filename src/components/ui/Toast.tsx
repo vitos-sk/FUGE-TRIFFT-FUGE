@@ -1,10 +1,10 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
-import styled, { keyframes, css } from 'styled-components';
-import { FiCheck, FiX, FiInfo } from 'react-icons/fi';
+import React, { createContext, useContext, useState, useCallback } from "react";
+import styled, { keyframes, css } from "styled-components";
+import { FiCheck, FiX, FiInfo } from "react-icons/fi";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type ToastType = 'success' | 'error' | 'info';
+type ToastType = "success" | "error" | "info";
 
 interface ToastAction {
   label: string;
@@ -35,7 +35,7 @@ interface ToastContextValue {
 const ToastContext = createContext<ToastContextValue>({
   success: () => {},
   error: () => {},
-  info:    () => {},
+  info: () => {},
 });
 
 export const useToast = () => useContext(ToastContext);
@@ -71,10 +71,28 @@ const Container = styled.div`
   }
 `;
 
-const toastColors: Record<ToastType, { bg: string; border: string; icon: React.ReactNode; progress: string }> = {
-  success: { bg: '#0f2818', border: '#22a35a44', icon: <FiCheck size={13} />,  progress: '#22a35a' },
-  error:   { bg: '#2a0a0a', border: '#cc222244', icon: <FiX size={13} />,      progress: '#cc2222' },
-  info:    { bg: '#0d1a2a', border: '#3b82f644', icon: <FiInfo size={13} />,   progress: '#3b82f6' },
+const toastColors: Record<
+  ToastType,
+  { bg: string; border: string; icon: React.ReactNode; progress: string }
+> = {
+  success: {
+    bg: "#0f2818",
+    border: "#22a35a44",
+    icon: <FiCheck size={13} />,
+    progress: "#22a35a",
+  },
+  error: {
+    bg: "#2a0a0a",
+    border: "#cc222244",
+    icon: <FiX size={13} />,
+    progress: "#cc2222",
+  },
+  info: {
+    bg: "#0d1a2a",
+    border: "#3b82f644",
+    icon: <FiInfo size={13} />,
+    progress: "#3b82f6",
+  },
 };
 
 const ToastEl = styled.div<{ $type: ToastType; $exiting: boolean }>`
@@ -85,14 +103,20 @@ const ToastEl = styled.div<{ $type: ToastType; $exiting: boolean }>`
   border-radius: 10px;
   border: 1px solid ${({ $type }) => toastColors[$type].border};
   background: ${({ $type }) => toastColors[$type].bg};
-  box-shadow: 0 8px 32px rgba(0,0,0,0.6), 0 2px 8px rgba(0,0,0,0.4);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.6),
+    0 2px 8px rgba(0, 0, 0, 0.4);
   min-width: 280px;
   max-width: 380px;
   pointer-events: all;
-  animation: ${({ $exiting }) => $exiting
-    ? css`${slideOut} 0.25s ease forwards`
-    : css`${slideIn} 0.25s cubic-bezier(0.4, 0, 0.2, 1)`
-  };
+  animation: ${({ $exiting }) =>
+    $exiting
+      ? css`
+          ${slideOut} 0.25s ease forwards
+        `
+      : css`
+          ${slideIn} 0.25s cubic-bezier(0.4, 0, 0.2, 1)
+        `};
   position: relative;
   overflow: hidden;
 
@@ -112,8 +136,12 @@ const ProgressBar = styled.div<{ $type: ToastType; $duration: number }>`
   animation: shrink ${({ $duration }) => $duration}ms linear forwards;
 
   @keyframes shrink {
-    from { width: 100%; }
-    to   { width: 0%; }
+    from {
+      width: 100%;
+    }
+    to {
+      width: 0%;
+    }
   }
 `;
 
@@ -149,7 +177,9 @@ const DismissBtn = styled.button`
   border-radius: 4px;
   flex-shrink: 0;
   transition: color 0.15s;
-  &:hover { color: #999; }
+  &:hover {
+    color: #999;
+  }
 `;
 
 const ActionBtn = styled.button<{ $type: ToastType }>`
@@ -178,21 +208,27 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [toasts, setToasts] = useState<(ToastItem & { exiting: boolean })[]>([]);
 
   const dismiss = useCallback((id: string) => {
-    setToasts((prev) => prev.map((t) => t.id === id ? { ...t, exiting: true } : t));
+    setToasts((prev) => prev.map((t) => (t.id === id ? { ...t, exiting: true } : t)));
     setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 280);
   }, []);
 
-  const addToast = useCallback((message: string, type: ToastType, opts?: ToastOptions) => {
-    const id = Math.random().toString(36).slice(2);
-    const duration = opts?.duration ?? DEFAULT_DURATION;
-    setToasts((prev) => [...prev.slice(-4), { id, message, type, action: opts?.action, duration, exiting: false }]);
-    setTimeout(() => dismiss(id), duration);
-  }, [dismiss]);
+  const addToast = useCallback(
+    (message: string, type: ToastType, opts?: ToastOptions) => {
+      const id = Math.random().toString(36).slice(2);
+      const duration = opts?.duration ?? DEFAULT_DURATION;
+      setToasts((prev) => [
+        ...prev.slice(-4),
+        { id, message, type, action: opts?.action, duration, exiting: false },
+      ]);
+      setTimeout(() => dismiss(id), duration);
+    },
+    [dismiss],
+  );
 
   const value: ToastContextValue = {
-    success: (msg, opts) => addToast(msg, 'success', opts),
-    error:   (msg, opts) => addToast(msg, 'error',   opts),
-    info:    (msg, opts) => addToast(msg, 'info',    opts),
+    success: (msg, opts) => addToast(msg, "success", opts),
+    error: (msg, opts) => addToast(msg, "error", opts),
+    info: (msg, opts) => addToast(msg, "info", opts),
   };
 
   return (
@@ -204,11 +240,19 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             <IconCircle $type={t.type}>{toastColors[t.type].icon}</IconCircle>
             <Message>{t.message}</Message>
             {t.action && (
-              <ActionBtn $type={t.type} onClick={() => { t.action!.onClick(); dismiss(t.id); }}>
+              <ActionBtn
+                $type={t.type}
+                onClick={() => {
+                  t.action!.onClick();
+                  dismiss(t.id);
+                }}
+              >
                 {t.action.label}
               </ActionBtn>
             )}
-            <DismissBtn onClick={() => dismiss(t.id)}><FiX size={13} /></DismissBtn>
+            <DismissBtn onClick={() => dismiss(t.id)}>
+              <FiX size={13} />
+            </DismissBtn>
             {!t.exiting && <ProgressBar $type={t.type} $duration={t.duration} />}
           </ToastEl>
         ))}

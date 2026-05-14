@@ -4,7 +4,7 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend,
 } from 'recharts';
-import { onSnapshot, collection, query } from 'firebase/firestore';
+import { onSnapshot, collection, query, where } from 'firebase/firestore';
 import { subDays, format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { db } from '../services/firebase';
@@ -138,7 +138,12 @@ const DashboardPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const q = query(collection(db, 'workHours'));
+    // Scope to last 30 days — covers bar chart (30 days), week stats, and current-month chart.
+    const from = format(subDays(new Date(), 29), 'yyyy-MM-dd');
+    const q = query(
+      collection(db, 'workHours'),
+      where('date', '>=', from),
+    );
     const unsub = onSnapshot(q, (snap) => {
       const entries = snap.docs.map((d) => ({ id: d.id, ...d.data() } as WorkHourEntry));
       setHours(entries);

@@ -14,7 +14,9 @@ import { ObjectForm } from '../components/objects/ObjectForm';
 import { Spinner } from '../components/ui/Spinner';
 import { useToast } from '../components/ui/Toast';
 import { useConfirm } from '../components/ui/ConfirmDialog';
-import { getObject, updateObject, deleteObject, updateMaterials, updateChecklist } from '../services/objectsService';
+import { onSnapshot, doc as fsDoc } from 'firebase/firestore';
+import { db } from '../services/firebase';
+import { updateObject, deleteObject, updateMaterials, updateChecklist } from '../services/objectsService';
 import { useAuth } from '../hooks/useAuth';
 import type { CRMObject, Material, ChecklistItem, TabId } from '../types';
 import { format } from 'date-fns';
@@ -233,16 +235,22 @@ const ObjectDetailPage: React.FC = () => {
 
   useEffect(() => {
     if (!id) return;
-    getObject(id)
-      .then((obj) => {
-        if (obj) {
+    const unsub = onSnapshot(
+      fsDoc(db, 'objects', id),
+      (snap) => {
+        if (!snap.exists()) {
+          setObject(null);
+        } else {
+          const obj = { id: snap.id, ...snap.data() } as CRMObject;
           obj.materials = obj.materials ?? [];
           obj.checklist = obj.checklist ?? [];
+          setObject(obj);
         }
-        setObject(obj);
         setLoading(false);
-      })
-      .catch(() => { toast.error('Objekt konnte nicht geladen werden.'); setLoading(false); });
+      },
+      () => { toast.error('Objekt konnte nicht geladen werden.'); setLoading(false); }
+    );
+    return unsub;
   }, [id]);
 
   if (loading) {

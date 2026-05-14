@@ -3,10 +3,12 @@ import {
   addDoc,
   query,
   where,
+  orderBy,
   getDocs,
   Timestamp,
   deleteDoc,
   doc,
+  QueryConstraint,
 } from 'firebase/firestore';
 import { db } from './firebase';
 import type { WorkHourEntry } from '../types';
@@ -17,7 +19,7 @@ const calculateMinutes = (start: string, end: string, breakMins: number): number
   return Math.max(0, (eh * 60 + em) - (sh * 60 + sm) - breakMins);
 };
 
-const sortByDate = (a: WorkHourEntry, b: WorkHourEntry) => b.date.localeCompare(a.date);
+const toDateStr = (d: Date) => d.toISOString().slice(0, 10);
 
 export const addHourEntry = async (
   entry: Omit<WorkHourEntry, 'id' | 'createdAt' | 'totalMinutes'>
@@ -30,25 +32,27 @@ export const addHourEntry = async (
   return addDoc(collection(db, 'workHours'), cleanEntry);
 };
 
+// Worker: own entries only, date range pushed to Firestore.
+// Requires composite index: userId ASC + date ASC (see firestore.indexes.json).
 export const getHoursForUser = async (userId: string, from?: Date, to?: Date): Promise<WorkHourEntry[]> => {
-  const q = query(collection(db, 'workHours'), where('userId', '==', userId));
-  const snap = await getDocs(q);
-  let entries = snap.docs.map((d) => ({ id: d.id, ...d.data() } as WorkHourEntry));
+  const constraints: QueryConstraint[] = [where('userId', '==', userId)];
+  if (from) constraints.push(where('date', '>=', toDateStr(from)));
+  if (to)   constraints.push(where('date', '<=', toDateStr(to)));
+  constraints.push(orderBy('date', 'desc'));
 
-  if (from) entries = entries.filter((e) => e.date >= from.toISOString().slice(0, 10));
-  if (to)   entries = entries.filter((e) => e.date <= to.toISOString().slice(0, 10));
-
-  return entries.sort(sortByDate);
+  const snap = await getDocs(query(collection(db, 'workHours'), ...constraints));
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as WorkHourEntry));
 };
 
+// Admin: all entries, date range pushed to Firestore.
 export const getAllHours = async (from?: Date, to?: Date): Promise<WorkHourEntry[]> => {
-  const snap = await getDocs(collection(db, 'workHours'));
-  let entries = snap.docs.map((d) => ({ id: d.id, ...d.data() } as WorkHourEntry));
+  const constraints: QueryConstraint[] = [];
+  if (from) constraints.push(where('date', '>=', toDateStr(from)));
+  if (to)   constraints.push(where('date', '<=', toDateStr(to)));
+  constraints.push(orderBy('date', 'desc'));
 
-  if (from) entries = entries.filter((e) => e.date >= from.toISOString().slice(0, 10));
-  if (to)   entries = entries.filter((e) => e.date <= to.toISOString().slice(0, 10));
-
-  return entries.sort(sortByDate);
+  const snap = await getDocs(query(collection(db, 'workHours'), ...constraints));
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as WorkHourEntry));
 };
 
 export const deleteHourEntry = async (id: string) => deleteDoc(doc(db, 'workHours', id));

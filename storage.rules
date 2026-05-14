@@ -1,0 +1,33 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    function isActive() {
+      return isAuthenticated() &&
+        firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.disabled != true;
+    }
+
+    // Object photos: all active workers can read/upload, only admin can delete.
+    // 5 MB hard cap on uploads (browser already compresses, this is a server-side guard).
+    match /objects/{objectId}/photos/{fileName} {
+      allow read:   if isActive();
+      allow create: if isActive() && request.resource.size <= 5 * 1024 * 1024;
+      allow update: if false;
+      allow delete: if isAdmin();
+    }
+
+    // Catch-all: only admin can touch anything else.
+    match /{allPaths=**} {
+      allow read, write: if isAdmin();
+    }
+  }
+}
