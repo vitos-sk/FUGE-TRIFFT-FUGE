@@ -4,7 +4,7 @@ import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { FiBell, FiX } from 'react-icons/fi';
 import { useNotifications } from '../../hooks/useNotifications';
-import { markNotificationRead, markAllRead, deleteNotification } from '../../services/notificationsService';
+import { markNotificationRead, markAllRead, deleteNotification, deleteAllNotifications } from '../../services/notificationsService';
 import { NotifDot } from '../ui/Badge';
 import { Button } from '../ui/Button';
 import { useNavigate } from 'react-router-dom';
@@ -210,11 +210,18 @@ export const NotifBell: React.FC<Props> = ({ uid }) => {
         <Dropdown>
           <DropHeader>
             <DropTitle>Benachrichtigungen</DropTitle>
-            {unreadCount > 0 && (
-              <Button $size="sm" $variant="ghost" onClick={() => markAllRead(uid)}>
-                Alle gelesen
-              </Button>
-            )}
+            <div style={{ display: 'flex', gap: 4 }}>
+              {unreadCount > 0 && (
+                <Button $size="sm" $variant="ghost" onClick={() => markAllRead(uid)}>
+                  Alle gelesen
+                </Button>
+              )}
+              {notifications.length > 0 && (
+                <Button $size="sm" $variant="ghost" onClick={() => deleteAllNotifications(uid)}>
+                  Alle löschen
+                </Button>
+              )}
+            </div>
           </DropHeader>
           <NotifList>
             {notifications.length === 0 ? (

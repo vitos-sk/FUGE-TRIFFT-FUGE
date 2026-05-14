@@ -75,7 +75,7 @@ const ErrorBox = styled.div`
   line-height: 1.4;
 `;
 
-const BREAKS = [0, 10, 30, 60];
+const BREAKS = [0, 10, 15, 30, 60];
 
 const calcMinutes = (start: string, end: string, brk: number): number => {
   if (!start || !end) return 0;

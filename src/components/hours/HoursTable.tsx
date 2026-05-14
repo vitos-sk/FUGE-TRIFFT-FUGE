@@ -1,14 +1,17 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
-import { FiX } from 'react-icons/fi';
+import { FiX, FiEdit2 } from 'react-icons/fi';
 import { Button } from '../ui/Button';
+import { Input, Select, FormGroup, Label } from '../ui/Input';
+import { Modal } from '../ui/Modal';
 import { useToast } from '../ui/Toast';
 import { useConfirm } from '../ui/ConfirmDialog';
-import { deleteHourEntry } from '../../services/hoursService';
+import { deleteHourEntry, updateHourEntry } from '../../services/hoursService';
+import { subscribeToObjects } from '../../services/objectsService';
 import { useAuth } from '../../hooks/useAuth';
-import type { WorkHourEntry } from '../../types';
+import type { WorkHourEntry, CRMObject } from '../../types';
 
 const TableWrapper = styled.div`
   overflow-x: auto;
@@ -67,6 +70,68 @@ const Empty = styled.div`
   font-size: 14px;
 `;
 
+const ActionCell = styled.td`
+  padding: 6px 12px;
+  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
+  text-align: right;
+  white-space: nowrap;
+`;
+
+const BreakGroup = styled.div`
+  display: flex;
+  gap: 4px;
+  background: ${({ theme }) => theme.colors.bgElevated};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.borderRadiusSm};
+  padding: 3px;
+`;
+
+const BreakBtn = styled.button<{ $active: boolean }>`
+  flex: 1;
+  padding: 7px 4px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 5px;
+  border: none;
+  background: ${({ $active, theme }) => ($active ? theme.colors.accent : 'transparent')};
+  color: ${({ $active, theme }) => ($active ? '#fff' : theme.colors.textSecondary)};
+  transition: all ${({ theme }) => theme.transitions.fast};
+  cursor: pointer;
+
+  &:hover {
+    color: ${({ $active, theme }) => $active ? '#fff' : theme.colors.textPrimary};
+    background: ${({ $active, theme }) => $active ? theme.colors.accent : 'rgba(255,255,255,0.06)'};
+  }
+`;
+
+const TotalDisplay = styled.div`
+  padding: 10px 14px;
+  background: ${({ theme }) => theme.colors.bgElevated};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.borderRadiusSm};
+  font-size: 16px;
+  font-weight: 800;
+  color: ${({ theme }) => theme.colors.accent};
+  text-align: center;
+  letter-spacing: 0.04em;
+`;
+
+const EditRow = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+`;
+
+const EDIT_BREAKS = [0, 10, 15, 30, 60];
+
+const calcMins = (start: string, end: string, brk: number): number => {
+  if (!start || !end) return 0;
+  const [sh, sm] = start.split(':').map(Number);
+  const [eh, em] = end.split(':').map(Number);
+  return Math.max(0, (eh * 60 + em) - (sh * 60 + sm) - brk);
+};
+
 const formatMinutes = (mins: number): string => {
   const h = Math.floor(mins / 60);
   const m = mins % 60;
@@ -84,7 +149,54 @@ export const HoursTable: React.FC<Props> = ({ entries, showWorker = false, onDel
   const toast = useToast();
   const confirm = useConfirm();
 
-  const totalMins = entries.reduce((acc, e) => acc + (e.totalMinutes || 0), 0);
+  const [editEntry, setEditEntry] = useState<WorkHourEntry | null>(null);
+  const [editDate, setEditDate] = useState('');
+  const [editStart, setEditStart] = useState('');
+  const [editEnd, setEditEnd] = useState('');
+  const [editBreak, setEditBreak] = useState(0);
+  const [editObjectId, setEditObjectId] = useState('');
+  const [objects, setObjects] = useState<CRMObject[]>([]);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    const unsub = subscribeToObjects((data) => setObjects(data));
+    return unsub;
+  }, []);
+
+  const openEdit = (entry: WorkHourEntry) => {
+    setEditEntry(entry);
+    setEditDate(entry.date);
+    setEditStart(entry.startTime);
+    setEditEnd(entry.endTime);
+    setEditBreak(entry.breakMinutes);
+    setEditObjectId(entry.objectId ?? '');
+  };
+
+  const handleSave = async () => {
+    if (!editEntry) return;
+    const totalMinutes = calcMins(editStart, editEnd, editBreak);
+    if (totalMinutes <= 0) return;
+    setSaving(true);
+    try {
+      const selectedObj = objects.find((o) => o.id === editObjectId);
+      await updateHourEntry(editEntry.id, {
+        date: editDate,
+        startTime: editStart,
+        endTime: editEnd,
+        breakMinutes: editBreak,
+        totalMinutes,
+        objectId: editObjectId || null,
+        objectTitle: selectedObj?.title,
+      });
+      toast.success('Stunden aktualisiert');
+      setEditEntry(null);
+      onDelete?.();
+    } catch {
+      toast.error('Fehler beim Speichern.');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const handleDelete = async (id: string, date: string) => {
     const ok = await confirm({
@@ -103,6 +215,9 @@ export const HoursTable: React.FC<Props> = ({ entries, showWorker = false, onDel
     }
   };
 
+  const totalMins = entries.reduce((acc, e) => acc + (e.totalMinutes || 0), 0);
+  const editTotal = calcMins(editStart, editEnd, editBreak);
+
   if (entries.length === 0) {
     return (
       <TableWrapper>
@@ -112,54 +227,129 @@ export const HoursTable: React.FC<Props> = ({ entries, showWorker = false, onDel
   }
 
   return (
-    <TableWrapper>
-      <Table>
-        <thead>
-          <tr>
-            <Th>Datum</Th>
-            {showWorker && <Th>Mitarbeiter</Th>}
-            <Th>Objekt</Th>
-            <Th>Beginn</Th>
-            <Th>Ende</Th>
-            <Th>Pause</Th>
-            <Th>Gesamt</Th>
-            <Th></Th>
-          </tr>
-        </thead>
-        <tbody>
-          {entries.map((e) => {
-            const dateFormatted = format(new Date(e.date), 'dd.MM.yyyy', { locale: de });
-            return (
-              <Tr key={e.id}>
-                <Td>{dateFormatted}</Td>
-                {showWorker && <Td style={{ color: '#8a8a8a' }}>{e.userName}</Td>}
-                <Td style={{ color: '#8a8a8a' }}>{e.objectTitle || '—'}</Td>
-                <Td>{e.startTime}</Td>
-                <Td>{e.endTime}</Td>
-                <Td style={{ color: '#8a8a8a' }}>{e.breakMinutes > 0 ? `${e.breakMinutes} min` : '—'}</Td>
-                <Td style={{ fontWeight: 600 }}>{formatMinutes(e.totalMinutes)}</Td>
-                <Td>
-                  {(isAdmin || e.userId === uid) && (
-                    <Button
-                      $variant="ghost"
-                      $size="sm"
-                      onClick={() => handleDelete(e.id, dateFormatted)}
-                      style={{ color: '#777' }}
-                    >
-                      <FiX size={14} />
-                    </Button>
-                  )}
-                </Td>
-              </Tr>
-            );
-          })}
-          <TotalRow>
-            <Td colSpan={showWorker ? 6 : 5}>Gesamt</Td>
-            <Td>{formatMinutes(totalMins)}</Td>
-            <Td></Td>
-          </TotalRow>
-        </tbody>
-      </Table>
-    </TableWrapper>
+    <>
+      <TableWrapper>
+        <Table>
+          <thead>
+            <tr>
+              <Th>Datum</Th>
+              {showWorker && <Th>Mitarbeiter</Th>}
+              <Th>Objekt</Th>
+              <Th>Beginn</Th>
+              <Th>Ende</Th>
+              <Th>Pause</Th>
+              <Th>Gesamt</Th>
+              <Th></Th>
+            </tr>
+          </thead>
+          <tbody>
+            {entries.map((e) => {
+              const dateFormatted = format(new Date(e.date), 'dd.MM.yyyy', { locale: de });
+              const canEdit = isAdmin || e.userId === uid;
+              return (
+                <Tr key={e.id}>
+                  <Td>{dateFormatted}</Td>
+                  {showWorker && <Td style={{ color: '#8a8a8a' }}>{e.userName}</Td>}
+                  <Td style={{ color: '#8a8a8a' }}>{e.objectTitle || '—'}</Td>
+                  <Td>{e.startTime}</Td>
+                  <Td>{e.endTime}</Td>
+                  <Td style={{ color: '#8a8a8a' }}>{e.breakMinutes > 0 ? `${e.breakMinutes} min` : '—'}</Td>
+                  <Td style={{ fontWeight: 600 }}>{formatMinutes(e.totalMinutes)}</Td>
+                  <ActionCell>
+                    {canEdit && (
+                      <div style={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+                        <Button
+                          $variant="ghost"
+                          $size="sm"
+                          onClick={() => openEdit(e)}
+                          style={{ color: '#777' }}
+                          title="Bearbeiten"
+                        >
+                          <FiEdit2 size={13} />
+                        </Button>
+                        <Button
+                          $variant="ghost"
+                          $size="sm"
+                          onClick={() => handleDelete(e.id, dateFormatted)}
+                          style={{ color: '#777' }}
+                          title="Löschen"
+                        >
+                          <FiX size={14} />
+                        </Button>
+                      </div>
+                    )}
+                  </ActionCell>
+                </Tr>
+              );
+            })}
+            <TotalRow>
+              <Td colSpan={showWorker ? 6 : 5}>Gesamt</Td>
+              <Td>{formatMinutes(totalMins)}</Td>
+              <Td></Td>
+            </TotalRow>
+          </tbody>
+        </Table>
+      </TableWrapper>
+
+      <Modal
+        isOpen={!!editEntry}
+        onClose={() => setEditEntry(null)}
+        title="Stunden bearbeiten"
+        width="520px"
+      >
+        <EditRow>
+          <FormGroup>
+            <Label>Datum</Label>
+            <Input type="date" value={editDate} onChange={(e) => setEditDate(e.target.value)} required />
+          </FormGroup>
+          <FormGroup>
+            <Label>Beginn</Label>
+            <Input type="time" value={editStart} onChange={(e) => setEditStart(e.target.value)} required />
+          </FormGroup>
+          <FormGroup>
+            <Label>Ende</Label>
+            <Input type="time" value={editEnd} onChange={(e) => setEditEnd(e.target.value)} required />
+          </FormGroup>
+        </EditRow>
+
+        <EditRow>
+          <FormGroup>
+            <Label>Pause</Label>
+            <BreakGroup>
+              {EDIT_BREAKS.map((b) => (
+                <BreakBtn key={b} type="button" $active={editBreak === b} onClick={() => setEditBreak(b)}>
+                  {b === 0 ? 'Keine' : `${b} min`}
+                </BreakBtn>
+              ))}
+            </BreakGroup>
+          </FormGroup>
+          <FormGroup>
+            <Label>Objekt (optional)</Label>
+            <Select value={editObjectId} onChange={(e) => setEditObjectId(e.target.value)}>
+              <option value="">— Kein Objekt —</option>
+              {objects.map((o) => (
+                <option key={o.id} value={o.id}>{o.title}</option>
+              ))}
+            </Select>
+          </FormGroup>
+        </EditRow>
+
+        <EditRow>
+          <FormGroup>
+            <Label>Gesamt</Label>
+            <TotalDisplay>{editTotal > 0 ? formatMinutes(editTotal) : '—'}</TotalDisplay>
+          </FormGroup>
+          <FormGroup style={{ justifyContent: 'flex-end' }}>
+            <Label>&nbsp;</Label>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <Button $variant="secondary" onClick={() => setEditEntry(null)}>Abbrechen</Button>
+              <Button onClick={handleSave} disabled={saving || editTotal <= 0}>
+                {saving ? 'Speichern…' : 'Speichern'}
+              </Button>
+            </div>
+          </FormGroup>
+        </EditRow>
+      </Modal>
+    </>
   );
 };

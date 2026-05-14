@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { NoteItem } from './NoteItem';
 import { AddNoteForm } from './AddNoteForm';
 import { useNotes } from '../../hooks/useNotes';
+import { useAuth } from '../../hooks/useAuth';
 import { Spinner } from '../ui/Spinner';
 
 const Wrapper = styled.div`
@@ -30,6 +31,7 @@ interface Props {
 
 export const NotesFeed: React.FC<Props> = ({ objectId, objectTitle }) => {
   const { notes, loading } = useNotes(objectId);
+  const { uid, isAdmin } = useAuth();
 
   return (
     <Wrapper>
@@ -43,7 +45,13 @@ export const NotesFeed: React.FC<Props> = ({ objectId, objectTitle }) => {
       ) : (
         <Feed>
           {notes.map((note) => (
-            <NoteItem key={note.id} note={note} />
+            <NoteItem
+              key={note.id}
+              note={note}
+              objectId={objectId}
+              uid={uid ?? ''}
+              isAdmin={isAdmin}
+            />
           ))}
         </Feed>
       )}

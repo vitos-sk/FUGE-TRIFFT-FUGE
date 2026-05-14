@@ -48,6 +48,13 @@ export const markAllRead = async (uid: string) => {
   await batch.commit();
 };
 
+export const deleteAllNotifications = async (uid: string) => {
+  const snap = await getDocs(query(collection(db, 'notifications', uid, 'items')));
+  const batch = writeBatch(db);
+  snap.docs.forEach((d) => batch.delete(d.ref));
+  await batch.commit();
+};
+
 export const createNotification = async (
   uid: string,
   title: string,

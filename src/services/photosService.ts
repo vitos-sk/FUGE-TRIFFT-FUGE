@@ -28,9 +28,11 @@ export const uploadPhoto = async (
   uploadedByName: string
 ): Promise<Photo> => {
   const compressed = await imageCompression(file, {
-    maxSizeMB: 0.5,
-    maxWidthOrHeight: 1920,
-    useWebWorker: true,
+    maxSizeMB: 2,
+    maxWidthOrHeight: 2048,
+    useWebWorker: false,   // Web Workers hang silently on mobile Safari
+    initialQuality: 0.85,
+    fileType: 'image/jpeg', // normalize HEIC/HEIF from iPhone to JPEG
   });
 
   const storagePath = `objects/${objectId}/photos/${Date.now()}_${file.name}`;

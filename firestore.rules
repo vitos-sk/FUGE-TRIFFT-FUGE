@@ -40,7 +40,7 @@ service cloud.firestore {
       match /notes/{noteId} {
         allow read: if isActive();
         allow create: if isActive();
-        allow update, delete: if isAdmin();
+        allow update, delete: if isAdmin() || (isActive() && resource.data.authorId == request.auth.uid);
       }
 
       match /photos/{photoId} {

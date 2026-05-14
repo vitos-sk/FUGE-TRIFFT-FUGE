@@ -6,6 +6,7 @@ import {
   orderBy,
   Timestamp,
   updateDoc,
+  deleteDoc,
   doc,
   increment,
   writeBatch,
@@ -83,4 +84,18 @@ export const addNote = async (
   }
 
   return noteRef;
+};
+
+export const deleteNote = async (objectId: string, noteId: string): Promise<void> => {
+  await deleteDoc(doc(db, 'objects', objectId, 'notes', noteId));
+  await updateDoc(doc(db, 'objects', objectId), { noteCount: increment(-1) });
+};
+
+export const updateNote = async (
+  objectId: string,
+  noteId: string,
+  text: string,
+  tag: NoteTag
+): Promise<void> => {
+  await updateDoc(doc(db, 'objects', objectId, 'notes', noteId), { text, tag });
 };

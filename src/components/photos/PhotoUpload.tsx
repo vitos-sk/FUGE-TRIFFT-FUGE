@@ -184,13 +184,20 @@ export const PhotoUpload: React.FC<Props> = ({ objectId }) => {
     setUploading(true);
     setProgress(10);
 
-    // Simulate progress (real Firebase Storage progress hooks would need different setup)
     const tick = setInterval(() => {
-      setProgress((p) => Math.min(p + 15, 85));
-    }, 400);
+      setProgress((p) => Math.min(p + 10, 80));
+    }, 600);
+
+    // 60s timeout — prevents infinite hang on slow mobile connections
+    const timeout = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('timeout')), 60_000)
+    );
 
     try {
-      await uploadPhoto(objectId, file, type, caption, uid, user.name);
+      await Promise.race([
+        uploadPhoto(objectId, file, type, caption, uid, user.name),
+        timeout,
+      ]);
       clearInterval(tick);
       setProgress(100);
       setTimeout(() => {
@@ -205,10 +212,12 @@ export const PhotoUpload: React.FC<Props> = ({ objectId }) => {
       setProgress(0);
       const msg = (err as { message?: string }).message ?? '';
       console.error('[PhotoUpload] failed:', err);
-      if (msg.includes('permission')) {
+      if (msg === 'timeout') {
+        setError('Upload-Timeout. Bitte prüfe die Verbindung und versuche es erneut.');
+      } else if (msg.includes('permission')) {
         setError('Keine Berechtigung zum Hochladen.');
-      } else if (msg.includes('storage')) {
-        setError('Speicherfehler. Bitte erneut versuchen.');
+      } else if (msg.includes('storage') || msg.includes('size')) {
+        setError('Datei zu groß oder Speicherfehler. Bitte erneut versuchen.');
       } else {
         setError('Upload fehlgeschlagen. Bitte erneut versuchen.');
       }

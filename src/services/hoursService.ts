@@ -7,6 +7,7 @@ import {
   getDocs,
   Timestamp,
   deleteDoc,
+  updateDoc,
   doc,
   QueryConstraint,
 } from 'firebase/firestore';
@@ -56,3 +57,11 @@ export const getAllHours = async (from?: Date, to?: Date): Promise<WorkHourEntry
 };
 
 export const deleteHourEntry = async (id: string) => deleteDoc(doc(db, 'workHours', id));
+
+export const updateHourEntry = async (
+  id: string,
+  data: Pick<WorkHourEntry, 'date' | 'startTime' | 'endTime' | 'breakMinutes' | 'totalMinutes'> & {
+    objectId?: string | null;
+    objectTitle?: string;
+  }
+) => updateDoc(doc(db, 'workHours', id), data as Record<string, unknown>);
