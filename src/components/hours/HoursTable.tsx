@@ -104,23 +104,58 @@ const BreakBtn = styled.button<{ $active: boolean }>`
   }
 `;
 
-const TotalDisplay = styled.div`
-  padding: 10px 14px;
+
+const EditStack = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+`;
+
+const TwoCol = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+`;
+
+const ModalFooter = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 4px;
+  flex-wrap: wrap;
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+`;
+
+const FooterTotal = styled.div`
+  padding: 10px 16px;
   background: ${({ theme }) => theme.colors.bgElevated};
   border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.borderRadiusSm};
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 800;
   color: ${({ theme }) => theme.colors.accent};
-  text-align: center;
   letter-spacing: 0.04em;
+  white-space: nowrap;
+
+  @media (max-width: 480px) {
+    text-align: center;
+  }
 `;
 
-const EditRow = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 12px;
-  margin-bottom: 16px;
+const FooterBtns = styled.div`
+  display: flex;
+  gap: 8px;
+  flex: 1;
+  justify-content: flex-end;
+
+  @media (max-width: 480px) {
+    button { flex: 1; }
+  }
 `;
 
 const EDIT_BREAKS = [0, 10, 15, 30, 60];
@@ -295,24 +330,28 @@ export const HoursTable: React.FC<Props> = ({ entries, showWorker = false, onDel
         isOpen={!!editEntry}
         onClose={() => setEditEntry(null)}
         title="Stunden bearbeiten"
-        width="520px"
+        width="460px"
       >
-        <EditRow>
+        <EditStack>
+          {/* Datum — full width */}
           <FormGroup>
             <Label>Datum</Label>
             <Input type="date" value={editDate} onChange={(e) => setEditDate(e.target.value)} required />
           </FormGroup>
-          <FormGroup>
-            <Label>Beginn</Label>
-            <Input type="time" value={editStart} onChange={(e) => setEditStart(e.target.value)} required />
-          </FormGroup>
-          <FormGroup>
-            <Label>Ende</Label>
-            <Input type="time" value={editEnd} onChange={(e) => setEditEnd(e.target.value)} required />
-          </FormGroup>
-        </EditRow>
 
-        <EditRow>
+          {/* Beginn + Ende — side by side, always 2 columns */}
+          <TwoCol>
+            <FormGroup>
+              <Label>Beginn</Label>
+              <Input type="time" value={editStart} onChange={(e) => setEditStart(e.target.value)} required />
+            </FormGroup>
+            <FormGroup>
+              <Label>Ende</Label>
+              <Input type="time" value={editEnd} onChange={(e) => setEditEnd(e.target.value)} required />
+            </FormGroup>
+          </TwoCol>
+
+          {/* Pause — full width */}
           <FormGroup>
             <Label>Pause</Label>
             <BreakGroup>
@@ -323,6 +362,8 @@ export const HoursTable: React.FC<Props> = ({ entries, showWorker = false, onDel
               ))}
             </BreakGroup>
           </FormGroup>
+
+          {/* Objekt — full width */}
           <FormGroup>
             <Label>Objekt (optional)</Label>
             <Select value={editObjectId} onChange={(e) => setEditObjectId(e.target.value)}>
@@ -332,23 +373,18 @@ export const HoursTable: React.FC<Props> = ({ entries, showWorker = false, onDel
               ))}
             </Select>
           </FormGroup>
-        </EditRow>
 
-        <EditRow>
-          <FormGroup>
-            <Label>Gesamt</Label>
-            <TotalDisplay>{editTotal > 0 ? formatMinutes(editTotal) : '—'}</TotalDisplay>
-          </FormGroup>
-          <FormGroup style={{ justifyContent: 'flex-end' }}>
-            <Label>&nbsp;</Label>
-            <div style={{ display: 'flex', gap: 8 }}>
+          {/* Footer: total + action buttons */}
+          <ModalFooter>
+            <FooterTotal>{editTotal > 0 ? formatMinutes(editTotal) : '—'}</FooterTotal>
+            <FooterBtns>
               <Button $variant="secondary" onClick={() => setEditEntry(null)}>Abbrechen</Button>
               <Button onClick={handleSave} disabled={saving || editTotal <= 0}>
                 {saving ? 'Speichern…' : 'Speichern'}
               </Button>
-            </div>
-          </FormGroup>
-        </EditRow>
+            </FooterBtns>
+          </ModalFooter>
+        </EditStack>
       </Modal>
     </>
   );

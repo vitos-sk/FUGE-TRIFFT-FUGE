@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
-import { FiMapPin, FiSearch, FiRotateCcw, FiInbox } from 'react-icons/fi';
-import { restoreObject } from '../services/objectsService';
+import { FiMapPin, FiSearch, FiRotateCcw, FiInbox, FiTrash2 } from 'react-icons/fi';
+import { restoreObject, deleteObjectPermanently } from '../services/objectsService';
 import { useArchivedObjects } from '../hooks/useObjects';
 import { useToast } from '../components/ui/Toast';
 import { useConfirm } from '../components/ui/ConfirmDialog';
@@ -174,7 +174,12 @@ const EmptyIcon = styled.div`
 
 // ─── Component ─────────────────────────────────────────────────────────────────
 
-const ArchiveCard: React.FC<{ object: CRMObject; onRestore: (obj: CRMObject) => void; isAdmin: boolean }> = ({ object, onRestore, isAdmin }) => {
+const ArchiveCard: React.FC<{
+  object: CRMObject;
+  onRestore: (obj: CRMObject) => void;
+  onDelete: (obj: CRMObject) => void;
+  isAdmin: boolean;
+}> = ({ object, onRestore, onDelete, isAdmin }) => {
   const archivedDate = object.archivedAt?.toDate?.();
 
   return (
@@ -195,11 +200,18 @@ const ArchiveCard: React.FC<{ object: CRMObject; onRestore: (obj: CRMObject) => 
           {archivedDate ? format(archivedDate, 'dd. MMM yyyy', { locale: de }) : '—'}
         </ArchivedDate>
         {isAdmin && (
-          <Button $variant="secondary" $size="sm" onClick={() => onRestore(object)}
-            style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <FiRotateCcw size={13} />
-            Wiederherstellen
-          </Button>
+          <div style={{ display: 'flex', gap: 6 }}>
+            <Button $variant="secondary" $size="sm" onClick={() => onRestore(object)}
+              style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <FiRotateCcw size={13} />
+              Wiederherstellen
+            </Button>
+            <Button $variant="ghost" $size="sm" onClick={() => onDelete(object)}
+              style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#cc2222' }}>
+              <FiTrash2 size={13} />
+              Löschen
+            </Button>
+          </div>
         )}
       </CardFooter>
     </ArchivedCard>
@@ -228,6 +240,22 @@ const ArchivePage: React.FC = () => {
     if (!ok) return;
     await restoreObject(obj.id);
     toast.success(`„${obj.title}" wiederhergestellt`);
+  };
+
+  const handleDelete = async (obj: CRMObject) => {
+    const ok = await confirm({
+      title: 'Objekt endgültig löschen?',
+      message: `„${obj.title}" wird mit allen Notizen und Fotos dauerhaft gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.`,
+      confirmLabel: 'Endgültig löschen',
+      danger: true,
+    });
+    if (!ok) return;
+    try {
+      await deleteObjectPermanently(obj.id);
+      toast.success(`„${obj.title}" gelöscht`);
+    } catch {
+      toast.error('Fehler beim Löschen.');
+    }
   };
 
   if (loading) {
@@ -264,7 +292,7 @@ const ArchivePage: React.FC = () => {
           </Empty>
         ) : (
           filtered.map((obj) => (
-            <ArchiveCard key={obj.id} object={obj} onRestore={handleRestore} isAdmin={isAdmin} />
+            <ArchiveCard key={obj.id} object={obj} onRestore={handleRestore} onDelete={handleDelete} isAdmin={isAdmin} />
           ))
         )}
       </Grid>

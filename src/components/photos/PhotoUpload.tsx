@@ -94,7 +94,7 @@ const Row = styled.div`
 `;
 
 const ProgressBar = styled.div<{ $progress: number }>`
-  height: 3px;
+  height: 4px;
   background: ${({ theme }) => theme.colors.border};
   border-radius: 9999px;
   margin-top: 10px;
@@ -107,8 +107,7 @@ const ProgressBar = styled.div<{ $progress: number }>`
     width: ${({ $progress }) => $progress}%;
     background: ${({ theme }) => theme.colors.accent};
     border-radius: 9999px;
-    transition: width 0.3s ease;
-    animation: ${({ $progress }) => $progress < 100 ? pulse : 'none'} 1.5s infinite;
+    transition: width 0.4s ease;
   }
 `;
 
@@ -154,13 +153,13 @@ export const PhotoUpload: React.FC<Props> = ({ objectId }) => {
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept: { 'image/*': [] },
-    maxSize: 10 * 1024 * 1024,
+    maxSize: 15 * 1024 * 1024,
     multiple: false,
     onDrop: (accepted, rejected) => {
       setError('');
       if (rejected.length > 0) {
         const reason = rejected[0].errors[0]?.code;
-        if (reason === 'file-too-large') setError('Datei zu groß (max. 10 MB).');
+        if (reason === 'file-too-large') setError('Datei zu groß (max. 15 MB).');
         else setError('Ungültiges Dateiformat. Nur Bilder erlaubt.');
         return;
       }
@@ -182,54 +181,39 @@ export const PhotoUpload: React.FC<Props> = ({ objectId }) => {
     if (!file || !uid || !user) return;
     setError('');
     setUploading(true);
-    setProgress(10);
-
-    const tick = setInterval(() => {
-      setProgress((p) => Math.min(p + 10, 80));
-    }, 600);
-
-    // 60s timeout — prevents infinite hang on slow mobile connections
-    const timeout = new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error('timeout')), 60_000)
-    );
+    setProgress(0);
 
     try {
-      await Promise.race([
-        uploadPhoto(objectId, file, type, caption, uid, user.name),
-        timeout,
-      ]);
-      clearInterval(tick);
-      setProgress(100);
-      setTimeout(() => {
-        setFile(null);
-        setPreview(null);
-        setCaption('');
-        setProgress(0);
-        toast.success('Foto hochgeladen');
-      }, 400);
-    } catch (err: unknown) {
-      clearInterval(tick);
+      await uploadPhoto(objectId, file, type, caption, uid, user.name, setProgress);
+      setFile(null);
+      setPreview(null);
+      setCaption('');
       setProgress(0);
+      toast.success('Foto hochgeladen');
+    } catch (err: unknown) {
       const msg = (err as { message?: string }).message ?? '';
       console.error('[PhotoUpload] failed:', err);
-      if (msg === 'timeout') {
-        setError('Upload-Timeout. Bitte prüfe die Verbindung und versuche es erneut.');
-      } else if (msg.includes('permission')) {
+      if (msg.includes('permission') || msg.includes('unauthorized')) {
         setError('Keine Berechtigung zum Hochladen.');
-      } else if (msg.includes('storage') || msg.includes('size')) {
-        setError('Datei zu groß oder Speicherfehler. Bitte erneut versuchen.');
+      } else if (msg.includes('quota') || msg.includes('size')) {
+        setError('Datei zu groß für den Speicher.');
       } else {
-        setError('Upload fehlgeschlagen. Bitte erneut versuchen.');
+        setError(`Upload fehlgeschlagen: ${msg || 'Bitte erneut versuchen.'}`);
       }
+      setProgress(0);
     } finally {
       setUploading(false);
     }
   };
 
+  const statusLabel = progress === 0
+    ? 'Bild wird vorbereitet…'
+    : `Hochladen… ${progress}%`;
+
   return (
     <div>
       <Zone {...getRootProps()} $active={isDragActive} $hasFile={!!preview}>
-        <input {...getInputProps()} />
+        <input {...getInputProps()} capture={undefined} />
         {preview ? (
           <PreviewWrapper>
             <Preview src={preview} alt="Vorschau" />
@@ -241,7 +225,7 @@ export const PhotoUpload: React.FC<Props> = ({ objectId }) => {
             <ZoneText>
               {isDragActive ? 'Datei hier ablegen…' : 'Foto hier ablegen oder klicken'}
             </ZoneText>
-            <ZoneHint>JPG, PNG, WEBP · max. 10 MB</ZoneHint>
+            <ZoneHint>JPG, PNG, WEBP · max. 15 MB</ZoneHint>
           </>
         )}
       </Zone>
@@ -249,7 +233,7 @@ export const PhotoUpload: React.FC<Props> = ({ objectId }) => {
       {uploading && (
         <>
           <ProgressBar $progress={progress} />
-          <UploadingLabel>Hochladen… {progress}%</UploadingLabel>
+          <UploadingLabel>{statusLabel}</UploadingLabel>
         </>
       )}
 

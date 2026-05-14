@@ -4,13 +4,16 @@ import {
   addDoc,
   updateDoc,
   deleteDoc,
+  getDocs,
+  writeBatch,
   Timestamp,
   onSnapshot,
   query,
   orderBy,
   getDoc,
 } from 'firebase/firestore';
-import { db } from './firebase';
+import { ref, deleteObject as deleteStorageObject } from 'firebase/storage';
+import { db, storage } from './firebase';
 import type { CRMObject, ObjectStatus, Material, ChecklistItem } from '../types';
 
 export const subscribeToObjects = (
@@ -52,6 +55,38 @@ export const updateObject = async (id: string, data: Partial<CRMObject>) =>
   updateDoc(doc(db, 'objects', id), data as Record<string, unknown>);
 
 export const deleteObject = async (id: string) => deleteDoc(doc(db, 'objects', id));
+
+// Permanently deletes object + all notes + all photos (Firestore docs + Storage files).
+export const deleteObjectPermanently = async (id: string): Promise<void> => {
+  const [notesSnap, photosSnap] = await Promise.all([
+    getDocs(collection(db, 'objects', id, 'notes')),
+    getDocs(collection(db, 'objects', id, 'photos')),
+  ]);
+
+  // Delete Storage files for photos
+  await Promise.all(
+    photosSnap.docs.map((d) => {
+      const path = (d.data().storagePath as string | undefined) ?? extractStoragePath(d.data().url as string);
+      return path ? deleteStorageObject(ref(storage, path)).catch(() => {}) : Promise.resolve();
+    })
+  );
+
+  // Batch delete all Firestore subcollection docs + the object doc
+  const batch = writeBatch(db);
+  notesSnap.docs.forEach((d) => batch.delete(d.ref));
+  photosSnap.docs.forEach((d) => batch.delete(d.ref));
+  batch.delete(doc(db, 'objects', id));
+  await batch.commit();
+};
+
+const extractStoragePath = (url: string): string | null => {
+  try {
+    const match = url?.match(/\/o\/(.+?)\?/);
+    return match ? decodeURIComponent(match[1]) : null;
+  } catch {
+    return null;
+  }
+};
 
 export const updateObjectStatus = async (id: string, status: ObjectStatus) =>
   updateDoc(doc(db, 'objects', id), { status });
