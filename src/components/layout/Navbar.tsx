@@ -182,11 +182,11 @@ export const Navbar: React.FC = () => {
       <NavLinks>
         <NavItem to="/" end>Objekte</NavItem>
         <NavItem to="/hours">Stunden</NavItem>
-        <NavItem to="/archiv">
-          Archiv{archivedCount > 0 && <NavBadge>{archivedCount}</NavBadge>}
-        </NavItem>
         {isAdmin && (
           <>
+            <NavItem to="/archiv">
+              Archiv{archivedCount > 0 && <NavBadge>{archivedCount}</NavBadge>}
+            </NavItem>
             <Divider />
             <NavItem to="/dashboard">Dashboard</NavItem>
             <NavItem to="/admin/users">Benutzer</NavItem>

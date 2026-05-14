@@ -122,9 +122,9 @@ export const MobileTabBar: React.FC = () => {
     <Bar>
       <Tab to="/"       icon={<FiGrid size={20} />}    label="Objekte"   active={onRoot || onObjects} />
       <Tab to="/hours"  icon={<FiClock size={20} />}   label="Stunden"   active={onHours} />
-      <Tab to="/archiv" icon={<FiInbox size={20} />}   label="Archiv"    active={onArchiv} badge={archivedCount} />
       {isAdmin && (
         <>
+          <Tab to="/archiv"      icon={<FiInbox size={20} />}     label="Archiv"    active={onArchiv} badge={archivedCount} />
           <Tab to="/dashboard"   icon={<FiBarChart2 size={20} />} label="Dashboard" active={onDashboard} />
           <Tab to="/admin/users" icon={<FiSettings size={20} />}  label="Benutzer"  active={onAdmin} />
         </>

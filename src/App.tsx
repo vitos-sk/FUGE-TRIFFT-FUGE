@@ -33,6 +33,19 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   return <>{children}</>;
 };
 
+const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { firebaseUser, loading, isAdmin } = useAuth();
+  if (loading)
+    return (
+      <FullPageSpinner>
+        <Spinner size={32} />
+      </FullPageSpinner>
+    );
+  if (!firebaseUser) return <Navigate to="/login" replace />;
+  if (!isAdmin) return <Navigate to="/" replace />;
+  return <>{children}</>;
+};
+
 const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { uid } = useAuth();
   useFCM(uid);
@@ -132,11 +145,11 @@ const AppRoutes: React.FC = () => {
         <Route
           path="/archiv"
           element={
-            <ProtectedRoute>
+            <AdminRoute>
               <AppShell>
                 <ArchivePage />
               </AppShell>
-            </ProtectedRoute>
+            </AdminRoute>
           }
         />
         <Route path="*" element={<Navigate to="/" replace />} />

@@ -32,7 +32,9 @@ service cloud.firestore {
     match /objects/{objectId} {
       allow read: if isActive();
       allow create: if isAdmin();
-      allow update: if isActive();
+      // Workers can update object fields but cannot touch archived/archivedAt — only admin can.
+      allow update: if isAdmin() ||
+        (isActive() && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['archived', 'archivedAt']));
       allow delete: if isAdmin();
 
       match /notes/{noteId} {

@@ -10,6 +10,7 @@ import { useConfirm } from '../components/ui/ConfirmDialog';
 import { Spinner } from '../components/ui/Spinner';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
+import { useAuth } from '../hooks/useAuth';
 import type { CRMObject } from '../types';
 
 // ─── Styled ───────────────────────────────────────────────────────────────────
@@ -173,7 +174,7 @@ const EmptyIcon = styled.div`
 
 // ─── Component ─────────────────────────────────────────────────────────────────
 
-const ArchiveCard: React.FC<{ object: CRMObject; onRestore: (obj: CRMObject) => void }> = ({ object, onRestore }) => {
+const ArchiveCard: React.FC<{ object: CRMObject; onRestore: (obj: CRMObject) => void; isAdmin: boolean }> = ({ object, onRestore, isAdmin }) => {
   const archivedDate = object.archivedAt?.toDate?.();
 
   return (
@@ -193,11 +194,13 @@ const ArchiveCard: React.FC<{ object: CRMObject; onRestore: (obj: CRMObject) => 
         <ArchivedDate>
           {archivedDate ? format(archivedDate, 'dd. MMM yyyy', { locale: de }) : '—'}
         </ArchivedDate>
-        <Button $variant="secondary" $size="sm" onClick={() => onRestore(object)}
-          style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <FiRotateCcw size={13} />
-          Wiederherstellen
-        </Button>
+        {isAdmin && (
+          <Button $variant="secondary" $size="sm" onClick={() => onRestore(object)}
+            style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <FiRotateCcw size={13} />
+            Wiederherstellen
+          </Button>
+        )}
       </CardFooter>
     </ArchivedCard>
   );
@@ -205,6 +208,7 @@ const ArchiveCard: React.FC<{ object: CRMObject; onRestore: (obj: CRMObject) => 
 
 const ArchivePage: React.FC = () => {
   const { objects, loading } = useArchivedObjects();
+  const { isAdmin } = useAuth();
   const toast = useToast();
   const confirm = useConfirm();
   const [search, setSearch] = useState('');
@@ -260,7 +264,7 @@ const ArchivePage: React.FC = () => {
           </Empty>
         ) : (
           filtered.map((obj) => (
-            <ArchiveCard key={obj.id} object={obj} onRestore={handleRestore} />
+            <ArchiveCard key={obj.id} object={obj} onRestore={handleRestore} isAdmin={isAdmin} />
           ))
         )}
       </Grid>
