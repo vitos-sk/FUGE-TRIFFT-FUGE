@@ -20,7 +20,7 @@ service firebase.storage {
     // 5 MB hard cap on uploads (browser already compresses, this is a server-side guard).
     match /objects/{objectId}/photos/{fileName} {
       allow read:   if isActive();
-      allow create: if isActive() && request.resource.size <= 5 * 1024 * 1024;
+      allow create: if isActive() && request.resource.size <= 10 * 1024 * 1024;
       allow update: if false;
       allow delete: if isActive();
     }

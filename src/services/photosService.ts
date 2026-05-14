@@ -14,55 +14,24 @@ import {
   getDownloadURL,
   deleteObject,
 } from 'firebase/storage';
+import imageCompression from 'browser-image-compression';
 import { db, storage } from './firebase';
 import type { Photo, PhotoType } from '../types';
 
-// Native canvas compression — works on all mobile browsers without Web Workers.
-// Falls back to original file if canvas is unavailable or image can't be decoded.
-function compressToJpeg(file: File, maxMB: number, maxPx: number): Promise<Blob> {
-  return new Promise((resolve) => {
-    const img = new Image();
-    const objectUrl = URL.createObjectURL(file);
-
-    img.onload = () => {
-      URL.revokeObjectURL(objectUrl);
-
-      let { width, height } = img;
-      const scale = Math.min(1, maxPx / Math.max(width, height));
-      width = Math.round(width * scale);
-      height = Math.round(height * scale);
-
-      const canvas = document.createElement('canvas');
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) { resolve(file); return; }
-      ctx.drawImage(img, 0, 0, width, height);
-
-      const maxBytes = maxMB * 1024 * 1024;
-      let quality = 0.85;
-
-      const attempt = () => {
-        canvas.toBlob((blob) => {
-          if (!blob) { resolve(file); return; }
-          if (blob.size <= maxBytes || quality <= 0.3) {
-            resolve(blob);
-          } else {
-            quality = Math.max(0.3, quality - 0.1);
-            attempt();
-          }
-        }, 'image/jpeg', quality);
-      };
-      attempt();
-    };
-
-    img.onerror = () => {
-      URL.revokeObjectURL(objectUrl);
-      resolve(file); // upload original if decode fails
-    };
-
-    img.src = objectUrl;
-  });
+async function compressToJpeg(file: File): Promise<Blob> {
+  try {
+    const compressed = await imageCompression(file, {
+      maxSizeMB: 2,
+      maxWidthOrHeight: 2048,
+      useWebWorker: false, // safer on iOS WebViews
+      fileType: 'image/jpeg',
+      initialQuality: 0.85,
+    });
+    return compressed;
+  } catch {
+    // fall back to original if compression fails (e.g. unsupported HEIC variant)
+    return file;
+  }
 }
 
 export const subscribeToPhotos = (
@@ -90,7 +59,7 @@ export const uploadPhoto = async (
   onProgress?: (pct: number) => void
 ): Promise<Photo> => {
   // Step 1: compress (async, non-blocking via canvas)
-  const blob = await compressToJpeg(file, 2, 2048);
+  const blob = await compressToJpeg(file);
   onProgress?.(5); // compression done
 
   // Step 2: upload with real progress tracking

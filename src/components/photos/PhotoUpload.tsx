@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import styled, { keyframes } from 'styled-components';
-import { useDropzone } from 'react-dropzone';
-import { FiCamera, FiX } from 'react-icons/fi';
+import { FiCamera, FiImage, FiX } from 'react-icons/fi';
 import { uploadPhoto } from '../../services/photosService';
 import { useAuth } from '../../hooks/useAuth';
 import { Button } from '../ui/Button';
@@ -14,48 +13,59 @@ const pulse = keyframes`
   50%       { opacity: 0.6; }
 `;
 
-const Zone = styled.div<{ $active: boolean; $hasFile: boolean }>`
-  border: 2px dashed ${({ $active, theme }) => ($active ? theme.colors.accent : theme.colors.border)};
-  border-radius: ${({ theme }) => theme.borderRadius};
-  padding: ${({ $hasFile }) => $hasFile ? '12px' : '32px'};
-  text-align: center;
-  cursor: pointer;
-  transition: all ${({ theme }) => theme.transitions.spring};
-  background: ${({ $active, theme }) => ($active ? `${theme.colors.accent}0e` : theme.colors.bgCard)};
-  position: relative;
+const PickerRow = styled.div`
+  display: flex;
+  gap: 10px;
 
-  &:hover {
-    border-color: ${({ theme }) => theme.colors.accent};
-    background: ${({ theme }) => `${theme.colors.accent}08`};
+  @media (max-width: 480px) {
+    gap: 8px;
   }
 `;
 
-const ZoneIcon = styled.div`
-  margin-bottom: 10px;
-  color: ${({ theme }) => theme.colors.textMuted};
+const PickerBtn = styled.label`
+  flex: 1;
   display: flex;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
-`;
-
-const ZoneText = styled.p`
-  color: ${({ theme }) => theme.colors.textSecondary};
-  font-size: 14px;
-  line-height: 1.5;
-`;
-
-const ZoneHint = styled.p`
+  gap: 8px;
+  padding: 22px 12px;
+  border: 2px dashed ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.borderRadius};
+  background: ${({ theme }) => theme.colors.bgCard};
   color: ${({ theme }) => theme.colors.textMuted};
-  font-size: 11px;
-  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all ${({ theme }) => theme.transitions.spring};
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+
+  &:hover, &:active {
+    border-color: ${({ theme }) => theme.colors.accent};
+    color: ${({ theme }) => theme.colors.accent};
+    background: ${({ theme }) => `${theme.colors.accent}08`};
+  }
+
+  @media (max-width: 480px) {
+    padding: 18px 8px;
+    font-size: 11px;
+  }
 `;
 
-const PreviewWrapper = styled.div`
+const PreviewBox = styled.div`
   position: relative;
-  display: inline-block;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.borderRadius};
+  padding: 12px;
+  background: ${({ theme }) => theme.colors.bgCard};
+  text-align: center;
 `;
 
 const Preview = styled.img`
-  max-height: 180px;
+  max-height: 200px;
   max-width: 100%;
   border-radius: ${({ theme }) => theme.borderRadiusSm};
   object-fit: contain;
@@ -63,10 +73,10 @@ const Preview = styled.img`
 
 const ClearBtn = styled.button`
   position: absolute;
-  top: -8px;
-  right: -8px;
-  width: 22px;
-  height: 22px;
+  top: -10px;
+  right: -10px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   background: ${({ theme }) => theme.colors.accent};
   color: #fff;
@@ -129,12 +139,19 @@ const ErrorBox = styled.div`
   margin-top: 10px;
 `;
 
+const HiddenInput = styled.input`
+  display: none;
+`;
+
 const TYPE_OPTIONS: { value: PhotoType; label: string }[] = [
   { value: 'daily',   label: 'Täglich' },
   { value: 'before',  label: 'Vorher' },
   { value: 'after',   label: 'Nachher' },
   { value: 'problem', label: 'Problem' },
 ];
+
+// iOS sometimes delivers HEIC as application/octet-stream — check extension too
+const ACCEPTED = ['image/jpeg','image/png','image/webp','image/gif','image/heic','image/heif','application/octet-stream'];
 
 interface Props {
   objectId: string;
@@ -148,30 +165,38 @@ export const PhotoUpload: React.FC<Props> = ({ objectId }) => {
   const [preview, setPreview] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState('');
+
+  const cameraRef = useRef<HTMLInputElement>(null);
+  const galleryRef = useRef<HTMLInputElement>(null);
+
   const { user, uid } = useAuth();
   const toast = useToast();
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    accept: { 'image/*': [] },
-    maxSize: 15 * 1024 * 1024,
-    multiple: false,
-    onDrop: (accepted, rejected) => {
-      setError('');
-      if (rejected.length > 0) {
-        const reason = rejected[0].errors[0]?.code;
-        if (reason === 'file-too-large') setError('Datei zu groß (max. 15 MB).');
-        else setError('Ungültiges Dateiformat. Nur Bilder erlaubt.');
-        return;
-      }
-      const f = accepted[0];
-      if (!f) return;
-      setFile(f);
-      setPreview(URL.createObjectURL(f));
-    },
-  });
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setError('');
+    const f = e.target.files?.[0];
+    if (!f) return;
 
-  const clearFile = (e: React.MouseEvent) => {
-    e.stopPropagation();
+    const isImage = ACCEPTED.includes(f.type) || /\.(jpe?g|png|webp|gif|heic|heif)$/i.test(f.name);
+    if (!isImage) {
+      setError('Ungültiges Format. Nur Bilder (JPG, PNG, HEIC…) erlaubt.');
+      return;
+    }
+    if (f.size > 50 * 1024 * 1024) {
+      setError('Datei zu groß. Bitte Bild unter 50 MB wählen.');
+      return;
+    }
+
+    setFile(f);
+    const url = URL.createObjectURL(f);
+    setPreview(url);
+
+    // reset input so same file can be picked again
+    e.target.value = '';
+  };
+
+  const clearFile = () => {
+    if (preview) URL.revokeObjectURL(preview);
     setFile(null);
     setPreview(null);
     setError('');
@@ -185,8 +210,7 @@ export const PhotoUpload: React.FC<Props> = ({ objectId }) => {
 
     try {
       await uploadPhoto(objectId, file, type, caption, uid, user.name, setProgress);
-      setFile(null);
-      setPreview(null);
+      clearFile();
       setCaption('');
       setProgress(0);
       toast.success('Foto hochgeladen');
@@ -207,28 +231,46 @@ export const PhotoUpload: React.FC<Props> = ({ objectId }) => {
   };
 
   const statusLabel = progress === 0
-    ? 'Bild wird vorbereitet…'
+    ? 'Bild wird komprimiert…'
     : `Hochladen… ${progress}%`;
 
   return (
     <div>
-      <Zone {...getRootProps()} $active={isDragActive} $hasFile={!!preview}>
-        <input {...getInputProps()} capture={undefined} />
-        {preview ? (
-          <PreviewWrapper>
-            <Preview src={preview} alt="Vorschau" />
-            {!uploading && <ClearBtn onClick={clearFile}><FiX size={10} /></ClearBtn>}
-          </PreviewWrapper>
-        ) : (
-          <>
-            <ZoneIcon><FiCamera size={28} style={{ opacity: 0.5 }} /></ZoneIcon>
-            <ZoneText>
-              {isDragActive ? 'Datei hier ablegen…' : 'Foto hier ablegen oder klicken'}
-            </ZoneText>
-            <ZoneHint>JPG, PNG, WEBP · max. 15 MB</ZoneHint>
-          </>
-        )}
-      </Zone>
+      {!file && (
+        <PickerRow>
+          <PickerBtn htmlFor="photo-camera">
+            <HiddenInput
+              id="photo-camera"
+              ref={cameraRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              onChange={handleFileChange}
+            />
+            <FiCamera size={26} />
+            Kamera
+          </PickerBtn>
+
+          <PickerBtn htmlFor="photo-gallery">
+            <HiddenInput
+              id="photo-gallery"
+              ref={galleryRef}
+              type="file"
+              accept="image/*,image/heic,image/heif"
+              onChange={handleFileChange}
+            />
+            <FiImage size={26} />
+            Galerie
+          </PickerBtn>
+        </PickerRow>
+      )}
+
+      {preview && (
+        <PreviewBox>
+          <Preview src={preview} alt="Vorschau" />
+          {!uploading && <ClearBtn onClick={clearFile}><FiX size={11} /></ClearBtn>}
+        </PreviewBox>
+      )}
 
       {uploading && (
         <>

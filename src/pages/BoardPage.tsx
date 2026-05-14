@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useObjects } from '../hooks/useObjects';
 import { useAuth } from '../hooks/useAuth';
+import { FiPlus } from 'react-icons/fi';
 import { ObjectCard } from '../components/objects/ObjectCard';
 import { ObjectForm } from '../components/objects/ObjectForm';
 import { Modal } from '../components/ui/Modal';
@@ -112,33 +113,32 @@ const Empty = styled.div`
 
 const FAB = styled.button`
   position: fixed;
-  bottom: 28px;
-  right: 28px;
+  bottom: 24px;
+  right: 22px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
   background: ${({ theme }) => theme.colors.accent};
   color: #fff;
-  border: none;
-  border-radius: ${({ theme }) => theme.borderRadius};
-  padding: 13px 22px;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
-  cursor: pointer;
-  box-shadow: 0 4px 24px rgba(204,34,34,0.45), 0 2px 8px rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 18px rgba(204,34,34,0.5), 0 2px 6px rgba(0,0,0,0.25);
   transition: all ${({ theme }) => theme.transitions.spring};
   z-index: 100;
 
   &:hover {
-    background: ${({ theme }) => theme.colors.accentHover};
-    transform: translateY(-2px);
-    box-shadow: 0 8px 32px rgba(204,34,34,0.5), 0 2px 8px rgba(0,0,0,0.3);
+    transform: scale(1.1);
+    box-shadow: 0 6px 26px rgba(204,34,34,0.6), 0 2px 8px rgba(0,0,0,0.3);
   }
 
-  &:active {
-    transform: translateY(-1px);
-  }
+  &:active { transform: scale(0.96); }
 
-  @media (max-width: 768px) { bottom: 78px; }
+  @media (max-width: 768px) {
+    bottom: 76px;
+    width: 46px;
+    height: 46px;
+  }
 `;
 
 const FILTERS: { label: string; value: ObjectStatus | 'all' }[] = [
@@ -195,7 +195,7 @@ const BoardPage: React.FC = () => {
 
       {isAdmin && (
         <>
-          <FAB onClick={() => setShowModal(true)}>+ Neues Objekt</FAB>
+          <FAB onClick={() => setShowModal(true)} title="Neues Objekt"><FiPlus size={22} /></FAB>
           <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="Neues Objekt anlegen">
             <ObjectForm onSubmit={handleCreate} onCancel={() => setShowModal(false)} submitLabel="Anlegen" />
           </Modal>
