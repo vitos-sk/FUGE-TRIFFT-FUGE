@@ -46,7 +46,7 @@ service cloud.firestore {
       match /photos/{photoId} {
         allow read: if isActive();
         allow create: if isActive();
-        allow delete: if isAdmin();
+        allow delete: if isActive();
       }
     }
 

@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import styled, { keyframes } from 'styled-components';
-import { subscribeToPhotos } from '../../services/photosService';
+import { FiTrash2 } from 'react-icons/fi';
+import { subscribeToPhotos, deletePhoto } from '../../services/photosService';
 import { Badge } from '../ui/Badge';
 import { PhotoUpload } from './PhotoUpload';
+import { useConfirm } from '../ui/ConfirmDialog';
+import { useToast } from '../ui/Toast';
 import type { Photo } from '../../types';
 import { Spinner } from '../ui/Spinner';
 
@@ -42,6 +45,10 @@ const PhotoCard = styled.div`
   &:hover img {
     transform: scale(1.06);
   }
+
+  &:hover .delete-btn {
+    opacity: 1;
+  }
 `;
 
 const Img = styled.img`
@@ -66,6 +73,35 @@ const Caption = styled.p`
   color: rgba(255,255,255,0.85);
   margin-top: 4px;
   line-height: 1.3;
+`;
+
+const DeleteBtn = styled.button`
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0,0,0,0.65);
+  color: #ff6b6b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s, background 0.2s;
+  backdrop-filter: blur(4px);
+  z-index: 10;
+
+  &:hover {
+    background: rgba(180, 30, 30, 0.85);
+    color: #fff;
+  }
+
+  @media (max-width: 768px) {
+    opacity: 1;
+  }
 `;
 
 const Lightbox = styled.div`
@@ -114,6 +150,8 @@ export const PhotoGrid: React.FC<Props> = ({ objectId }) => {
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(true);
   const [lightbox, setLightbox] = useState<Photo | null>(null);
+  const confirm = useConfirm();
+  const toast = useToast();
 
   useEffect(() => {
     const unsub = subscribeToPhotos(objectId, (data) => {
@@ -122,6 +160,25 @@ export const PhotoGrid: React.FC<Props> = ({ objectId }) => {
     });
     return unsub;
   }, [objectId]);
+
+  const handleDelete = async (e: React.MouseEvent, photo: Photo) => {
+    e.stopPropagation();
+    e.preventDefault();
+    const ok = await confirm({
+      title: 'Foto löschen',
+      message: `Foto "${photo.caption || photo.type}" wirklich permanent löschen?`,
+      confirmLabel: 'Löschen',
+      danger: true,
+    });
+    if (!ok) return;
+    try {
+      await deletePhoto(objectId, photo);
+      toast.success('Foto gelöscht');
+      if (lightbox?.id === photo.id) setLightbox(null);
+    } catch {
+      toast.error('Fehler beim Löschen.');
+    }
+  };
 
   if (loading) return <div style={{ display: 'flex', justifyContent: 'center', padding: 32 }}><Spinner /></div>;
 
@@ -136,6 +193,13 @@ export const PhotoGrid: React.FC<Props> = ({ objectId }) => {
           {photos.map((photo) => (
             <PhotoCard key={photo.id} onClick={() => setLightbox(photo)}>
               <Img src={photo.url} alt={photo.caption || 'Foto'} loading="lazy" />
+              <DeleteBtn
+                className="delete-btn"
+                title="Foto löschen"
+                onClick={(e) => handleDelete(e, photo)}
+              >
+                <FiTrash2 size={14} />
+              </DeleteBtn>
               <Overlay>
                 <Badge $photoType={photo.type}>{photoTypeLabels[photo.type]}</Badge>
                 {photo.caption && <Caption>{photo.caption}</Caption>}

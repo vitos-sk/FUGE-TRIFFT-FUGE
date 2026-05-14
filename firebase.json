@@ -4,6 +4,7 @@
     "indexes": "firestore.indexes.json"
   },
   "storage": {
+    "bucket": "fuge-trifft-fuge.firebasestorage.app",
     "rules": "storage.rules"
   }
 }

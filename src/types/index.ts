@@ -61,6 +61,7 @@ export type PhotoType = 'before' | 'after' | 'daily' | 'problem';
 export interface Photo {
   id: string;
   url: string;
+  storagePath?: string;
   caption: string;
   type: PhotoType;
   uploadedBy: string;
