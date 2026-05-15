@@ -3,15 +3,15 @@ import styled from 'styled-components';
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { FiMapPin, FiSearch, FiRotateCcw, FiInbox, FiTrash2 } from 'react-icons/fi';
-import { restoreObject, deleteObjectPermanently } from '../services/objectsService';
-import { useArchivedObjects } from '../hooks/useObjects';
-import { useToast } from '../components/ui/Toast';
-import { useConfirm } from '../components/ui/ConfirmDialog';
-import { Spinner } from '../components/ui/Spinner';
-import { Button } from '../components/ui/Button';
-import { Input } from '../components/ui/Input';
-import { useAuth } from '../hooks/useAuth';
-import type { CRMObject } from '../types';
+import { restoreObject, deleteObjectPermanently } from '@shared/services/objectsService';
+import { useArchivedObjects } from '@features/objects/hooks/useObjects';
+import { useToast } from '@shared/ui/Toast';
+import { useConfirm } from '@shared/ui/ConfirmDialog';
+import { Spinner } from '@shared/ui/Spinner';
+import { Button } from '@shared/ui/Button';
+import { Input } from '@shared/ui/Input';
+import { useAuth } from '@shared/hooks/useAuth';
+import type { CRMObject } from '@shared/types';
 
 // ─── Styled ───────────────────────────────────────────────────────────────────
 

@@ -3,17 +3,17 @@ import styled from 'styled-components';
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { FiEdit2, FiUserPlus } from 'react-icons/fi';
-import { Modal } from '../components/ui/Modal';
-import { Button } from '../components/ui/Button';
-import { Input, Select, FormGroup, Label } from '../components/ui/Input';
-import { Badge } from '../components/ui/Badge';
-import { useToast } from '../components/ui/Toast';
-import { useConfirm } from '../components/ui/ConfirmDialog';
-import { getAllUsers, createUser, toggleUserDisabled, updateUserName } from '../services/authService';
-import { useAuth } from '../hooks/useAuth';
+import { Modal } from '@shared/ui/Modal';
+import { Button } from '@shared/ui/Button';
+import { Input, Select, FormGroup, Label } from '@shared/ui/Input';
+import { Badge } from '@shared/ui/Badge';
+import { useToast } from '@shared/ui/Toast';
+import { useConfirm } from '@shared/ui/ConfirmDialog';
+import { getAllUsers, createUser, toggleUserDisabled, updateUserName } from '@shared/services/authService';
+import { useAuth } from '@shared/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
-import type { AppUser, UserRole } from '../types';
-import { Spinner } from '../components/ui/Spinner';
+import type { AppUser, UserRole } from '@shared/types';
+import { Spinner } from '@shared/ui/Spinner';
 
 const PageTitle = styled.h1`
   font-size: 12px;

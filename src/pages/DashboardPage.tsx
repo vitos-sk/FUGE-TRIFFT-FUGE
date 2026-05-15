@@ -7,13 +7,13 @@ import {
 import { onSnapshot, collection, query, where } from 'firebase/firestore';
 import { subDays, format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
 import { de } from 'date-fns/locale';
-import { db } from '../services/firebase';
-import { getAllUsers } from '../services/authService';
-import { useObjects } from '../hooks/useObjects';
+import { db } from '@shared/services/firebase';
+import { getAllUsers } from '@shared/services/authService';
+import { useObjects } from '@features/objects/hooks/useObjects';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
-import { Spinner } from '../components/ui/Spinner';
-import type { WorkHourEntry, AppUser } from '../types';
+import { useAuth } from '@shared/hooks/useAuth';
+import { Spinner } from '@shared/ui/Spinner';
+import type { WorkHourEntry, AppUser } from '@shared/types';
 
 // ─── Styled ────────────────────────────────────────────────────────────────────
 

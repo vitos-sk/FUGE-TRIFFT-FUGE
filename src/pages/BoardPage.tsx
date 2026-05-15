@@ -1,14 +1,14 @@
 import React, { useState } from "react";
 import styled from "styled-components";
-import { useObjects } from "../hooks/useObjects";
-import { useAuth } from "../hooks/useAuth";
+import { useObjects } from "@features/objects/hooks/useObjects";
+import { useAuth } from "@shared/hooks/useAuth";
 import { FiPlus } from "react-icons/fi";
-import { ObjectCard } from "../components/objects/ObjectCard";
-import { ObjectForm } from "../components/objects/ObjectForm";
-import { Modal } from "../components/ui/Modal";
-import { Spinner } from "../components/ui/Spinner";
-import { createObject } from "../services/objectsService";
-import type { CRMObject, ObjectStatus } from "../types";
+import { ObjectCard } from "@features/objects/components/ObjectCard";
+import { ObjectForm } from "@features/objects/components/ObjectForm";
+import { Modal } from "@shared/ui/Modal";
+import { Spinner } from "@shared/ui/Spinner";
+import { createObject } from "@shared/services/objectsService";
+import type { CRMObject, ObjectStatus } from "@shared/types";
 
 const Header = styled.div`
   display: flex;

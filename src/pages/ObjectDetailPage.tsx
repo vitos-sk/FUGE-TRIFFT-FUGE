@@ -1,24 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { FiMapPin, FiX, FiMessageSquare, FiCamera, FiBox, FiCheckSquare, FiInfo } from 'react-icons/fi';
-import { v4 as uuidv4 } from 'uuid';
-import { Tabs } from '../components/ui/Tabs';
-import { NotesFeed } from '../components/notes/NotesFeed';
-import { PhotoGrid } from '../components/photos/PhotoGrid';
-import { Button } from '../components/ui/Button';
-import { Input, Select } from '../components/ui/Input';
-import { Modal } from '../components/ui/Modal';
-import { Badge } from '../components/ui/Badge';
-import { ObjectForm } from '../components/objects/ObjectForm';
-import { Spinner } from '../components/ui/Spinner';
-import { useToast } from '../components/ui/Toast';
-import { useConfirm } from '../components/ui/ConfirmDialog';
-import { onSnapshot, doc as fsDoc } from 'firebase/firestore';
-import { db } from '../services/firebase';
-import { updateObject, deleteObject, updateMaterials, updateChecklist } from '../services/objectsService';
-import { useAuth } from '../hooks/useAuth';
-import type { CRMObject, Material, ChecklistItem, TabId } from '../types';
+import { Tabs } from '@shared/ui/Tabs';
+import { NotesFeed } from '@features/notes/components/NotesFeed';
+import { PhotoGrid } from '@features/photos/components/PhotoGrid';
+import { Button } from '@shared/ui/Button';
+import { Input, Select } from '@shared/ui/Input';
+import { Modal } from '@shared/ui/Modal';
+import { Badge } from '@shared/ui/Badge';
+import { ObjectForm } from '@features/objects/components/ObjectForm';
+import { Spinner } from '@shared/ui/Spinner';
+import { useAuth } from '@shared/hooks/useAuth';
+import { useObjectDetail } from '@features/objects/hooks/useObjectDetail';
+import type { TabId } from '@shared/types';
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
 
@@ -231,34 +226,29 @@ const ObjectDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { isAdmin } = useAuth();
-  const [object, setObject] = useState<CRMObject | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<TabId>('notes');
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [newMaterial, setNewMaterial] = useState('');
-  const [newCheckItem, setNewCheckItem] = useState('');
-  const toast = useToast();
-  const confirm = useConfirm();
 
-  useEffect(() => {
-    if (!id) return;
-    const unsub = onSnapshot(
-      fsDoc(db, 'objects', id),
-      (snap) => {
-        if (!snap.exists()) {
-          setObject(null);
-        } else {
-          const obj = { id: snap.id, ...snap.data() } as CRMObject;
-          obj.materials = obj.materials ?? [];
-          obj.checklist = obj.checklist ?? [];
-          setObject(obj);
-        }
-        setLoading(false);
-      },
-      () => { toast.error('Objekt konnte nicht geladen werden.'); setLoading(false); }
-    );
-    return unsub;
-  }, [id]);
+  const {
+    object,
+    loading,
+    tab,
+    setTab,
+    showEditModal,
+    setShowEditModal,
+    newMaterial,
+    setNewMaterial,
+    newCheckItem,
+    setNewCheckItem,
+    handleUpdate,
+    handleDelete,
+    addMaterial,
+    updateMaterialStatus,
+    removeMaterial,
+    addCheckItem,
+    toggleCheck,
+    removeCheckItem,
+    doneCount,
+    checklistPct,
+  } = useObjectDetail(id, () => navigate('/'));
 
   if (loading) {
     return (
@@ -271,111 +261,6 @@ const ObjectDetailPage: React.FC = () => {
   if (!object) {
     return <EmptyText style={{ padding: 40 }}>Objekt nicht gefunden.</EmptyText>;
   }
-
-  const handleUpdate = async (data: Partial<CRMObject>) => {
-    try {
-      await updateObject(object.id, data);
-      setObject((prev) => prev ? { ...prev, ...data } : prev);
-      setShowEditModal(false);
-      toast.success('Objekt gespeichert');
-    } catch {
-      toast.error('Fehler beim Speichern.');
-    }
-  };
-
-  const handleDelete = async () => {
-    const ok = await confirm({
-      title: 'Objekt löschen',
-      message: `"${object.title}" wirklich permanent löschen? Alle Notizen und Fotos gehen verloren.`,
-      confirmLabel: 'Löschen',
-      danger: true,
-    });
-    if (!ok) return;
-    try {
-      await deleteObject(object.id);
-      toast.success('Objekt gelöscht');
-      navigate('/');
-    } catch {
-      toast.error('Fehler beim Löschen.');
-    }
-  };
-
-  const addMaterial = async () => {
-    if (!newMaterial.trim()) return;
-    const updated: Material[] = [
-      ...object.materials,
-      { id: uuidv4(), name: newMaterial.trim(), status: 'needed' },
-    ];
-    try {
-      await updateMaterials(object.id, updated);
-      setObject((prev) => prev ? { ...prev, materials: updated } : prev);
-      setNewMaterial('');
-      toast.success('Material hinzugefügt');
-    } catch {
-      toast.error('Fehler beim Hinzufügen.');
-    }
-  };
-
-  const updateMaterialStatus = async (matId: string, status: Material['status']) => {
-    const updated = object.materials.map((m) => m.id === matId ? { ...m, status } : m);
-    try {
-      await updateMaterials(object.id, updated);
-      setObject((prev) => prev ? { ...prev, materials: updated } : prev);
-    } catch {
-      toast.error('Fehler beim Aktualisieren.');
-    }
-  };
-
-  const removeMaterial = async (matId: string) => {
-    const ok = await confirm({
-      title: 'Material entfernen',
-      message: 'Dieses Material wirklich entfernen?',
-      confirmLabel: 'Entfernen',
-      danger: true,
-    });
-    if (!ok) return;
-    const updated = object.materials.filter((m) => m.id !== matId);
-    try {
-      await updateMaterials(object.id, updated);
-      setObject((prev) => prev ? { ...prev, materials: updated } : prev);
-    } catch {
-      toast.error('Fehler beim Entfernen.');
-    }
-  };
-
-  const addCheckItem = async () => {
-    if (!newCheckItem.trim()) return;
-    const updated: ChecklistItem[] = [
-      ...object.checklist,
-      { id: uuidv4(), text: newCheckItem.trim(), done: false },
-    ];
-    try {
-      await updateChecklist(object.id, updated);
-      setObject((prev) => prev ? { ...prev, checklist: updated } : prev);
-      setNewCheckItem('');
-    } catch {
-      toast.error('Fehler beim Hinzufügen.');
-    }
-  };
-
-  const toggleCheck = async (itemId: string) => {
-    const updated = object.checklist.map((c) =>
-      c.id === itemId ? { ...c, done: !c.done } : c
-    );
-    await updateChecklist(object.id, updated);
-    setObject((prev) => prev ? { ...prev, checklist: updated } : prev);
-  };
-
-  const removeCheckItem = async (itemId: string) => {
-    const updated = object.checklist.filter((c) => c.id !== itemId);
-    await updateChecklist(object.id, updated);
-    setObject((prev) => prev ? { ...prev, checklist: updated } : prev);
-  };
-
-  const doneCount = object.checklist.filter((c) => c.done).length;
-  const checklistPct = object.checklist.length > 0
-    ? Math.round((doneCount / object.checklist.length) * 100)
-    : 0;
 
   return (
     <>
@@ -411,7 +296,7 @@ const ObjectDetailPage: React.FC = () => {
                   <MatName>{mat.name}</MatName>
                   <Select
                     value={mat.status}
-                    onChange={(e) => updateMaterialStatus(mat.id, e.target.value as Material['status'])}
+                    onChange={(e) => updateMaterialStatus(mat.id, e.target.value as typeof mat.status)}
                     style={{ width: 'auto', minWidth: 120 }}
                   >
                     <option value="needed">Benötigt</option>
@@ -548,7 +433,6 @@ const ObjectDetailPage: React.FC = () => {
           onCancel={() => setShowEditModal(false)}
         />
       </Modal>
-
     </>
   );
 };

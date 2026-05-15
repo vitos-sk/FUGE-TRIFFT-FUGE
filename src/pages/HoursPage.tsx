@@ -1,17 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React from 'react';
 import styled from 'styled-components';
-import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, format } from 'date-fns';
-import { de } from 'date-fns/locale';
-import * as XLSX from 'xlsx';
-import { AddHoursForm } from '../components/hours/AddHoursForm';
-import { HoursTable } from '../components/hours/HoursTable';
-import { Button } from '../components/ui/Button';
-import { Select, Input, FormGroup, Label } from '../components/ui/Input';
-import { getAllHours, getHoursForUser } from '../services/hoursService';
-import { getAllUsers } from '../services/authService';
-import { useAuth } from '../hooks/useAuth';
-import type { WorkHourEntry, AppUser } from '../types';
-import { Spinner } from '../components/ui/Spinner';
+import { AddHoursForm } from '@features/hours/components/AddHoursForm';
+import { HoursTable } from '@features/hours/components/HoursTable';
+import { Button } from '@shared/ui/Button';
+import { Select, Input, FormGroup, Label } from '@shared/ui/Input';
+import { Spinner } from '@shared/ui/Spinner';
+import { useHoursPage } from '@features/hours/hooks/useHoursPage';
 
 const PageTitle = styled.h1`
   font-size: 12px;
@@ -131,88 +125,21 @@ const TotalValue = styled.span`
   text-transform: none;
 `;
 
-type RangePreset = 'week' | 'month' | 'all' | 'custom';
-
-const exportExcel = (entries: WorkHourEntry[], monthLabel: string) => {
-  const totalMins = entries.reduce((acc, e) => acc + (e.totalMinutes || 0), 0);
-  const totalH = Math.floor(totalMins / 60);
-  const totalM = totalMins % 60;
-
-  const rows = entries.map((e) => {
-    const h = Math.floor(e.totalMinutes / 60);
-    const m = e.totalMinutes % 60;
-    return {
-      'Mitarbeiter': e.userName,
-      'Objekt': e.objectTitle ?? '—',
-      'Datum': e.date,
-      'Stunden': `${h}:${String(m).padStart(2, '0')}`,
-    };
-  });
-
-  rows.push({
-    'Mitarbeiter': 'GESAMT',
-    'Objekt': '',
-    'Datum': '',
-    'Stunden': `${totalH}:${String(totalM).padStart(2, '0')}`,
-  });
-
-  const ws = XLSX.utils.json_to_sheet(rows);
-  ws['!cols'] = [{ wch: 24 }, { wch: 28 }, { wch: 14 }, { wch: 12 }];
-
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Stunden');
-
-  XLSX.writeFile(wb, `Bericht_${monthLabel}.xlsx`);
-};
-
-
 const HoursPage: React.FC = () => {
-  const { isAdmin, uid } = useAuth();
-  const [tab, setTab] = useState<'add' | 'view'>('add');
-  const [entries, setEntries] = useState<WorkHourEntry[]>([]);
-  const [users, setUsers] = useState<AppUser[]>([]);
-  const [selectedUser, setSelectedUser] = useState<string>('');
-  const [range, setRange] = useState<RangePreset>('week');
-  const [customFrom, setCustomFrom] = useState('');
-  const [customTo, setCustomTo] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [exportMonth, setExportMonth] = useState(() => format(new Date(), 'yyyy-MM'));
-
-  useEffect(() => {
-    if (isAdmin) {
-      getAllUsers().then((u) => setUsers(u.filter((x) => x.role === 'worker' || x.role === 'admin')));
-    }
-  }, [isAdmin]);
-
-  const getDateRange = (): [Date | undefined, Date | undefined] => {
-    const now = new Date();
-    if (range === 'week') return [startOfWeek(now, { locale: de }), endOfWeek(now, { locale: de })];
-    if (range === 'month') return [startOfMonth(now), endOfMonth(now)];
-    if (range === 'all') return [undefined, undefined];
-    if (customFrom && customTo) return [new Date(customFrom), new Date(customTo)];
-    return [startOfWeek(now, { locale: de }), endOfWeek(now, { locale: de })];
-  };
-
-  const load = useCallback(async () => {
-    setLoading(true);
-    const [from, to] = getDateRange();
-    try {
-      if (isAdmin) {
-        const all = await getAllHours(from, to);
-        const filtered = selectedUser ? all.filter((e) => e.userId === selectedUser) : all;
-        setEntries(filtered);
-      } else if (uid) {
-        const own = await getHoursForUser(uid, from, to);
-        setEntries(own);
-      }
-    } finally {
-      setLoading(false);
-    }
-  }, [isAdmin, uid, range, selectedUser, customFrom, customTo]);
-
-  useEffect(() => {
-    load();
-  }, [load]);
+  const {
+    isAdmin,
+    tab, setTab,
+    entries,
+    users,
+    selectedUser, setSelectedUser,
+    range, setRange,
+    customFrom, setCustomFrom,
+    customTo, setCustomTo,
+    loading,
+    exportMonth, setExportMonth,
+    load,
+    exportToExcel,
+  } = useHoursPage();
 
   return (
     <>
@@ -293,7 +220,6 @@ const HoursPage: React.FC = () => {
               <Button onClick={load} $variant="secondary">Aktualisieren</Button>
             </FormGroup>
 
-
             {isAdmin && (
               <>
                 <FormGroup>
@@ -307,22 +233,9 @@ const HoursPage: React.FC = () => {
                 </FormGroup>
                 <FormGroup>
                   <Label>&nbsp;</Label>
-                  <Button
-                    $variant="secondary"
-                    onClick={async () => {
-                      const [year, month] = exportMonth.split('-').map(Number);
-                      const from = startOfMonth(new Date(year, month - 1));
-                      const to = endOfMonth(new Date(year, month - 1));
-                      const all = await getAllHours(from, to);
-                      const filtered = selectedUser
-                        ? all.filter((e) => e.userId === selectedUser)
-                        : all;
-                      const label = format(new Date(year, month - 1), 'MMMM_yyyy', { locale: de });
-                      exportExcel(filtered, label);
-                    }}
-                  >
+                  <Button $variant="secondary" onClick={exportToExcel}>
                     Excel-Export
-                  </Button>
+                  </>
                 </FormGroup>
               </>
             )}

@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { useNavigate } from 'react-router-dom';
-import { loginUser, sendPasswordReset } from '../services/authService';
-import { Button } from '../components/ui/Button';
-import { Input, FormGroup, Label } from '../components/ui/Input';
+import { loginUser, sendPasswordReset } from '@shared/services/authService';
+import { Button } from '@shared/ui/Button';
+import { Input, FormGroup, Label } from '@shared/ui/Input';
 
 const fadeIn = keyframes`
   from { opacity: 0; transform: translateY(16px); }
