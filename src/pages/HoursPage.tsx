@@ -235,7 +235,7 @@ const HoursPage: React.FC = () => {
                   <Label>&nbsp;</Label>
                   <Button $variant="secondary" onClick={exportToExcel}>
                     Excel-Export
-                  </>
+                  </Button>
                 </FormGroup>
               </>
             )}
