@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { FiPower } from 'react-icons/fi';
@@ -6,6 +6,7 @@ import { logoutUser } from '../../services/authService';
 import { useAuth } from '../../hooks/useAuth';
 import { useArchivedCount } from '../../hooks/useObjects';
 import { NotifBell } from '../notifications/NotifBell';
+import { ChangePasswordModal } from '../ui/ChangePasswordModal';
 
 const Nav = styled.nav`
   position: sticky;
@@ -99,7 +100,7 @@ const NavRight = styled.div`
   margin-left: auto;
 `;
 
-const UserChip = styled.div`
+const UserChip = styled.button`
   display: flex;
   align-items: center;
   gap: 9px;
@@ -108,9 +109,10 @@ const UserChip = styled.div`
   border-radius: ${({ theme }) => theme.borderRadiusPill};
   background: ${({ theme }) => theme.colors.bgCard};
   transition: border-color ${({ theme }) => theme.transitions.fast};
+  cursor: pointer;
 
   &:hover {
-    border-color: ${({ theme }) => theme.colors.borderHover};
+    border-color: ${({ theme }) => theme.colors.accent}66;
   }
 
   @media (max-width: 480px) {
@@ -163,6 +165,7 @@ export const Navbar: React.FC = () => {
   const { user, uid, isAdmin } = useAuth();
   const navigate = useNavigate();
   const archivedCount = useArchivedCount();
+  const [showPwModal, setShowPwModal] = useState(false);
 
   const handleLogout = async () => {
     await logoutUser();
@@ -174,6 +177,7 @@ export const Navbar: React.FC = () => {
     : '?';
 
   return (
+    <>
     <Nav>
       <Logo to="/">
         FUGE <span>TRIFFT</span> FUGE
@@ -196,7 +200,7 @@ export const Navbar: React.FC = () => {
 
       <NavRight>
         {uid && <NotifBell uid={uid} />}
-        <UserChip>
+        <UserChip onClick={() => setShowPwModal(true)} title="Passwort ändern">
           <Avatar>{initials}</Avatar>
           <UserName>{user?.name?.split(' ')[0]}</UserName>
         </UserChip>
@@ -205,5 +209,8 @@ export const Navbar: React.FC = () => {
         </LogoutBtn>
       </NavRight>
     </Nav>
+
+    <ChangePasswordModal isOpen={showPwModal} onClose={() => setShowPwModal(false)} />
+    </>
   );
 };

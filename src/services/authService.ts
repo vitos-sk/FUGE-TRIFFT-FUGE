@@ -2,6 +2,10 @@ import {
   signInWithEmailAndPassword,
   signOut,
   createUserWithEmailAndPassword,
+  reauthenticateWithCredential,
+  EmailAuthProvider,
+  updatePassword,
+  sendPasswordResetEmail,
 } from 'firebase/auth';
 import { initializeApp, deleteApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
@@ -87,3 +91,14 @@ export const toggleUserDisabled = async (uid: string, disabled: boolean) =>
 
 export const updateFCMToken = async (uid: string, token: string) =>
   updateDoc(doc(db, 'users', uid), { fcmToken: token });
+
+export const sendPasswordReset = (email: string) =>
+  sendPasswordResetEmail(auth, email);
+
+export const changePassword = async (currentPassword: string, newPassword: string): Promise<void> => {
+  const user = auth.currentUser;
+  if (!user || !user.email) throw new Error('Kein Benutzer eingeloggt');
+  const credential = EmailAuthProvider.credential(user.email, currentPassword);
+  await reauthenticateWithCredential(user, credential);
+  await updatePassword(user, newPassword);
+};

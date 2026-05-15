@@ -46,6 +46,11 @@ export const GlobalStyles = createGlobalStyle`
     box-shadow: ${({ theme }) => theme.shadows.focus};
   }
 
+  /* Remove browser focus outlines from Recharts SVG elements */
+  svg, svg *, [tabindex] {
+    outline: none !important;
+  }
+
   ::-webkit-scrollbar { width: 5px; height: 5px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb {

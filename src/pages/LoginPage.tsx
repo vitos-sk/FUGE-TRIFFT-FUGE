@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { useNavigate } from 'react-router-dom';
-import { loginUser } from '../services/authService';
+import { loginUser, sendPasswordReset } from '../services/authService';
 import { Button } from '../components/ui/Button';
 import { Input, FormGroup, Label } from '../components/ui/Input';
 
@@ -158,12 +158,50 @@ const ErrorMsg = styled.div`
   line-height: 1.4;
 `;
 
+const SuccessMsg = styled.div`
+  padding: 12px 16px;
+  background: rgba(76, 175, 80, 0.08);
+  border: 1px solid rgba(76, 175, 80, 0.3);
+  border-radius: ${({ theme }) => theme.borderRadiusSm};
+  font-size: 13px;
+  color: #4caf50;
+  line-height: 1.4;
+`;
+
+const ForgotLink = styled.button`
+  font-size: 12px;
+  color: ${({ theme }) => theme.colors.textMuted};
+  text-align: right;
+  display: block;
+  margin-top: -6px;
+  transition: color ${({ theme }) => theme.transitions.fast};
+  cursor: pointer;
+  &:hover { color: ${({ theme }) => theme.colors.accent}; }
+`;
+
+const BackLink = styled.button`
+  font-size: 13px;
+  color: ${({ theme }) => theme.colors.textMuted};
+  margin-top: 14px;
+  display: block;
+  text-align: center;
+  cursor: pointer;
+  transition: color ${({ theme }) => theme.transitions.fast};
+  &:hover { color: ${({ theme }) => theme.colors.textPrimary}; }
+`;
+
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  const [resetMode, setResetMode] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetSent, setResetSent] = useState(false);
+  const [resetError, setResetError] = useState('');
+  const [resetLoading, setResetLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -186,6 +224,34 @@ const LoginPage: React.FC = () => {
     }
   };
 
+  const handleReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setResetError('');
+    setResetLoading(true);
+    try {
+      await sendPasswordReset(resetEmail);
+      setResetSent(true);
+    } catch (err: unknown) {
+      const msg = (err as { message?: string }).message ?? '';
+      if (msg.includes('user-not-found') || msg.includes('invalid-email')) {
+        setResetError('E-Mail-Adresse nicht gefunden.');
+      } else if (msg.includes('too-many-requests')) {
+        setResetError('Zu viele Versuche. Bitte später erneut versuchen.');
+      } else {
+        setResetError('Fehler beim Senden. Bitte erneut versuchen.');
+      }
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
+  const goBack = () => {
+    setResetMode(false);
+    setResetEmail('');
+    setResetSent(false);
+    setResetError('');
+  };
+
   return (
     <Page>
       <LeftPanel>
@@ -206,46 +272,96 @@ const LoginPage: React.FC = () => {
             <MobileLogoText>Fuge <span>trifft</span> Fuge</MobileLogoText>
           </MobileLogo>
 
-          <FormTitle>Anmelden</FormTitle>
-          <FormSubtitle>Einloggen um fortzufahren</FormSubtitle>
+          {!resetMode ? (
+            <>
+              <FormTitle>Anmelden</FormTitle>
+              <FormSubtitle>Einloggen um fortzufahren</FormSubtitle>
 
-          <Form onSubmit={handleSubmit}>
-            {error && <ErrorMsg>{error}</ErrorMsg>}
+              <Form onSubmit={handleSubmit}>
+                {error && <ErrorMsg>{error}</ErrorMsg>}
 
-            <FormGroup>
-              <Label>E-Mail</Label>
-              <Input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="name@beispiel.de"
-                autoComplete="email"
-                required
-              />
-            </FormGroup>
+                <FormGroup>
+                  <Label>E-Mail</Label>
+                  <Input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="name@beispiel.de"
+                    autoComplete="email"
+                    required
+                  />
+                </FormGroup>
 
-            <FormGroup>
-              <Label>Passwort</Label>
-              <Input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                autoComplete="current-password"
-                required
-              />
-            </FormGroup>
+                <FormGroup>
+                  <Label>Passwort</Label>
+                  <Input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    autoComplete="current-password"
+                    required
+                  />
+                  <ForgotLink type="button" onClick={() => { setResetMode(true); setResetEmail(email); }}>
+                    Passwort vergessen?
+                  </ForgotLink>
+                </FormGroup>
 
-            <Button
-              type="submit"
-              disabled={loading}
-              $fullWidth
-              $size="lg"
-              style={{ marginTop: 10 }}
-            >
-              {loading ? 'Anmelden…' : 'Einloggen'}
-            </Button>
-          </Form>
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  $fullWidth
+                  $size="lg"
+                  style={{ marginTop: 10 }}
+                >
+                  {loading ? 'Anmelden…' : 'Einloggen'}
+                </Button>
+              </Form>
+            </>
+          ) : (
+            <>
+              <FormTitle>Passwort zurücksetzen</FormTitle>
+              <FormSubtitle>
+                {resetSent
+                  ? 'E-Mail gesendet'
+                  : 'Gib deine E-Mail ein — wir schicken dir einen Link'}
+              </FormSubtitle>
+
+              {!resetSent ? (
+                <Form onSubmit={handleReset}>
+                  {resetError && <ErrorMsg>{resetError}</ErrorMsg>}
+
+                  <FormGroup>
+                    <Label>E-Mail</Label>
+                    <Input
+                      type="email"
+                      value={resetEmail}
+                      onChange={(e) => setResetEmail(e.target.value)}
+                      placeholder="name@beispiel.de"
+                      autoComplete="email"
+                      required
+                    />
+                  </FormGroup>
+
+                  <Button
+                    type="submit"
+                    disabled={resetLoading}
+                    $fullWidth
+                    $size="lg"
+                    style={{ marginTop: 10 }}
+                  >
+                    {resetLoading ? 'Senden…' : 'Link senden'}
+                  </Button>
+                </Form>
+              ) : (
+                <SuccessMsg>
+                  Wir haben einen Passwort-Reset-Link an <strong>{resetEmail}</strong> gesendet. Bitte prüfe dein Postfach.
+                </SuccessMsg>
+              )}
+
+              <BackLink type="button" onClick={goBack}>← Zurück zum Login</BackLink>
+            </>
+          )}
         </FormCard>
       </RightPanel>
     </Page>
