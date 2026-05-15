@@ -21,6 +21,9 @@ export const GlobalStyles = createGlobalStyle`
   body {
     font-family: ${({ theme }) => theme.fonts.base};
     background-color: ${({ theme }) => theme.colors.bgPrimary};
+    background-image:
+      radial-gradient(ellipse 70% 50% at 15% 25%, rgba(204,34,34,0.05) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 40% at 85% 75%, rgba(255,255,255,0.018) 0%, transparent 55%);
     color: ${({ theme }) => theme.colors.textPrimary};
     line-height: 1.5;
     min-height: 100vh;

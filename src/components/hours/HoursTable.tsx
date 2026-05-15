@@ -13,97 +13,120 @@ import { subscribeToObjects } from '../../services/objectsService';
 import { useAuth } from '../../hooks/useAuth';
 import type { WorkHourEntry, CRMObject } from '../../types';
 
+// ─── Table ─────────────────────────────────────────────────────────────────────
+
+const Outer = styled.div`
+  position: relative;
+  border-radius: ${({ theme }) => theme.borderRadius};
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.35);
+
+  /* Fade on the right to hint at horizontal scroll on mobile */
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 36px;
+    background: linear-gradient(to right, transparent, rgba(10,10,10,0.7));
+    pointer-events: none;
+    border-radius: 0 ${({ theme }) => theme.borderRadius} ${({ theme }) => theme.borderRadius} 0;
+
+    @media (min-width: 640px) { display: none; }
+  }
+`;
+
 const TableWrapper = styled.div`
   overflow-x: auto;
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${({ theme }) => theme.borderRadius};
+  -webkit-overflow-scrolling: touch;
+  background: rgba(18,18,18,0.85);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.08) transparent;
+
+  &::-webkit-scrollbar { height: 4px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.08);
+    border-radius: 9999px;
+  }
 `;
 
 const Table = styled.table`
   width: 100%;
   border-collapse: collapse;
   font-size: 13px;
+  min-width: 560px;
 `;
 
 const Th = styled.th`
-  padding: 11px 16px;
+  padding: 10px 14px;
   text-align: left;
   font-size: 10px;
   font-weight: 700;
   color: ${({ theme }) => theme.colors.textMuted};
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  background: ${({ theme }) => theme.colors.bgCard};
-  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
+  background: rgba(255,255,255,0.025);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
   white-space: nowrap;
+
+  @media (max-width: 639px) {
+    padding: 8px 10px;
+    font-size: 9px;
+  }
 `;
 
 const Td = styled.td`
-  padding: 11px 16px;
+  padding: 9px 14px;
   color: ${({ theme }) => theme.colors.textPrimary};
-  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
+  border-bottom: 1px solid rgba(255,255,255,0.04);
   white-space: nowrap;
   line-height: 1.4;
   &:last-child { text-align: right; }
+
+  @media (max-width: 639px) {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
 `;
 
 const Tr = styled.tr`
   transition: background ${({ theme }) => theme.transitions.fast};
   &:last-child td { border-bottom: none; }
-  &:hover td { background: ${({ theme }) => theme.colors.bgElevated}; }
-`;
-
-const TotalRow = styled.tr`
-  td {
-    font-weight: 700;
-    color: ${({ theme }) => theme.colors.accent};
-    background: ${({ theme }) => theme.colors.bgCard};
-    border-top: 2px solid ${({ theme }) => theme.colors.border};
-    border-bottom: none;
-  }
-`;
-
-const Empty = styled.div`
-  padding: 40px;
-  text-align: center;
-  color: ${({ theme }) => theme.colors.textMuted};
-  font-size: 14px;
+  &:hover td { background: rgba(255,255,255,0.025); }
 `;
 
 const ActionCell = styled.td`
-  padding: 6px 12px;
-  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
+  padding: 5px 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
   text-align: right;
   white-space: nowrap;
+
+  @media (max-width: 639px) { padding: 5px 8px; }
 `;
 
-const BreakGroup = styled.div`
-  display: flex;
-  gap: 4px;
-  background: ${({ theme }) => theme.colors.bgElevated};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${({ theme }) => theme.borderRadiusSm};
-  padding: 3px;
+const Empty = styled.div`
+  padding: 48px;
+  text-align: center;
+  color: ${({ theme }) => theme.colors.textMuted};
+  font-size: 14px;
+  background: rgba(18,18,18,0.85);
 `;
 
-const BreakBtn = styled.button<{ $active: boolean }>`
-  flex: 1;
-  padding: 7px 4px;
-  font-size: 11px;
-  font-weight: 600;
-  border-radius: 5px;
-  border: none;
-  background: ${({ $active, theme }) => ($active ? theme.colors.accent : 'transparent')};
-  color: ${({ $active, theme }) => ($active ? '#fff' : theme.colors.textSecondary)};
-  transition: all ${({ theme }) => theme.transitions.fast};
-  cursor: pointer;
-
-  &:hover {
-    color: ${({ $active, theme }) => $active ? '#fff' : theme.colors.textPrimary};
-    background: ${({ $active, theme }) => $active ? theme.colors.accent : 'rgba(255,255,255,0.06)'};
-  }
+const HideMobile = styled.th`
+  @media (max-width: 639px) { display: none; }
+`;
+const HideMobileTd = styled.td`
+  padding: 9px 14px;
+  color: ${({ theme }) => theme.colors.textPrimary};
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  white-space: nowrap;
+  @media (max-width: 639px) { display: none; }
 `;
 
+// ─── Edit modal ─────────────────────────────────────────────────────────────────
 
 const EditStack = styled.div`
   display: flex;
@@ -132,19 +155,15 @@ const ModalFooter = styled.div`
 `;
 
 const FooterTotal = styled.div`
-  padding: 10px 16px;
-  background: ${({ theme }) => theme.colors.bgElevated};
-  border: 1px solid ${({ theme }) => theme.colors.border};
+  padding: 9px 16px;
+  background: rgba(204,34,34,0.08);
+  border: 1px solid rgba(204,34,34,0.2);
   border-radius: ${({ theme }) => theme.borderRadiusSm};
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 800;
   color: ${({ theme }) => theme.colors.accent};
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
   white-space: nowrap;
-
-  @media (max-width: 480px) {
-    text-align: center;
-  }
 `;
 
 const FooterBtns = styled.div`
@@ -153,10 +172,36 @@ const FooterBtns = styled.div`
   flex: 1;
   justify-content: flex-end;
 
-  @media (max-width: 480px) {
-    button { flex: 1; }
+  @media (max-width: 480px) { button { flex: 1; } }
+`;
+
+const BreakGroup = styled.div`
+  display: flex;
+  gap: 4px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: ${({ theme }) => theme.borderRadiusSm};
+  padding: 3px;
+`;
+
+const BreakBtn = styled.button<{ $active: boolean }>`
+  flex: 1;
+  padding: 7px 4px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 5px;
+  background: ${({ $active, theme }) => ($active ? theme.colors.accent : 'transparent')};
+  color: ${({ $active, theme }) => ($active ? '#fff' : theme.colors.textSecondary)};
+  transition: all ${({ theme }) => theme.transitions.fast};
+  cursor: pointer;
+
+  &:hover {
+    color: ${({ $active, theme }) => ($active ? '#fff' : theme.colors.textPrimary)};
+    background: ${({ $active, theme }) => ($active ? theme.colors.accent : 'rgba(255,255,255,0.06)')};
   }
 `;
+
+// ─── Helpers ────────────────────────────────────────────────────────────────────
 
 const EDIT_BREAKS = [0, 10, 15, 30, 60];
 
@@ -172,6 +217,8 @@ const formatMinutes = (mins: number): string => {
   const m = mins % 60;
   return `${h}:${String(m).padStart(2, '0')} h`;
 };
+
+// ─── Component ─────────────────────────────────────────────────────────────────
 
 interface Props {
   entries: WorkHourEntry[];
@@ -250,96 +297,79 @@ export const HoursTable: React.FC<Props> = ({ entries, showWorker = false, onDel
     }
   };
 
-  const totalMins = entries.reduce((acc, e) => acc + (e.totalMinutes || 0), 0);
   const editTotal = calcMins(editStart, editEnd, editBreak);
 
   if (entries.length === 0) {
     return (
-      <TableWrapper>
+      <Outer>
         <Empty>Keine Einträge für diesen Zeitraum.</Empty>
-      </TableWrapper>
+      </Outer>
     );
   }
 
   return (
     <>
-      <TableWrapper>
-        <Table>
-          <thead>
-            <tr>
-              <Th>Datum</Th>
-              {showWorker && <Th>Mitarbeiter</Th>}
-              <Th>Objekt</Th>
-              <Th>Beginn</Th>
-              <Th>Ende</Th>
-              <Th>Pause</Th>
-              <Th>Gesamt</Th>
-              <Th></Th>
-            </tr>
-          </thead>
-          <tbody>
-            {entries.map((e) => {
-              const dateFormatted = format(new Date(e.date), 'dd.MM.yyyy', { locale: de });
-              const canEdit = isAdmin || e.userId === uid;
-              return (
-                <Tr key={e.id}>
-                  <Td>{dateFormatted}</Td>
-                  {showWorker && <Td style={{ color: '#8a8a8a' }}>{e.userName}</Td>}
-                  <Td style={{ color: '#8a8a8a' }}>{e.objectTitle || '—'}</Td>
-                  <Td>{e.startTime}</Td>
-                  <Td>{e.endTime}</Td>
-                  <Td style={{ color: '#8a8a8a' }}>{e.breakMinutes > 0 ? `${e.breakMinutes} min` : '—'}</Td>
-                  <Td style={{ fontWeight: 600 }}>{formatMinutes(e.totalMinutes)}</Td>
-                  <ActionCell>
-                    {canEdit && (
-                      <div style={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
-                        <Button
-                          $variant="ghost"
-                          $size="sm"
-                          onClick={() => openEdit(e)}
-                          style={{ color: '#777' }}
-                          title="Bearbeiten"
-                        >
-                          <FiEdit2 size={13} />
-                        </Button>
-                        <Button
-                          $variant="ghost"
-                          $size="sm"
-                          onClick={() => handleDelete(e.id, dateFormatted)}
-                          style={{ color: '#777' }}
-                          title="Löschen"
-                        >
-                          <FiX size={14} />
-                        </Button>
-                      </div>
-                    )}
-                  </ActionCell>
-                </Tr>
-              );
-            })}
-            <TotalRow>
-              <Td colSpan={showWorker ? 6 : 5}>Gesamt</Td>
-              <Td>{formatMinutes(totalMins)}</Td>
-              <Td></Td>
-            </TotalRow>
-          </tbody>
-        </Table>
-      </TableWrapper>
+      <Outer>
+        <TableWrapper>
+          <Table>
+            <thead>
+              <tr>
+                <Th>Datum</Th>
+                {showWorker && <Th>Mitarbeiter</Th>}
+                <Th>Objekt</Th>
+                <Th>Beginn</Th>
+                <Th>Ende</Th>
+                <HideMobile as="th">Pause</HideMobile>
+                <Th>Gesamt</Th>
+                <Th />
+              </tr>
+            </thead>
+            <tbody>
+              {entries.map((e) => {
+                const dateFormatted = format(new Date(e.date), 'dd.MM.yyyy', { locale: de });
+                const canEdit = isAdmin || e.userId === uid;
+                return (
+                  <Tr key={e.id}>
+                    <Td>{dateFormatted}</Td>
+                    {showWorker && <Td style={{ color: '#666' }}>{e.userName}</Td>}
+                    <Td style={{ color: '#666' }}>{e.objectTitle || '—'}</Td>
+                    <Td>{e.startTime}</Td>
+                    <Td>{e.endTime}</Td>
+                    <HideMobileTd style={{ color: '#666' }}>
+                      {e.breakMinutes > 0 ? `${e.breakMinutes} min` : '—'}
+                    </HideMobileTd>
+                    <Td style={{ fontWeight: 700 }}>{formatMinutes(e.totalMinutes)}</Td>
+                    <ActionCell>
+                      {canEdit && (
+                        <div style={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+                          <Button $variant="ghost" $size="sm" onClick={() => openEdit(e)}
+                            style={{ color: '#555' }} title="Bearbeiten">
+                            <FiEdit2 size={13} />
+                          </Button>
+                          <Button $variant="ghost" $size="sm"
+                            onClick={() => handleDelete(e.id, dateFormatted)}
+                            style={{ color: '#555' }} title="Löschen">
+                            <FiX size={14} />
+                          </Button>
+                        </div>
+                      )}
+                    </ActionCell>
+                  </Tr>
+                );
+              })}
+            </tbody>
+          </Table>
+        </TableWrapper>
+      </Outer>
 
-      <Modal
-        isOpen={!!editEntry}
-        onClose={() => setEditEntry(null)}
-        title="Stunden bearbeiten"
-        width="460px"
-      >
+      {/* Edit modal */}
+      <Modal isOpen={!!editEntry} onClose={() => setEditEntry(null)} title="Stunden bearbeiten" width="460px">
         <EditStack>
-          {/* Datum — full width */}
           <FormGroup>
             <Label>Datum</Label>
             <Input type="date" value={editDate} onChange={(e) => setEditDate(e.target.value)} required />
           </FormGroup>
 
-          {/* Beginn + Ende — side by side, always 2 columns */}
           <TwoCol>
             <FormGroup>
               <Label>Beginn</Label>
@@ -351,7 +381,6 @@ export const HoursTable: React.FC<Props> = ({ entries, showWorker = false, onDel
             </FormGroup>
           </TwoCol>
 
-          {/* Pause — full width */}
           <FormGroup>
             <Label>Pause</Label>
             <BreakGroup>
@@ -363,7 +392,6 @@ export const HoursTable: React.FC<Props> = ({ entries, showWorker = false, onDel
             </BreakGroup>
           </FormGroup>
 
-          {/* Objekt — full width */}
           <FormGroup>
             <Label>Objekt (optional)</Label>
             <Select value={editObjectId} onChange={(e) => setEditObjectId(e.target.value)}>
@@ -374,7 +402,6 @@ export const HoursTable: React.FC<Props> = ({ entries, showWorker = false, onDel
             </Select>
           </FormGroup>
 
-          {/* Footer: total + action buttons */}
           <ModalFooter>
             <FooterTotal>{editTotal > 0 ? formatMinutes(editTotal) : '—'}</FooterTotal>
             <FooterBtns>

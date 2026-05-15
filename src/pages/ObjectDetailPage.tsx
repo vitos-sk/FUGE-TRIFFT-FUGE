@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { FiMapPin, FiX } from 'react-icons/fi';
+import { FiMapPin, FiX, FiMessageSquare, FiCamera, FiBox, FiCheckSquare, FiInfo } from 'react-icons/fi';
 import { v4 as uuidv4 } from 'uuid';
 import { Tabs } from '../components/ui/Tabs';
 import { NotesFeed } from '../components/notes/NotesFeed';
@@ -79,11 +79,14 @@ const MaterialItem = styled.div`
   align-items: center;
   gap: 12px;
   padding: 11px 16px;
-  background: ${({ theme }) => theme.colors.bgCard};
-  border: 1px solid ${({ theme }) => theme.colors.border};
+  background: rgba(22,22,22,0.7);
+  border: 1px solid rgba(255,255,255,0.06);
   border-radius: ${({ theme }) => theme.borderRadiusSm};
-  transition: border-color ${({ theme }) => theme.transitions.fast};
-  &:hover { border-color: ${({ theme }) => theme.colors.borderHover}; }
+  transition: all ${({ theme }) => theme.transitions.fast};
+  &:hover {
+    border-color: rgba(255,255,255,0.1);
+    background: rgba(28,28,28,0.8);
+  }
 `;
 
 const MatName = styled.span`
@@ -105,12 +108,15 @@ const CheckItem = styled.label`
   align-items: center;
   gap: 12px;
   padding: 12px 16px;
-  background: ${({ theme }) => theme.colors.bgCard};
-  border: 1px solid ${({ theme }) => theme.colors.border};
+  background: rgba(22,22,22,0.7);
+  border: 1px solid rgba(255,255,255,0.06);
   border-radius: ${({ theme }) => theme.borderRadiusSm};
   cursor: pointer;
   transition: all ${({ theme }) => theme.transitions.fast};
-  &:hover { background: ${({ theme }) => theme.colors.bgElevated}; border-color: ${({ theme }) => theme.colors.borderHover}; }
+  &:hover {
+    background: rgba(28,28,28,0.8);
+    border-color: rgba(255,255,255,0.1);
+  }
 `;
 
 const CheckText = styled.span<{ $done: boolean }>`
@@ -158,9 +164,10 @@ const InfoGrid = styled.div`
 
 const InfoItem = styled.div`
   padding: 14px 16px;
-  background: ${({ theme }) => theme.colors.bgCard};
-  border: 1px solid ${({ theme }) => theme.colors.border};
+  background: rgba(22,22,22,0.7);
+  border: 1px solid rgba(255,255,255,0.06);
   border-radius: ${({ theme }) => theme.borderRadiusSm};
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
 `;
 
 const InfoLabel = styled.div`
@@ -209,11 +216,11 @@ const EmptyText = styled.p`
 `;
 
 const TABS = [
-  { id: 'notes',     label: 'Notizen' },
-  { id: 'photos',    label: 'Fotos' },
-  { id: 'material',  label: 'Material' },
-  { id: 'checklist', label: 'Checkliste' },
-  { id: 'info',      label: 'Info' },
+  { id: 'notes',     label: 'Notizen',    icon: <FiMessageSquare size={13} /> },
+  { id: 'photos',    label: 'Fotos',      icon: <FiCamera size={13} /> },
+  { id: 'material',  label: 'Material',   icon: <FiBox size={13} /> },
+  { id: 'checklist', label: 'Checkliste', icon: <FiCheckSquare size={13} /> },
+  { id: 'info',      label: 'Info',       icon: <FiInfo size={13} /> },
 ];
 
 const statusLabels: Record<string, string> = {

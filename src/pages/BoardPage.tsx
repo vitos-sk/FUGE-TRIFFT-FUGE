@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
-import styled from 'styled-components';
-import { useObjects } from '../hooks/useObjects';
-import { useAuth } from '../hooks/useAuth';
-import { FiPlus } from 'react-icons/fi';
-import { ObjectCard } from '../components/objects/ObjectCard';
-import { ObjectForm } from '../components/objects/ObjectForm';
-import { Modal } from '../components/ui/Modal';
-import { Spinner } from '../components/ui/Spinner';
-import { createObject } from '../services/objectsService';
-import type { CRMObject, ObjectStatus } from '../types';
+import React, { useState } from "react";
+import styled from "styled-components";
+import { useObjects } from "../hooks/useObjects";
+import { useAuth } from "../hooks/useAuth";
+import { FiPlus } from "react-icons/fi";
+import { ObjectCard } from "../components/objects/ObjectCard";
+import { ObjectForm } from "../components/objects/ObjectForm";
+import { Modal } from "../components/ui/Modal";
+import { Spinner } from "../components/ui/Spinner";
+import { createObject } from "../services/objectsService";
+import type { CRMObject, ObjectStatus } from "../types";
 
 const Header = styled.div`
   display: flex;
@@ -50,7 +50,9 @@ const FilterBar = styled.div`
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
-    &::-webkit-scrollbar { display: none; }
+    &::-webkit-scrollbar {
+      display: none;
+    }
   }
 `;
 
@@ -62,15 +64,16 @@ const FilterBtn = styled.button<{ $active: boolean }>`
   text-transform: uppercase;
   border-radius: ${({ theme }) => theme.borderRadiusSm};
   border: none;
-  background: ${({ $active, theme }) => $active ? theme.colors.accent : 'transparent'};
-  color: ${({ $active, theme }) => $active ? '#fff' : theme.colors.textMuted};
+  background: ${({ $active, theme }) => ($active ? theme.colors.accent : "transparent")};
+  color: ${({ $active, theme }) => ($active ? "#fff" : theme.colors.textMuted)};
   transition: all ${({ theme }) => theme.transitions.fast};
   cursor: pointer;
   white-space: nowrap;
 
   &:hover {
-    color: ${({ $active, theme }) => $active ? '#fff' : theme.colors.textSecondary};
-    background: ${({ $active, theme }) => $active ? theme.colors.accent : 'rgba(255,255,255,0.05)'};
+    color: ${({ $active, theme }) => ($active ? "#fff" : theme.colors.textSecondary)};
+    background: ${({ $active, theme }) =>
+      $active ? theme.colors.accent : "rgba(255,255,255,0.05)"};
   }
 
   @media (max-width: 768px) {
@@ -90,8 +93,12 @@ const Grid = styled.div`
   grid-template-columns: repeat(3, 1fr);
   gap: 14px;
 
-  @media (max-width: 1100px) { grid-template-columns: repeat(2, 1fr); }
-  @media (max-width: 640px)  { grid-template-columns: 1fr; }
+  @media (max-width: 1100px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
 `;
 
 const Empty = styled.div`
@@ -103,7 +110,7 @@ const Empty = styled.div`
   letter-spacing: 0.04em;
 
   &::before {
-    content: '—';
+    content: "—";
     display: block;
     font-size: 28px;
     margin-bottom: 14px;
@@ -115,51 +122,63 @@ const FAB = styled.button`
   position: fixed;
   bottom: 24px;
   right: 22px;
-  width: 50px;
-  height: 50px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
-  background: ${({ theme }) => theme.colors.accent};
+  background: rgba(204, 34, 34, 0.75);
+  border: 1px solid rgba(204, 34, 34, 0.4);
   color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 18px rgba(204,34,34,0.5), 0 2px 6px rgba(0,0,0,0.25);
+  box-shadow:
+    0 4px 16px rgba(204, 34, 34, 0.25),
+    0 2px 6px rgba(0, 0, 0, 0.4);
   transition: all ${({ theme }) => theme.transitions.spring};
   z-index: 100;
 
   &:hover {
-    transform: scale(1.1);
-    box-shadow: 0 6px 26px rgba(204,34,34,0.6), 0 2px 8px rgba(0,0,0,0.3);
+    transform: scale(1.08);
+    background: rgba(204, 34, 34, 0.9);
+    box-shadow:
+      0 6px 22px rgba(204, 34, 34, 0.35),
+      0 2px 8px rgba(0, 0, 0, 0.4);
   }
 
-  &:active { transform: scale(0.96); }
+  &:active {
+    transform: scale(0.96);
+  }
 
   @media (max-width: 768px) {
     bottom: 76px;
-    width: 46px;
-    height: 46px;
+    width: 38px;
+    height: 38px;
   }
 `;
 
-const FILTERS: { label: string; value: ObjectStatus | 'all' }[] = [
-  { label: 'Alle',      value: 'all' },
-  { label: 'Neu',       value: 'new' },
-  { label: 'In Arbeit', value: 'in_progress' },
-  { label: 'Pausiert',  value: 'paused' },
-  { label: 'Fertig',    value: 'done' },
+const FILTERS: { label: string; value: ObjectStatus | "all" }[] = [
+  { label: "Alle", value: "all" },
+  { label: "Neu", value: "new" },
+  { label: "In Arbeit", value: "in_progress" },
+  { label: "Pausiert", value: "paused" },
+  { label: "Fertig", value: "done" },
 ];
 
 const BoardPage: React.FC = () => {
   const { objects, loading } = useObjects();
   const { isAdmin, uid } = useAuth();
-  const [filter, setFilter] = useState<ObjectStatus | 'all'>('all');
+  const [filter, setFilter] = useState<ObjectStatus | "all">("all");
   const [showModal, setShowModal] = useState(false);
 
-  const filtered = filter === 'all' ? objects : objects.filter((o) => o.status === filter);
+  const filtered =
+    filter === "all" ? objects : objects.filter((o) => o.status === filter);
 
   const handleCreate = async (data: Partial<CRMObject>) => {
     if (!uid) return;
-    await createObject(data as Omit<CRMObject, 'id' | 'createdAt' | 'materials' | 'checklist'>, uid);
+    await createObject(
+      data as Omit<CRMObject, "id" | "createdAt" | "materials" | "checklist">,
+      uid,
+    );
     setShowModal(false);
   };
 
@@ -169,9 +188,16 @@ const BoardPage: React.FC = () => {
         <PageTitle>Objekte — {objects.length}</PageTitle>
         <FilterBar>
           {FILTERS.map((f) => {
-            const count = f.value === 'all' ? objects.length : objects.filter((o) => o.status === f.value).length;
+            const count =
+              f.value === "all"
+                ? objects.length
+                : objects.filter((o) => o.status === f.value).length;
             return (
-              <FilterBtn key={f.value} $active={filter === f.value} onClick={() => setFilter(f.value)}>
+              <FilterBtn
+                key={f.value}
+                $active={filter === f.value}
+                onClick={() => setFilter(f.value)}
+              >
                 {f.label}
                 {count > 0 && <CountBadge>{count}</CountBadge>}
               </FilterBtn>
@@ -181,23 +207,34 @@ const BoardPage: React.FC = () => {
       </Header>
 
       {loading ? (
-        <div style={{ display: 'flex', justifyContent: 'center', padding: 80 }}>
+        <div style={{ display: "flex", justifyContent: "center", padding: 80 }}>
           <Spinner size={28} />
         </div>
       ) : (
         <Grid>
-          {filtered.length === 0
-            ? <Empty>Keine Objekte gefunden</Empty>
-            : filtered.map((obj) => <ObjectCard key={obj.id} object={obj} />)
-          }
+          {filtered.length === 0 ? (
+            <Empty>Keine Objekte gefunden</Empty>
+          ) : (
+            filtered.map((obj) => <ObjectCard key={obj.id} object={obj} />)
+          )}
         </Grid>
       )}
 
       {isAdmin && (
         <>
-          <FAB onClick={() => setShowModal(true)} title="Neues Objekt"><FiPlus size={22} /></FAB>
-          <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="Neues Objekt anlegen">
-            <ObjectForm onSubmit={handleCreate} onCancel={() => setShowModal(false)} submitLabel="Anlegen" />
+          <FAB onClick={() => setShowModal(true)} title="Neues Objekt">
+            <FiPlus size={18} />
+          </FAB>
+          <Modal
+            isOpen={showModal}
+            onClose={() => setShowModal(false)}
+            title="Neues Objekt anlegen"
+          >
+            <ObjectForm
+              onSubmit={handleCreate}
+              onCancel={() => setShowModal(false)}
+              submitLabel="Anlegen"
+            />
           </Modal>
         </>
       )}

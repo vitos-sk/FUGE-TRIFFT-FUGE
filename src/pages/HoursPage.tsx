@@ -97,7 +97,38 @@ const SectionTitle = styled.h2`
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: ${({ theme }) => theme.colors.textMuted};
+`;
+
+const ViewHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   margin-bottom: 14px;
+`;
+
+const TotalChip = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: rgba(204,34,34,0.08);
+  border: 1px solid rgba(204,34,34,0.22);
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+  color: ${({ theme }) => theme.colors.textMuted};
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+`;
+
+const TotalValue = styled.span`
+  font-size: 15px;
+  font-weight: 800;
+  color: ${({ theme }) => theme.colors.accent};
+  letter-spacing: -0.01em;
+  text-transform: none;
 `;
 
 type RangePreset = 'week' | 'month' | 'all' | 'custom';
@@ -134,28 +165,6 @@ const exportExcel = (entries: WorkHourEntry[], monthLabel: string) => {
   XLSX.writeFile(wb, `Bericht_${monthLabel}.xlsx`);
 };
 
-const exportCSV = (entries: WorkHourEntry[]) => {
-  const header = 'Datum,Mitarbeiter,Objekt,Beginn,Ende,Pause (min),Gesamt (h)\n';
-  const rows = entries.map((e) => {
-    const h = Math.floor(e.totalMinutes / 60);
-    const m = e.totalMinutes % 60;
-    return [
-      e.date,
-      e.userName,
-      e.objectTitle ?? '',
-      e.startTime,
-      e.endTime,
-      e.breakMinutes,
-      `${h}:${String(m).padStart(2, '0')}`,
-    ].join(',');
-  });
-  const blob = new Blob([header + rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `stunden_${format(new Date(), 'yyyy-MM-dd')}.csv`;
-  a.click();
-};
 
 const HoursPage: React.FC = () => {
   const { isAdmin, uid } = useAuth();
@@ -223,7 +232,21 @@ const HoursPage: React.FC = () => {
 
       {tab === 'view' && (
         <>
-          <SectionTitle>Übersicht</SectionTitle>
+          {(() => {
+            const totalMins = entries.reduce((acc, e) => acc + (e.totalMinutes || 0), 0);
+            const totalH = Math.floor(totalMins / 60);
+            const totalM = totalMins % 60;
+            return (
+              <ViewHeader>
+                <SectionTitle>Übersicht</SectionTitle>
+                {!loading && entries.length > 0 && (
+                  <TotalChip>
+                    Gesamt <TotalValue>{totalH}:{String(totalM).padStart(2, '0')} h</TotalValue>
+                  </TotalChip>
+                )}
+              </ViewHeader>
+            );
+          })()}
 
           <Controls>
             {isAdmin && (
@@ -270,12 +293,6 @@ const HoursPage: React.FC = () => {
               <Button onClick={load} $variant="secondary">Aktualisieren</Button>
             </FormGroup>
 
-            {isAdmin && (
-              <FormGroup>
-                <Label>&nbsp;</Label>
-                <Button onClick={() => exportCSV(entries)} $variant="secondary">Export CSV</Button>
-              </FormGroup>
-            )}
 
             {isAdmin && (
               <>
@@ -297,8 +314,11 @@ const HoursPage: React.FC = () => {
                       const from = startOfMonth(new Date(year, month - 1));
                       const to = endOfMonth(new Date(year, month - 1));
                       const all = await getAllHours(from, to);
+                      const filtered = selectedUser
+                        ? all.filter((e) => e.userId === selectedUser)
+                        : all;
                       const label = format(new Date(year, month - 1), 'MMMM_yyyy', { locale: de });
-                      exportExcel(all, label);
+                      exportExcel(filtered, label);
                     }}
                   >
                     Excel-Export

@@ -245,9 +245,9 @@ const AdminUsersPage: React.FC = () => {
 
       <TableHeader>
         <UserCount>{users.length} Benutzer</UserCount>
-        <Button onClick={() => setShowModal(true)} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+        <Button $variant="secondary" onClick={() => setShowModal(true)}>
           <FiUserPlus size={15} />
-          <span>Neuen Benutzer</span>
+          Neuen Benutzer
         </Button>
       </TableHeader>
 

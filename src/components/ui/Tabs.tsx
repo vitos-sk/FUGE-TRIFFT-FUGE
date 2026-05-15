@@ -1,41 +1,77 @@
 import React from 'react';
 import styled from 'styled-components';
 
-const TabsWrapper = styled.div`
-  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
+const StickyShell = styled.div`
+  position: sticky;
+  top: 58px;
+  z-index: 100;
+  margin: 0 -24px 20px;
+  padding: 5px 24px 6px;
+  background: ${({ theme }) => theme.colors.bgPrimary};
+
+  @media (max-width: 768px) {
+    margin: 0 -16px 16px;
+    padding: 5px 16px 6px;
+  }
+`;
+
+const Rail = styled.div`
   display: flex;
-  gap: 0;
+  gap: 3px;
+  padding: 4px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 10px;
   overflow-x: auto;
   scrollbar-width: none;
   &::-webkit-scrollbar { display: none; }
 `;
 
-const TabButton = styled.button<{ $active: boolean }>`
-  padding: 11px 20px;
-  font-size: 13px;
-  font-weight: ${({ $active }) => ($active ? '600' : '400')};
-  color: ${({ $active, theme }) => ($active ? theme.colors.textPrimary : theme.colors.textSecondary)};
-  border-bottom: 2px solid ${({ $active, theme }) => ($active ? theme.colors.accent : 'transparent')};
-  transition: all ${({ theme }) => theme.transitions.fast};
+const TabBtn = styled.button<{ $active: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 15px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: ${({ $active, theme }) => ($active ? '#fff' : theme.colors.textMuted)};
+  background: ${({ $active, theme }) =>
+    $active
+      ? `linear-gradient(135deg, ${theme.colors.accent}e0 0%, ${theme.colors.accent}a0 100%)`
+      : 'transparent'};
+  border-radius: 7px;
   white-space: nowrap;
-  margin-bottom: -1px;
-  letter-spacing: 0.01em;
-  cursor: pointer;
-  outline: none;
+  transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+  box-shadow: ${({ $active }) =>
+    $active
+      ? '0 2px 12px rgba(204,34,34,0.4), inset 0 1px 0 rgba(255,255,255,0.14)'
+      : 'none'};
 
   &:hover {
-    color: ${({ $active, theme }) => $active ? theme.colors.textPrimary : '#c0c0c0'};
-    background: rgba(255,255,255,0.03);
+    color: ${({ $active, theme }) => ($active ? '#fff' : theme.colors.textSecondary)};
+    background: ${({ $active, theme }) =>
+      !$active ? 'rgba(255,255,255,0.05)' : `linear-gradient(135deg, ${theme.colors.accent}e0 0%, ${theme.colors.accent}a0 100%)`};
   }
 
-  &:focus-visible {
-    background: rgba(255,255,255,0.04);
+  svg {
+    flex-shrink: 0;
+    opacity: ${({ $active }) => ($active ? 1 : 0.5)};
+    transition: opacity 0.15s ease;
+  }
+
+  @media (max-width: 480px) {
+    padding: 8px 11px;
+    font-size: 11px;
+    gap: 5px;
   }
 `;
 
 interface Tab {
   id: string;
   label: string;
+  icon?: React.ReactNode;
 }
 
 interface TabsProps {
@@ -45,11 +81,14 @@ interface TabsProps {
 }
 
 export const Tabs: React.FC<TabsProps> = ({ tabs, activeTab, onChange }) => (
-  <TabsWrapper>
-    {tabs.map((tab) => (
-      <TabButton key={tab.id} $active={activeTab === tab.id} onClick={() => onChange(tab.id)}>
-        {tab.label}
-      </TabButton>
-    ))}
-  </TabsWrapper>
+  <StickyShell>
+    <Rail>
+      {tabs.map((tab) => (
+        <TabBtn key={tab.id} $active={activeTab === tab.id} onClick={() => onChange(tab.id)}>
+          {tab.icon}
+          {tab.label}
+        </TabBtn>
+      ))}
+    </Rail>
+  </StickyShell>
 );

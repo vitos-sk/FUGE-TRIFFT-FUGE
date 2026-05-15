@@ -37,31 +37,50 @@ const fadeSlideOut = keyframes`
 // ─── Styled ───────────────────────────────────────────────────────────────────
 
 const Card = styled.div<{ $status: string; $archiving: boolean }>`
-  background: ${({ theme }) => theme.colors.bgCard};
-  border: 1px solid ${({ theme }) => theme.colors.border};
+  background: linear-gradient(160deg, rgba(24,24,24,0.92) 0%, rgba(14,14,14,0.97) 100%);
+  border: 1px solid rgba(255,255,255,0.06);
   border-radius: ${({ theme }) => theme.borderRadius};
   cursor: pointer;
   transition: all ${({ theme }) => theme.transitions.spring};
   position: relative;
   display: flex;
   flex-direction: column;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.04);
 
   &::before {
     content: '';
     position: absolute;
     top: 0;
+    left: 18%;
+    right: 18%;
+    height: 1px;
+    background: ${({ $status }) => statusColor[$status] || '#333'};
+    box-shadow:
+      0 0 8px ${({ $status }) => statusColor[$status] || '#333'},
+      0 0 20px ${({ $status }) => statusColor[$status] || '#333'}70;
+    border-radius: 0 0 4px 4px;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
     left: 0;
     right: 0;
-    height: 3px;
-    background: ${({ $status }) => statusColor[$status] || '#333'};
+    height: 35%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.022) 0%, transparent 100%);
     border-radius: ${({ theme }) => theme.borderRadius} ${({ theme }) => theme.borderRadius} 0 0;
+    pointer-events: none;
   }
 
   &:hover {
-    border-color: ${({ theme }) => theme.colors.borderHover};
-    background: #1c1c1c;
+    border-color: rgba(255,255,255,0.1);
+    background: linear-gradient(160deg, rgba(30,30,30,0.95) 0%, rgba(18,18,18,0.99) 100%);
     transform: translateY(-3px);
-    box-shadow: 0 12px 40px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.3);
+    box-shadow:
+      0 16px 48px rgba(0,0,0,0.6),
+      0 0 0 1px rgba(255,255,255,0.07),
+      inset 0 1px 0 rgba(255,255,255,0.07);
   }
 
   &:active { transform: translateY(-1px); }
@@ -70,7 +89,7 @@ const Card = styled.div<{ $status: string; $archiving: boolean }>`
     animation: ${fadeSlideOut} 0.5s ease forwards;
     pointer-events: none;
     cursor: default;
-    &:hover { transform: none; box-shadow: none; border-color: inherit; background: inherit; }
+    &:hover { transform: none; box-shadow: none; border-color: rgba(255,255,255,0.06); background: linear-gradient(160deg, rgba(24,24,24,0.92) 0%, rgba(14,14,14,0.97) 100%); }
   `}
 `;
 
@@ -183,8 +202,8 @@ const Location = styled.p`
 
 const Divider = styled.div`
   height: 1px;
-  background: ${({ theme }) => theme.colors.border};
-  margin: 0 18px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+  margin: 0;
 `;
 
 const CardBody = styled.div`
