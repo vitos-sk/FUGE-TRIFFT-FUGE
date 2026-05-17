@@ -7,7 +7,9 @@ const StickyShell = styled.div`
   z-index: 100;
   margin: 0 -24px 20px;
   padding: 5px 24px 6px;
-  background: ${({ theme }) => theme.colors.bgPrimary};
+  background: rgba(10, 10, 10, 0.55);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
 
   @media (max-width: 768px) {
     margin: 0 -16px 16px;
@@ -19,8 +21,7 @@ const Rail = styled.div`
   display: flex;
   gap: 3px;
   padding: 4px;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.07);
+  background: transparent;
   border-radius: 10px;
   overflow-x: auto;
   scrollbar-width: none;

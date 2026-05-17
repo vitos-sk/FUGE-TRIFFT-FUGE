@@ -120,6 +120,31 @@ const UserChip = styled.button`
   }
 `;
 
+const MobileAvatar = styled.button`
+  display: none;
+
+  @media (max-width: 480px) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: ${({ theme }) => theme.colors.accent};
+    font-size: 11px;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: 0.04em;
+    flex-shrink: 0;
+    border: 2px solid transparent;
+    transition: border-color ${({ theme }) => theme.transitions.fast};
+
+    &:hover, &:active {
+      border-color: ${({ theme }) => theme.colors.accent}88;
+    }
+  }
+`;
+
 const Avatar = styled.div`
   width: 26px;
   height: 26px;
@@ -204,6 +229,9 @@ export const Navbar: React.FC = () => {
           <Avatar>{initials}</Avatar>
           <UserName>{user?.name?.split(' ')[0]}</UserName>
         </UserChip>
+        <MobileAvatar onClick={() => setShowPwModal(true)} title="Passwort ändern">
+          {initials}
+        </MobileAvatar>
         <LogoutBtn onClick={handleLogout} title="Abmelden">
           <FiPower size={16} />
         </LogoutBtn>
