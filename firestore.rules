@@ -19,10 +19,12 @@ service cloud.firestore {
     }
 
     // Users collection
-    // Workers may only read their own profile (AuthContext needs it even when disabled).
+    // Workers may only get their own profile (AuthContext needs it even when disabled).
+    // List access for active users is needed to send notifications to all users on note creation.
     // Admin reads all profiles.
     match /users/{userId} {
-      allow read: if request.auth.uid == userId || isAdmin();
+      allow get: if request.auth.uid == userId || isAdmin();
+      allow list: if isActive();
       allow create: if isAdmin();
       allow update: if isAdmin() || (isActive() && request.auth.uid == userId);
       allow delete: if isAdmin();
