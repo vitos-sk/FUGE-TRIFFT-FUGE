@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { Timestamp } from 'firebase/firestore';
-import { Input, Select, FormGroup, Label } from '@shared/ui/Input';
+import { Input, FormGroup, Label } from '@shared/ui/Input';
 import { Button } from '@shared/ui/Button';
 import type { CRMObject } from '@shared/types';
 
