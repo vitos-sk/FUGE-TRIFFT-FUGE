@@ -21,9 +21,9 @@ export const Input = styled.input`
     border-color: ${({ theme }) => theme.colors.borderHover};
   }
   &:focus {
-    border-color: ${({ theme }) => theme.colors.accent};
+    border-color: rgba(255,255,255,0.18);
     background: ${({ theme }) => theme.colors.bgCard};
-    box-shadow: 0 0 0 3px rgba(204,34,34,0.12);
+    box-shadow: none;
   }
   &:disabled { opacity: 0.4; cursor: not-allowed; }
 `;
@@ -44,9 +44,9 @@ export const Textarea = styled.textarea`
     border-color: ${({ theme }) => theme.colors.borderHover};
   }
   &:focus {
-    border-color: ${({ theme }) => theme.colors.accent};
+    border-color: rgba(255,255,255,0.18);
     background: ${({ theme }) => theme.colors.bgCard};
-    box-shadow: 0 0 0 3px rgba(204,34,34,0.12);
+    box-shadow: none;
   }
 `;
 
@@ -66,8 +66,8 @@ export const Select = styled.select`
     border-color: ${({ theme }) => theme.colors.borderHover};
   }
   &:focus {
-    border-color: ${({ theme }) => theme.colors.accent};
-    box-shadow: 0 0 0 3px rgba(204,34,34,0.12);
+    border-color: rgba(255,255,255,0.18);
+    box-shadow: none;
   }
   option { background: ${({ theme }) => theme.colors.bgCard}; }
 `;

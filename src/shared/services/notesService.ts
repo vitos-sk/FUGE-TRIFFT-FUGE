@@ -72,6 +72,7 @@ export const addNote = async (
         title,
         body,
         objectId,
+        noteId: noteRef.id,
         read: false,
         createdAt: now,
       });

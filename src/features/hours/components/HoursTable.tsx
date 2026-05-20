@@ -114,16 +114,8 @@ const Empty = styled.div`
   background: rgba(18,18,18,0.85);
 `;
 
-const HideMobile = styled.th`
-  @media (max-width: 639px) { display: none; }
-`;
-const HideMobileTd = styled.td`
-  padding: 9px 14px;
-  color: ${({ theme }) => theme.colors.textPrimary};
-  border-bottom: 1px solid rgba(255,255,255,0.04);
-  white-space: nowrap;
-  @media (max-width: 639px) { display: none; }
-`;
+const HideMobile = styled(Th)``;
+const HideMobileTd = styled(Td)``;
 
 // ─── Edit modal ─────────────────────────────────────────────────────────────────
 
@@ -319,7 +311,7 @@ export const HoursTable: React.FC<Props> = ({ entries, showWorker = false, onDel
                 <Th>Objekt</Th>
                 <Th>Beginn</Th>
                 <Th>Ende</Th>
-                <HideMobile as="th">Pause</HideMobile>
+                <HideMobile>Pause</HideMobile>
                 <Th>Gesamt</Th>
                 <Th />
               </tr>

@@ -27,9 +27,10 @@ const Empty = styled.p`
 interface Props {
   objectId: string;
   objectTitle?: string;
+  highlightNoteId?: string;
 }
 
-export const NotesFeed: React.FC<Props> = ({ objectId, objectTitle }) => {
+export const NotesFeed: React.FC<Props> = ({ objectId, objectTitle, highlightNoteId }) => {
   const { notes, loading } = useNotes(objectId);
   const { uid, isAdmin } = useAuth();
 
@@ -51,6 +52,7 @@ export const NotesFeed: React.FC<Props> = ({ objectId, objectTitle }) => {
               objectId={objectId}
               uid={uid ?? ''}
               isAdmin={isAdmin}
+              highlighted={note.id === highlightNoteId}
             />
           ))}
         </Feed>

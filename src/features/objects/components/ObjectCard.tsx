@@ -35,7 +35,7 @@ const fadeSlideOut = keyframes`
 // ─── Styled ───────────────────────────────────────────────────────────────────
 
 const Card = styled.div<{ $status: string; $archiving: boolean }>`
-  background: linear-gradient(160deg, rgba(24,24,24,0.92) 0%, rgba(14,14,14,0.97) 100%);
+  background: #111111;
   border: 1px solid rgba(255,255,255,0.06);
   border-radius: ${({ theme }) => theme.borderRadius};
   cursor: pointer;
@@ -43,7 +43,7 @@ const Card = styled.div<{ $status: string; $archiving: boolean }>`
   position: relative;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.04);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.45);
 
   &::before {
     content: '';
@@ -59,21 +59,9 @@ const Card = styled.div<{ $status: string; $archiving: boolean }>`
     border-radius: 0 0 4px 4px;
   }
 
-  &::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 35%;
-    background: linear-gradient(180deg, rgba(255,255,255,0.022) 0%, transparent 100%);
-    border-radius: ${({ theme }) => theme.borderRadius} ${({ theme }) => theme.borderRadius} 0 0;
-    pointer-events: none;
-  }
-
   &:hover {
     border-color: rgba(255,255,255,0.1);
-    background: linear-gradient(160deg, rgba(30,30,30,0.95) 0%, rgba(18,18,18,0.99) 100%);
+    background: #181818;
     transform: translateY(-3px);
     box-shadow:
       0 16px 48px rgba(0,0,0,0.6),
@@ -87,7 +75,7 @@ const Card = styled.div<{ $status: string; $archiving: boolean }>`
     animation: ${fadeSlideOut} 0.5s ease forwards;
     pointer-events: none;
     cursor: default;
-    &:hover { transform: none; box-shadow: none; border-color: rgba(255,255,255,0.06); background: linear-gradient(160deg, rgba(24,24,24,0.92) 0%, rgba(14,14,14,0.97) 100%); }
+    &:hover { transform: none; box-shadow: none; border-color: rgba(255,255,255,0.06); background: #111111; }
   `}
 `;
 

@@ -89,6 +89,7 @@ export interface Notification {
   body: string;
   objectId?: string;
   photoId?: string;
+  noteId?: string;
   read: boolean;
   createdAt: Timestamp;
 }

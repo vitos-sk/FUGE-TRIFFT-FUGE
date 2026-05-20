@@ -72,21 +72,6 @@ const Divider = styled.div`
   margin: 0 6px;
 `;
 
-const NavBadge = styled.span`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 16px;
-  height: 16px;
-  padding: 0 4px;
-  font-size: 9px;
-  font-weight: 800;
-  border-radius: 9999px;
-  background: ${({ theme }) => theme.colors.bgElevated};
-  color: ${({ theme }) => theme.colors.textMuted};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  margin-left: 2px;
-`;
 
 const NavRight = styled.div`
   display: flex;
@@ -327,9 +312,6 @@ export const Navbar: React.FC = () => {
         <NavItem to="/objects">Objekte</NavItem>
         {isAdmin && (
           <>
-            <NavItem to="/archiv">
-              Archiv{archivedCount > 0 && <NavBadge>{archivedCount}</NavBadge>}
-            </NavItem>
             <Divider />
             <NavItem to="/dashboard">Dashboard</NavItem>
             <NavItem to="/admin/users">Benutzer</NavItem>

@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import styled from 'styled-components';
 import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { FiMapPin, FiX, FiMessageSquare, FiCamera, FiCheckSquare, FiInfo } from 'react-icons/fi';
+import { FiMapPin, FiX, FiMessageSquare, FiCamera, FiCheckSquare, FiInfo, FiPlus } from 'react-icons/fi';
 import { Tabs } from '@shared/ui/Tabs';
 import { NotesFeed } from '@features/notes/components/NotesFeed';
 import { PhotoGrid } from '@features/photos/components/PhotoGrid';
@@ -198,6 +198,8 @@ const ObjectDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const photoParam = searchParams.get('photo');
+  const noteParam = searchParams.get('note');
+  const tabParam = searchParams.get('tab') as TabId | null;
   const { isAdmin } = useAuth();
 
   const {
@@ -220,7 +222,9 @@ const ObjectDetailPage: React.FC = () => {
 
   useEffect(() => {
     if (photoParam) setTab('photos');
-  }, [photoParam]);
+    else if (noteParam) setTab('notes');
+    else if (tabParam) setTab(tabParam);
+  }, [photoParam, noteParam, tabParam]);
 
   if (loading) {
     return (
@@ -253,7 +257,7 @@ const ObjectDetailPage: React.FC = () => {
       <Tabs tabs={TABS} activeTab={tab} onChange={(t) => setTab(t as TabId)} />
 
       <TabContent>
-        {tab === 'notes' && <NotesFeed objectId={object.id} objectTitle={object.title} />}
+        {tab === 'notes' && <NotesFeed objectId={object.id} objectTitle={object.title} highlightNoteId={noteParam ?? undefined} />}
 
         {tab === 'photos' && <PhotoGrid objectId={object.id} highlightPhotoId={photoParam ?? undefined} objectTitle={object.title} />}
 
@@ -295,8 +299,8 @@ const ObjectDetailPage: React.FC = () => {
                   placeholder="Aufgabe hinzufügen…"
                   onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addCheckItem())}
                 />
-                <Button onClick={addCheckItem} disabled={!newCheckItem.trim()} style={{ flexShrink: 0 }}>
-                  + Hinzufügen
+                <Button onClick={addCheckItem} disabled={!newCheckItem.trim()} title="Hinzufügen" style={{ flexShrink: 0, padding: '10px 13px' }}>
+                  <FiPlus size={15} />
                 </Button>
               </AddRow>
             )}

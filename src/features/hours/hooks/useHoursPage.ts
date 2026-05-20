@@ -47,7 +47,7 @@ export const useHoursPage = () => {
   const [entries, setEntries] = useState<WorkHourEntry[]>([]);
   const [users, setUsers] = useState<AppUser[]>([]);
   const [selectedUser, setSelectedUser] = useState<string>('');
-  const [range, setRange] = useState<RangePreset>('week');
+  const [range, setRange] = useState<RangePreset>('month');
   const [customFrom, setCustomFrom] = useState('');
   const [customTo, setCustomTo] = useState('');
   const [loading, setLoading] = useState(true);

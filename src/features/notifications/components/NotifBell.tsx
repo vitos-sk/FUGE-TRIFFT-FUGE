@@ -236,11 +236,19 @@ export const NotifBell: React.FC<Props> = ({ uid }) => {
     return () => document.removeEventListener('mousedown', handler);
   }, [open]);
 
-  const handleClick = async (n: { id: string; objectId?: string; photoId?: string }) => {
+  const handleClick = async (n: { id: string; objectId?: string; photoId?: string; noteId?: string }) => {
     await markNotificationRead(uid, n.id);
     setOpen(false);
     if (n.objectId) {
-      const url = n.photoId ? `/objects/${n.objectId}?photo=${n.photoId}` : `/objects/${n.objectId}`;
+      let url = `/objects/${n.objectId}`;
+      if (n.photoId) {
+        url += `?photo=${n.photoId}`;
+      } else if (n.noteId) {
+        url += `?note=${n.noteId}`;
+      } else {
+        // fallback for old note notifications without noteId
+        url += `?tab=notes`;
+      }
       navigate(url);
     }
   };
