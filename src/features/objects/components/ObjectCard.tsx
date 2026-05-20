@@ -3,26 +3,10 @@ import styled, { css, keyframes } from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import { format, isPast, differenceInDays } from 'date-fns';
 import { de } from 'date-fns/locale';
-import { FiMapPin, FiAlertTriangle, FiMessageSquare, FiCheckSquare, FiCalendar, FiMoreVertical, FiArchive, FiEdit2 } from 'react-icons/fi';
+import { FiMapPin, FiAlertTriangle, FiMessageSquare, FiCheckSquare, FiCalendar, FiMoreVertical, FiArchive, FiTrash2 } from 'react-icons/fi';
 import { useAuth } from '@shared/hooks/useAuth';
 import { useObjectCard } from '../hooks/useObjectCard';
 import type { CRMObject } from '@shared/types';
-
-// ─── Status helpers ────────────────────────────────────────────────────────────
-
-const statusColor: Record<string, string> = {
-  new: '#2563eb',
-  in_progress: '#cc2222',
-  paused: '#6b6b6b',
-  done: '#22a35a',
-};
-
-const statusLabels: Record<string, string> = {
-  new: 'Neu',
-  in_progress: 'In Arbeit',
-  paused: 'Pausiert',
-  done: 'Fertig',
-};
 
 // ─── Animations ───────────────────────────────────────────────────────────────
 
@@ -34,7 +18,7 @@ const fadeSlideOut = keyframes`
 
 // ─── Styled ───────────────────────────────────────────────────────────────────
 
-const Card = styled.div<{ $status: string; $archiving: boolean }>`
+const Card = styled.div<{ $archiving: boolean }>`
   background: #111111;
   border: 1px solid rgba(255,255,255,0.06);
   border-radius: ${({ theme }) => theme.borderRadius};
@@ -45,28 +29,13 @@ const Card = styled.div<{ $status: string; $archiving: boolean }>`
   flex-direction: column;
   box-shadow: 0 4px 20px rgba(0,0,0,0.45);
 
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 18%;
-    right: 18%;
-    height: 1px;
-    background: ${({ $status }) => statusColor[$status] || '#333'};
-    box-shadow:
-      0 0 8px ${({ $status }) => statusColor[$status] || '#333'},
-      0 0 20px ${({ $status }) => statusColor[$status] || '#333'}70;
-    border-radius: 0 0 4px 4px;
-  }
-
   &:hover {
     border-color: rgba(255,255,255,0.1);
     background: #181818;
     transform: translateY(-3px);
     box-shadow:
       0 16px 48px rgba(0,0,0,0.6),
-      0 0 0 1px rgba(255,255,255,0.07),
-      inset 0 1px 0 rgba(255,255,255,0.07);
+      0 0 0 1px rgba(255,255,255,0.07);
   }
 
   &:active { transform: translateY(-1px); }
@@ -97,21 +66,6 @@ const Title = styled.h3`
   color: ${({ theme }) => theme.colors.textPrimary};
   line-height: 1.3;
   flex: 1;
-`;
-
-const StatusPill = styled.span<{ $status: string }>`
-  font-size: 9px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: ${({ $status }) => statusColor[$status] || '#777'};
-  background: ${({ $status }) => statusColor[$status] || '#333'}1a;
-  border: 1px solid ${({ $status }) => statusColor[$status] || '#333'}40;
-  border-radius: 9999px;
-  padding: 4px 10px;
-  white-space: nowrap;
-  flex-shrink: 0;
-  margin-top: 2px;
 `;
 
 const MenuWrapper = styled.div`
@@ -294,18 +248,12 @@ interface Props {
 export const ObjectCard: React.FC<Props> = ({ object }) => {
   const navigate = useNavigate();
   const { isAdmin } = useAuth();
-  const { menuOpen, setMenuOpen, archiving, menuRef, handleArchive } = useObjectCard(object);
-
-  const handleStatusChange = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setMenuOpen(false);
-    navigate(`/objects/${object.id}`);
-  };
+  const { menuOpen, setMenuOpen, archiving, menuRef, handleArchive, handleDelete } = useObjectCard(object);
 
   const deadline = object.deadline?.toDate?.();
-  const isOverdue = deadline ? isPast(deadline) && object.status !== 'done' : false;
+  const isOverdue = deadline ? isPast(deadline) : false;
   const isSoon = deadline && !isOverdue
-    ? differenceInDays(deadline, new Date()) <= 3 && object.status !== 'done'
+    ? differenceInDays(deadline, new Date()) <= 3
     : false;
 
   const checklist = object.checklist ?? [];
@@ -316,7 +264,6 @@ export const ObjectCard: React.FC<Props> = ({ object }) => {
 
   return (
     <Card
-      $status={object.status}
       $archiving={archiving}
       onClick={() => !archiving && navigate(`/objects/${object.id}`)}
     >
@@ -324,32 +271,28 @@ export const ObjectCard: React.FC<Props> = ({ object }) => {
         <CardTop>
           <Title>{object.title}</Title>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, marginTop: 2 }}>
-            <StatusPill $status={object.status}>{statusLabels[object.status]}</StatusPill>
-
-            {isAdmin && object.status === 'done' && (
-              <MenuWrapper ref={menuRef}>
-                <MenuBtn
-                  onClick={(e) => { e.stopPropagation(); setMenuOpen((v) => !v); }}
-                  title="Optionen"
-                >
-                  <FiMoreVertical size={15} />
-                </MenuBtn>
-                {menuOpen && (
-                  <Dropdown>
-                    <DropdownItem $success onClick={handleArchive}>
-                      <FiArchive size={14} />
-                      In Archiv verschieben
-                    </DropdownItem>
-                    <DropdownItem onClick={handleStatusChange}>
-                      <FiEdit2 size={14} />
-                      Status ändern
-                    </DropdownItem>
-                  </Dropdown>
-                )}
-              </MenuWrapper>
-            )}
-          </div>
+          {isAdmin && (
+            <MenuWrapper ref={menuRef}>
+              <MenuBtn
+                onClick={(e) => { e.stopPropagation(); setMenuOpen((v) => !v); }}
+                title="Optionen"
+              >
+                <FiMoreVertical size={15} />
+              </MenuBtn>
+              {menuOpen && (
+                <Dropdown>
+                  <DropdownItem $success onClick={handleArchive}>
+                    <FiArchive size={14} />
+                    Archivieren
+                  </DropdownItem>
+                  <DropdownItem $danger onClick={handleDelete}>
+                    <FiTrash2 size={14} />
+                    Löschen
+                  </DropdownItem>
+                </Dropdown>
+              )}
+            </MenuWrapper>
+          )}
         </CardTop>
 
         <Location>

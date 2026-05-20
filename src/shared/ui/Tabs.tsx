@@ -36,22 +36,17 @@ const TabBtn = styled.button<{ $active: boolean }>`
   letter-spacing: 0.02em;
   color: ${({ $active, theme }) => ($active ? '#fff' : theme.colors.textSecondary)};
   background: ${({ $active, theme }) =>
-    $active
-      ? `linear-gradient(135deg, ${theme.colors.accent}e0 0%, ${theme.colors.accent}a0 100%)`
-      : 'transparent'};
+    $active ? theme.colors.accent : 'transparent'};
   border-radius: 7px;
   white-space: nowrap;
   transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
   flex-shrink: 0;
-  box-shadow: ${({ $active }) =>
-    $active
-      ? '0 2px 12px rgba(204,34,34,0.4), inset 0 1px 0 rgba(255,255,255,0.14)'
-      : 'none'};
+  box-shadow: none;
 
   &:hover {
     color: ${({ $active, theme }) => ($active ? '#fff' : theme.colors.textSecondary)};
     background: ${({ $active, theme }) =>
-      !$active ? 'rgba(255,255,255,0.05)' : `linear-gradient(135deg, ${theme.colors.accent}e0 0%, ${theme.colors.accent}a0 100%)`};
+      !$active ? 'rgba(255,255,255,0.05)' : theme.colors.accent};
   }
 
   svg {

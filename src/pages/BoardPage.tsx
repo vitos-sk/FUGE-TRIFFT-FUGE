@@ -8,7 +8,7 @@ import { ObjectForm } from "@features/objects/components/ObjectForm";
 import { Modal } from "@shared/ui/Modal";
 import { Spinner } from "@shared/ui/Spinner";
 import { createObject } from "@shared/services/objectsService";
-import type { CRMObject, ObjectStatus } from "@shared/types";
+import type { CRMObject } from "@shared/types";
 
 const Header = styled.div`
   display: flex;
@@ -36,57 +36,6 @@ const PageTitle = styled.h1`
   }
 `;
 
-const FilterBar = styled.div`
-  display: flex;
-  gap: 3px;
-  background: ${({ theme }) => theme.colors.bgCard};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${({ theme }) => theme.borderRadius};
-  padding: 4px;
-
-  @media (max-width: 768px) {
-    width: 100%;
-    justify-content: center;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    &::-webkit-scrollbar {
-      display: none;
-    }
-  }
-`;
-
-const FilterBtn = styled.button<{ $active: boolean }>`
-  padding: 6px 14px;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  border-radius: ${({ theme }) => theme.borderRadiusSm};
-  border: none;
-  background: ${({ $active, theme }) => ($active ? theme.colors.accent : "transparent")};
-  color: ${({ $active, theme }) => ($active ? "#fff" : theme.colors.textMuted)};
-  transition: all ${({ theme }) => theme.transitions.fast};
-  cursor: pointer;
-  white-space: nowrap;
-
-  &:hover {
-    color: ${({ $active, theme }) => ($active ? "#fff" : theme.colors.textSecondary)};
-    background: ${({ $active, theme }) =>
-      $active ? theme.colors.accent : "rgba(255,255,255,0.05)"};
-  }
-
-  @media (max-width: 768px) {
-    padding: 5px 11px;
-    font-size: 9px;
-  }
-`;
-
-const CountBadge = styled.span`
-  opacity: 0.65;
-  margin-left: 4px;
-  font-weight: 600;
-`;
 
 const Grid = styled.div`
   display: grid;
@@ -156,22 +105,10 @@ const FAB = styled.button`
   }
 `;
 
-const FILTERS: { label: string; value: ObjectStatus | "all" }[] = [
-  { label: "Alle", value: "all" },
-  { label: "Neu", value: "new" },
-  { label: "In Arbeit", value: "in_progress" },
-  { label: "Pausiert", value: "paused" },
-  { label: "Fertig", value: "done" },
-];
-
 const BoardPage: React.FC = () => {
   const { objects, loading } = useObjects();
   const { isAdmin, uid } = useAuth();
-  const [filter, setFilter] = useState<ObjectStatus | "all">("all");
   const [showModal, setShowModal] = useState(false);
-
-  const filtered =
-    filter === "all" ? objects : objects.filter((o) => o.status === filter);
 
   const handleCreate = async (data: Partial<CRMObject>) => {
     if (!uid) return;
@@ -186,24 +123,6 @@ const BoardPage: React.FC = () => {
     <>
       <Header>
         <PageTitle>Objekte — {objects.length}</PageTitle>
-        <FilterBar>
-          {FILTERS.map((f) => {
-            const count =
-              f.value === "all"
-                ? objects.length
-                : objects.filter((o) => o.status === f.value).length;
-            return (
-              <FilterBtn
-                key={f.value}
-                $active={filter === f.value}
-                onClick={() => setFilter(f.value)}
-              >
-                {f.label}
-                {count > 0 && <CountBadge>{count}</CountBadge>}
-              </FilterBtn>
-            );
-          })}
-        </FilterBar>
       </Header>
 
       {loading ? (
@@ -212,10 +131,10 @@ const BoardPage: React.FC = () => {
         </div>
       ) : (
         <Grid>
-          {filtered.length === 0 ? (
+          {objects.length === 0 ? (
             <Empty>Keine Objekte gefunden</Empty>
           ) : (
-            filtered.map((obj) => <ObjectCard key={obj.id} object={obj} />)
+            objects.map((obj) => <ObjectCard key={obj.id} object={obj} />)
           )}
         </Grid>
       )}

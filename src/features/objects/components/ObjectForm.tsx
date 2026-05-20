@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { Timestamp } from 'firebase/firestore';
 import { Input, Select, FormGroup, Label } from '@shared/ui/Input';
 import { Button } from '@shared/ui/Button';
-import type { CRMObject, ObjectStatus } from '@shared/types';
+import type { CRMObject } from '@shared/types';
 
 const Form = styled.form`
   display: flex;
@@ -44,7 +44,6 @@ export const ObjectForm: React.FC<Props> = ({
   const [title, setTitle] = useState(initial.title ?? '');
   const [address, setAddress] = useState(initial.address ?? '');
   const [city, setCity] = useState(initial.city ?? '');
-  const [status, setStatus] = useState<ObjectStatus>(initial.status ?? 'new');
   const [deadline, setDeadline] = useState(
     initial.deadline?.toDate?.()
       ? initial.deadline.toDate().toISOString().slice(0, 10)
@@ -60,7 +59,7 @@ export const ObjectForm: React.FC<Props> = ({
         title,
         address,
         city,
-        status,
+        status: 'new',
         deadline: deadline ? Timestamp.fromDate(new Date(deadline)) : null,
       });
     } finally {
@@ -101,25 +100,14 @@ export const ObjectForm: React.FC<Props> = ({
         </FormGroup>
       </Row>
 
-      <Row>
-        <FormGroup>
-          <Label>Status</Label>
-          <Select value={status} onChange={(e) => setStatus(e.target.value as ObjectStatus)}>
-            <option value="new">Neu</option>
-            <option value="in_progress">In Arbeit</option>
-            <option value="paused">Pausiert</option>
-            <option value="done">Fertig</option>
-          </Select>
-        </FormGroup>
-        <FormGroup>
-          <Label>Deadline</Label>
-          <Input
-            type="date"
-            value={deadline}
-            onChange={(e) => setDeadline(e.target.value)}
-          />
-        </FormGroup>
-      </Row>
+      <FormGroup>
+        <Label>Deadline</Label>
+        <Input
+          type="date"
+          value={deadline}
+          onChange={(e) => setDeadline(e.target.value)}
+        />
+      </FormGroup>
 
       <Actions>
         <Button type="button" $variant="secondary" onClick={onCancel}>

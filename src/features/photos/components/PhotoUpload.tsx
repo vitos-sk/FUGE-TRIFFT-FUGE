@@ -189,6 +189,12 @@ export const PhotoUpload: React.FC<Props> = ({ objectId, objectTitle }) => {
   const handleUpload = async () => {
     if (!file || !uid || !user) return;
     setError('');
+
+    if (!navigator.onLine) {
+      setError('Kein Internet. Bitte stelle eine Verbindung her und versuche es erneut.');
+      return;
+    }
+
     setUploading(true);
     setProgress(0);
 

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { archiveObject, restoreObject } from '@shared/services/objectsService';
+import { archiveObject, restoreObject, deleteObjectPermanently } from '@shared/services/objectsService';
 import { useToast } from '@shared/ui/Toast';
 import { useConfirm } from '@shared/ui/ConfirmDialog';
 import type { CRMObject } from '@shared/types';
@@ -52,5 +52,21 @@ export const useObjectCard = (object: CRMObject) => {
     }, 450);
   };
 
-  return { menuOpen, setMenuOpen, archiving, menuRef, handleArchive };
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setMenuOpen(false);
+
+    const ok = await confirm({
+      title: 'Objekt löschen?',
+      message: `„${object.title}" wird dauerhaft gelöscht. Alle Notizen, Fotos und Stunden gehen verloren. Dieser Vorgang kann nicht rückgängig gemacht werden.`,
+      confirmLabel: 'Löschen',
+      cancelLabel: 'Abbrechen',
+    });
+    if (!ok) return;
+
+    await deleteObjectPermanently(object.id);
+    toast.success('Objekt gelöscht');
+  };
+
+  return { menuOpen, setMenuOpen, archiving, menuRef, handleArchive, handleDelete };
 };
