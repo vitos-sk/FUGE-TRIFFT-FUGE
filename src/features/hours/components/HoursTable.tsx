@@ -189,6 +189,7 @@ const BreakBtn = styled.button<{ $active: boolean }>`
   font-size: 11px;
   font-weight: 600;
   border-radius: 5px;
+  border: none;
   background: ${({ $active, theme }) => ($active ? theme.colors.accent : 'transparent')};
   color: ${({ $active, theme }) => ($active ? '#fff' : theme.colors.textSecondary)};
   transition: all ${({ theme }) => theme.transitions.fast};
@@ -226,7 +227,7 @@ interface Props {
 }
 
 export const HoursTable: React.FC<Props> = ({ entries, showWorker = false, onDelete }) => {
-  const { isAdmin, uid } = useAuth();
+  const { uid } = useAuth();
   const toast = useToast();
   const confirm = useConfirm();
 
@@ -326,7 +327,7 @@ export const HoursTable: React.FC<Props> = ({ entries, showWorker = false, onDel
             <tbody>
               {entries.map((e) => {
                 const dateFormatted = format(new Date(e.date), 'dd.MM.yyyy', { locale: de });
-                const canEdit = isAdmin || e.userId === uid;
+                const isOwn = e.userId === uid;
                 return (
                   <Tr key={e.id}>
                     <Td>{dateFormatted}</Td>
@@ -339,7 +340,7 @@ export const HoursTable: React.FC<Props> = ({ entries, showWorker = false, onDel
                     </HideMobileTd>
                     <Td style={{ fontWeight: 700 }}>{formatMinutes(e.totalMinutes)}</Td>
                     <ActionCell>
-                      {canEdit && (
+                      {isOwn && (
                         <div style={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
                           <Button $variant="ghost" $size="sm" onClick={() => openEdit(e)}
                             style={{ color: '#555' }} title="Bearbeiten">

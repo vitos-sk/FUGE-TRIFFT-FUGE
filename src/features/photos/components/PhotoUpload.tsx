@@ -15,28 +15,21 @@ const pulse = keyframes`
 
 const PickerRow = styled.div`
   display: flex;
-  gap: 10px;
-
-  @media (max-width: 480px) {
-    gap: 8px;
-  }
+  gap: 8px;
 `;
 
 const PickerBtn = styled.label`
-  flex: 1;
-  display: flex;
-  flex-direction: column;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 22px 12px;
-  border: 2px dashed ${({ theme }) => theme.colors.border};
-  border-radius: ${({ theme }) => theme.borderRadius};
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px dashed ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.borderRadiusSm};
   background: ${({ theme }) => theme.colors.bgCard};
   color: ${({ theme }) => theme.colors.textMuted};
   font-size: 12px;
   font-weight: 600;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   cursor: pointer;
   transition: all ${({ theme }) => theme.transitions.spring};
@@ -47,11 +40,6 @@ const PickerBtn = styled.label`
     border-color: ${({ theme }) => theme.colors.accent};
     color: ${({ theme }) => theme.colors.accent};
     background: ${({ theme }) => `${theme.colors.accent}08`};
-  }
-
-  @media (max-width: 480px) {
-    padding: 18px 8px;
-    font-size: 11px;
   }
 `;
 
@@ -96,11 +84,6 @@ const Row = styled.div`
   gap: 8px;
   align-items: flex-end;
   margin-top: 14px;
-  flex-wrap: wrap;
-
-  @media (max-width: 480px) {
-    flex-direction: column;
-  }
 `;
 
 const ProgressBar = styled.div<{ $progress: number }>`
@@ -155,9 +138,10 @@ const ACCEPTED = ['image/jpeg','image/png','image/webp','image/gif','image/heic'
 
 interface Props {
   objectId: string;
+  objectTitle?: string;
 }
 
-export const PhotoUpload: React.FC<Props> = ({ objectId }) => {
+export const PhotoUpload: React.FC<Props> = ({ objectId, objectTitle }) => {
   const [type, setType] = useState<PhotoType>('daily');
   const [caption, setCaption] = useState('');
   const [uploading, setUploading] = useState(false);
@@ -209,7 +193,7 @@ export const PhotoUpload: React.FC<Props> = ({ objectId }) => {
     setProgress(0);
 
     try {
-      await uploadPhoto(objectId, file, type, caption, uid, user.name, setProgress);
+      await uploadPhoto(objectId, file, type, caption, uid, user.name, setProgress, objectTitle);
       clearFile();
       setCaption('');
       setProgress(0);
@@ -247,7 +231,7 @@ export const PhotoUpload: React.FC<Props> = ({ objectId }) => {
               capture="environment"
               onChange={handleFileChange}
             />
-            <FiCamera size={26} />
+            <FiCamera size={15} />
             Kamera
           </PickerBtn>
 
@@ -259,7 +243,7 @@ export const PhotoUpload: React.FC<Props> = ({ objectId }) => {
               accept="image/*,image/heic,image/heif"
               onChange={handleFileChange}
             />
-            <FiImage size={26} />
+            <FiImage size={15} />
             Galerie
           </PickerBtn>
         </PickerRow>
@@ -283,7 +267,7 @@ export const PhotoUpload: React.FC<Props> = ({ objectId }) => {
 
       {file && !uploading && (
         <Row>
-          <FormGroup style={{ flex: 1, minWidth: 120 }}>
+          <FormGroup style={{ flexShrink: 0, width: 110 }}>
             <Label>Typ</Label>
             <Select value={type} onChange={(e) => setType(e.target.value as PhotoType)}>
               {TYPE_OPTIONS.map((o) => (
@@ -291,7 +275,7 @@ export const PhotoUpload: React.FC<Props> = ({ objectId }) => {
               ))}
             </Select>
           </FormGroup>
-          <FormGroup style={{ flex: 2, minWidth: 160 }}>
+          <FormGroup style={{ flex: 1, minWidth: 0 }}>
             <Label>Beschriftung (optional)</Label>
             <Input
               value={caption}
@@ -300,7 +284,7 @@ export const PhotoUpload: React.FC<Props> = ({ objectId }) => {
               onKeyDown={(e) => e.key === 'Enter' && handleUpload()}
             />
           </FormGroup>
-          <Button onClick={handleUpload} disabled={uploading} style={{ flexShrink: 0 }}>
+          <Button onClick={handleUpload} disabled={uploading} style={{ flexShrink: 0, alignSelf: 'flex-end' }}>
             Hochladen
           </Button>
         </Row>

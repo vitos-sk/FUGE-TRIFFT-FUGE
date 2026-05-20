@@ -12,7 +12,7 @@ export const useObjectDetail = (id: string | undefined, onDeleteNavigate: () => 
   const confirm = useConfirm();
   const [object, setObject] = useState<CRMObject | null>(null);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<TabId>('notes');
+  const [tab, setTab] = useState<TabId>('photos');
   const [showEditModal, setShowEditModal] = useState(false);
   const [newMaterial, setNewMaterial] = useState('');
   const [newCheckItem, setNewCheckItem] = useState('');

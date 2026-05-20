@@ -6,12 +6,19 @@ import { Badge } from '@shared/ui/Badge';
 import { PhotoUpload } from './PhotoUpload';
 import { useConfirm } from '@shared/ui/ConfirmDialog';
 import { useToast } from '@shared/ui/Toast';
+import { useAuth } from '@shared/hooks/useAuth';
 import type { Photo } from '@shared/types';
 import { Spinner } from '@shared/ui/Spinner';
 
 const fadeIn = keyframes`
   from { opacity: 0; }
   to   { opacity: 1; }
+`;
+
+const highlight = keyframes`
+  0%   { box-shadow: 0 0 0 3px rgba(204,34,34,0.8); }
+  70%  { box-shadow: 0 0 0 6px rgba(204,34,34,0.3); }
+  100% { box-shadow: 0 0 0 0px rgba(204,34,34,0); }
 `;
 
 const Wrapper = styled.div`
@@ -26,15 +33,16 @@ const Grid = styled.div`
   gap: 10px;
 `;
 
-const PhotoCard = styled.div`
+const PhotoCard = styled.div<{ $highlighted?: boolean }>`
   position: relative;
   aspect-ratio: 4/3;
   overflow: hidden;
   border-radius: ${({ theme }) => theme.borderRadius};
-  border: 1px solid ${({ theme }) => theme.colors.border};
+  border: 1px solid ${({ $highlighted, theme }) => $highlighted ? theme.colors.accent : theme.colors.border};
   cursor: pointer;
   background: ${({ theme }) => theme.colors.bgElevated};
   transition: all ${({ theme }) => theme.transitions.spring};
+  animation: ${({ $highlighted }) => $highlighted ? highlight : 'none'} 1.6s ease-out;
 
   &:hover {
     border-color: ${({ theme }) => theme.colors.borderHover};
@@ -144,14 +152,17 @@ const Empty = styled.p`
 
 interface Props {
   objectId: string;
+  highlightPhotoId?: string;
+  objectTitle?: string;
 }
 
-export const PhotoGrid: React.FC<Props> = ({ objectId }) => {
+export const PhotoGrid: React.FC<Props> = ({ objectId, highlightPhotoId, objectTitle }) => {
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(true);
   const [lightbox, setLightbox] = useState<Photo | null>(null);
   const confirm = useConfirm();
   const toast = useToast();
+  const { uid, isAdmin } = useAuth();
 
   useEffect(() => {
     const unsub = subscribeToPhotos(objectId, (data) => {
@@ -160,6 +171,12 @@ export const PhotoGrid: React.FC<Props> = ({ objectId }) => {
     });
     return unsub;
   }, [objectId]);
+
+  useEffect(() => {
+    if (!highlightPhotoId || loading) return;
+    const el = document.getElementById(`photo-${highlightPhotoId}`);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, [highlightPhotoId, loading]);
 
   const handleDelete = async (e: React.MouseEvent, photo: Photo) => {
     e.stopPropagation();
@@ -184,22 +201,24 @@ export const PhotoGrid: React.FC<Props> = ({ objectId }) => {
 
   return (
     <Wrapper>
-      <PhotoUpload objectId={objectId} />
+      <PhotoUpload objectId={objectId} objectTitle={objectTitle} />
 
       {photos.length === 0 ? (
         <Empty>Noch keine Fotos hochgeladen.</Empty>
       ) : (
         <Grid>
           {photos.map((photo) => (
-            <PhotoCard key={photo.id} onClick={() => setLightbox(photo)}>
+            <PhotoCard key={photo.id} id={`photo-${photo.id}`} $highlighted={photo.id === highlightPhotoId} onClick={() => setLightbox(photo)}>
               <Img src={photo.url} alt={photo.caption || 'Foto'} loading="lazy" />
-              <DeleteBtn
-                className="delete-btn"
-                title="Foto löschen"
-                onClick={(e) => handleDelete(e, photo)}
-              >
-                <FiTrash2 size={14} />
-              </DeleteBtn>
+              {(isAdmin || photo.uploadedBy === uid) && (
+                <DeleteBtn
+                  className="delete-btn"
+                  title="Foto löschen"
+                  onClick={(e) => handleDelete(e, photo)}
+                >
+                  <FiTrash2 size={14} />
+                </DeleteBtn>
+              )}
               <Overlay>
                 <Badge $photoType={photo.type}>{photoTypeLabels[photo.type]}</Badge>
                 {photo.caption && <Caption>{photo.caption}</Caption>}

@@ -4,11 +4,10 @@ import { Input, Select, FormGroup, Label } from '@shared/ui/Input';
 import { Button } from '@shared/ui/Button';
 import { addHourEntry } from '@shared/services/hoursService';
 import { subscribeToObjects } from '@shared/services/objectsService';
-import { getAllUsers } from '@shared/services/authService';
 import { FiAlertTriangle } from 'react-icons/fi';
 import { useAuth } from '@shared/hooks/useAuth';
 import { useToast } from '@shared/ui/Toast';
-import type { CRMObject, AppUser } from '@shared/types';
+import type { CRMObject } from '@shared/types';
 
 const Form = styled.form`
   background: ${({ theme }) => theme.colors.bgCard};
@@ -102,10 +101,8 @@ export const AddHoursForm: React.FC<Props> = ({ onAdded }) => {
   const [breakMins, setBreakMins] = useState(30);
   const [objectId, setObjectId] = useState('');
   const [objects, setObjects] = useState<CRMObject[]>([]);
-  const [workers, setWorkers] = useState<AppUser[]>([]);
-  const [selectedWorkerId, setSelectedWorkerId] = useState('');
   const [loading, setLoading] = useState(false);
-  const { user, uid, isAdmin } = useAuth();
+  const { user, uid } = useAuth();
   const toast = useToast();
 
   useEffect(() => {
@@ -114,13 +111,6 @@ export const AddHoursForm: React.FC<Props> = ({ onAdded }) => {
     });
     return unsub;
   }, []);
-
-  useEffect(() => {
-    if (!isAdmin) return;
-    getAllUsers().then((all) => {
-      setWorkers(all.filter((u) => !u.disabled));
-    });
-  }, [isAdmin]);
 
   const totalMins = calcMinutes(startTime, endTime, breakMins);
   const [error, setError] = useState('');
@@ -138,17 +128,9 @@ export const AddHoursForm: React.FC<Props> = ({ onAdded }) => {
     try {
       const selectedObj = objects.find((o) => o.id === objectId);
 
-      let targetId = uid;
-      let targetName = user?.name ?? uid;
-
-      if (isAdmin && selectedWorkerId && selectedWorkerId !== uid) {
-        const w = workers.find((u) => u.uid === selectedWorkerId);
-        if (w) { targetId = w.uid; targetName = w.name; }
-      }
-
       await addHourEntry({
-        userId: targetId,
-        userName: targetName,
+        userId: uid,
+        userName: user?.name ?? uid,
         objectId: objectId || undefined,
         objectTitle: selectedObj?.title ?? undefined,
         date,
@@ -162,7 +144,6 @@ export const AddHoursForm: React.FC<Props> = ({ onAdded }) => {
       setEndTime('16:00');
       setBreakMins(30);
       setObjectId('');
-      setSelectedWorkerId('');
       toast.success('Stunden eingetragen');
       onAdded?.();
     } catch (err: unknown) {
@@ -179,25 +160,12 @@ export const AddHoursForm: React.FC<Props> = ({ onAdded }) => {
       {!uid && (
         <ErrorBox style={{ display: 'flex', alignItems: 'center', gap: 8 }}><FiAlertTriangle size={14} /> Kein Benutzer geladen. Bitte neu einloggen.</ErrorBox>
       )}
-      {isAdmin && (
-        <FormGroup>
-          <Label>Mitarbeiter</Label>
-          <Select value={selectedWorkerId} onChange={(e) => setSelectedWorkerId(e.target.value)}>
-            <option value="">— Für mich selbst ({user?.name}) —</option>
-            {workers
-              .filter((w) => w.uid !== uid)
-              .map((w) => (
-                <option key={w.uid} value={w.uid}>{w.name}</option>
-              ))}
-          </Select>
-        </FormGroup>
-      )}
+      <FormGroup>
+        <Label>Datum</Label>
+        <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
+      </FormGroup>
 
       <Row>
-        <FormGroup>
-          <Label>Datum</Label>
-          <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
-        </FormGroup>
         <FormGroup>
           <Label>Beginn</Label>
           <Input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} required />
@@ -208,27 +176,26 @@ export const AddHoursForm: React.FC<Props> = ({ onAdded }) => {
         </FormGroup>
       </Row>
 
-      <Row>
-        <FormGroup>
-          <Label>Pause</Label>
-          <BreakGroup>
-            {BREAKS.map((b) => (
-              <BreakBtn key={b} type="button" $active={breakMins === b} onClick={() => setBreakMins(b)}>
-                {b === 0 ? 'Keine' : `${b} min`}
-              </BreakBtn>
-            ))}
-          </BreakGroup>
-        </FormGroup>
-        <FormGroup>
-          <Label>Objekt (optional)</Label>
-          <Select value={objectId} onChange={(e) => setObjectId(e.target.value)}>
-            <option value="">— Kein Objekt —</option>
-            {objects.map((o) => (
-              <option key={o.id} value={o.id}>{o.title}</option>
-            ))}
-          </Select>
-        </FormGroup>
-      </Row>
+      <FormGroup>
+        <Label>Pause</Label>
+        <BreakGroup>
+          {BREAKS.map((b) => (
+            <BreakBtn key={b} type="button" $active={breakMins === b} onClick={() => setBreakMins(b)}>
+              {b === 0 ? 'Keine' : `${b} min`}
+            </BreakBtn>
+          ))}
+        </BreakGroup>
+      </FormGroup>
+
+      <FormGroup>
+        <Label>Objekt (optional)</Label>
+        <Select value={objectId} onChange={(e) => setObjectId(e.target.value)}>
+          <option value="">— Kein Objekt —</option>
+          {objects.map((o) => (
+            <option key={o.id} value={o.id}>{o.title}</option>
+          ))}
+        </Select>
+      </FormGroup>
 
       <Row>
         <FormGroup>

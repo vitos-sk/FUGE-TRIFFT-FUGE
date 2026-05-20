@@ -1,12 +1,12 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import styled from 'styled-components';
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import { FiMapPin, FiX, FiMessageSquare, FiCamera, FiBox, FiCheckSquare, FiInfo } from 'react-icons/fi';
+import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { FiMapPin, FiX, FiMessageSquare, FiCamera, FiCheckSquare, FiInfo } from 'react-icons/fi';
 import { Tabs } from '@shared/ui/Tabs';
 import { NotesFeed } from '@features/notes/components/NotesFeed';
 import { PhotoGrid } from '@features/photos/components/PhotoGrid';
 import { Button } from '@shared/ui/Button';
-import { Input, Select } from '@shared/ui/Input';
+import { Input } from '@shared/ui/Input';
 import { Modal } from '@shared/ui/Modal';
 import { Badge } from '@shared/ui/Badge';
 import { ObjectForm } from '@features/objects/components/ObjectForm';
@@ -62,34 +62,6 @@ const TabContent = styled.div`
   padding: 22px 0;
 `;
 
-const MaterialList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-bottom: 18px;
-`;
-
-const MaterialItem = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 11px 16px;
-  background: rgba(22,22,22,0.7);
-  border: 1px solid rgba(255,255,255,0.06);
-  border-radius: ${({ theme }) => theme.borderRadiusSm};
-  transition: all ${({ theme }) => theme.transitions.fast};
-  &:hover {
-    border-color: rgba(255,255,255,0.1);
-    background: rgba(28,28,28,0.8);
-  }
-`;
-
-const MatName = styled.span`
-  flex: 1;
-  font-size: 14px;
-  color: ${({ theme }) => theme.colors.textPrimary};
-  font-weight: 500;
-`;
 
 const CheckList = styled.div`
   display: flex;
@@ -211,9 +183,8 @@ const EmptyText = styled.p`
 `;
 
 const TABS = [
-  { id: 'notes',     label: 'Notizen',    icon: <FiMessageSquare size={13} /> },
   { id: 'photos',    label: 'Fotos',      icon: <FiCamera size={13} /> },
-  { id: 'material',  label: 'Material',   icon: <FiBox size={13} /> },
+  { id: 'notes',     label: 'Notizen',    icon: <FiMessageSquare size={13} /> },
   { id: 'checklist', label: 'Checkliste', icon: <FiCheckSquare size={13} /> },
   { id: 'info',      label: 'Info',       icon: <FiInfo size={13} /> },
 ];
@@ -225,6 +196,8 @@ const statusLabels: Record<string, string> = {
 const ObjectDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const photoParam = searchParams.get('photo');
   const { isAdmin } = useAuth();
 
   const {
@@ -234,21 +207,20 @@ const ObjectDetailPage: React.FC = () => {
     setTab,
     showEditModal,
     setShowEditModal,
-    newMaterial,
-    setNewMaterial,
     newCheckItem,
     setNewCheckItem,
     handleUpdate,
     handleDelete,
-    addMaterial,
-    updateMaterialStatus,
-    removeMaterial,
     addCheckItem,
     toggleCheck,
     removeCheckItem,
     doneCount,
     checklistPct,
   } = useObjectDetail(id, () => navigate('/'));
+
+  useEffect(() => {
+    if (photoParam) setTab('photos');
+  }, [photoParam]);
 
   if (loading) {
     return (
@@ -264,7 +236,7 @@ const ObjectDetailPage: React.FC = () => {
 
   return (
     <>
-      <BackLink to="/">← Zurück zur Übersicht</BackLink>
+      <BackLink to="/objects">← Zurück zur Übersicht</BackLink>
 
       <PageHeader>
         <TitleRow>
@@ -283,48 +255,7 @@ const ObjectDetailPage: React.FC = () => {
       <TabContent>
         {tab === 'notes' && <NotesFeed objectId={object.id} objectTitle={object.title} />}
 
-        {tab === 'photos' && <PhotoGrid objectId={object.id} />}
-
-        {tab === 'material' && (
-          <div>
-            <MaterialList>
-              {object.materials.length === 0 && (
-                <EmptyText>Keine Materialien eingetragen.</EmptyText>
-              )}
-              {object.materials.map((mat) => (
-                <MaterialItem key={mat.id}>
-                  <MatName>{mat.name}</MatName>
-                  <Select
-                    value={mat.status}
-                    onChange={(e) => updateMaterialStatus(mat.id, e.target.value as typeof mat.status)}
-                    style={{ width: 'auto', minWidth: 120 }}
-                  >
-                    <option value="needed">Benötigt</option>
-                    <option value="ordered">Bestellt</option>
-                    <option value="delivered">Geliefert</option>
-                  </Select>
-                  {isAdmin && (
-                    <Button $variant="ghost" $size="sm" onClick={() => removeMaterial(mat.id)}
-                      style={{ color: '#c0392b', flexShrink: 0 }}><FiX size={14} /></Button>
-                  )}
-                </MaterialItem>
-              ))}
-            </MaterialList>
-            {isAdmin && (
-              <AddRow>
-                <Input
-                  value={newMaterial}
-                  onChange={(e) => setNewMaterial(e.target.value)}
-                  placeholder="Material hinzufügen…"
-                  onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addMaterial())}
-                />
-                <Button onClick={addMaterial} disabled={!newMaterial.trim()} style={{ flexShrink: 0 }}>
-                  + Hinzufügen
-                </Button>
-              </AddRow>
-            )}
-          </div>
-        )}
+        {tab === 'photos' && <PhotoGrid objectId={object.id} highlightPhotoId={photoParam ?? undefined} objectTitle={object.title} />}
 
         {tab === 'checklist' && (
           <div>

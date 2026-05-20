@@ -1,9 +1,8 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Link, useMatch } from 'react-router-dom';
-import { FiGrid, FiClock, FiSettings, FiBarChart2, FiInbox } from 'react-icons/fi';
+import { FiGrid, FiClock, FiSettings, FiBarChart2 } from 'react-icons/fi';
 import { useAuth } from '../hooks/useAuth';
-import { useArchivedCount } from '@features/objects/hooks/useObjects';
 
 const Bar = styled.nav`
   display: none;
@@ -109,12 +108,8 @@ const Tab: React.FC<TabProps> = ({ to, icon, label, active, badge }) => (
 
 export const MobileTabBar: React.FC = () => {
   const { isAdmin } = useAuth();
-  const archivedCount = useArchivedCount();
-
-  const onRoot      = !!useMatch({ path: '/', end: true });
   const onObjects   = !!useMatch('/objects/*');
   const onHours     = !!useMatch('/hours');
-  const onArchiv    = !!useMatch('/archiv');
   const onDashboard = !!useMatch('/dashboard');
   const onAdmin     = !!useMatch('/admin/*');
 
@@ -123,12 +118,11 @@ export const MobileTabBar: React.FC = () => {
       {isAdmin && (
         <>
           <Tab to="/admin/users" icon={<FiSettings size={20} />}  label="Benutzer"  active={onAdmin} />
-          <Tab to="/archiv"      icon={<FiInbox size={20} />}     label="Archiv"    active={onArchiv} badge={archivedCount} />
           <Tab to="/dashboard"   icon={<FiBarChart2 size={20} />} label="Dashboard" active={onDashboard} />
         </>
       )}
+      <Tab to="/objects" icon={<FiGrid size={20} />} label="Objekte" active={onObjects} />
       <Tab to="/hours" icon={<FiClock size={20} />} label="Stunden" active={onHours} />
-      <Tab to="/"      icon={<FiGrid size={20} />}  label="Objekte" active={onRoot || onObjects} />
     </Bar>
   );
 };

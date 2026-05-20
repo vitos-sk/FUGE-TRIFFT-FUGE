@@ -28,7 +28,7 @@ const TabBar = styled.div`
 `;
 
 const Tab = styled.button<{ $active: boolean }>`
-  padding: 9px 24px;
+  padding: 9px 28px;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.07em;
@@ -46,45 +46,6 @@ const Tab = styled.button<{ $active: boolean }>`
   }
 `;
 
-const Controls = styled.div`
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  margin-bottom: 20px;
-  padding: 18px 20px;
-  background: ${({ theme }) => theme.colors.bgCard};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${({ theme }) => theme.borderRadius};
-`;
-
-const RangeButtons = styled.div`
-  display: flex;
-  gap: 4px;
-  background: ${({ theme }) => theme.colors.bgElevated};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${({ theme }) => theme.borderRadiusSm};
-  padding: 3px;
-`;
-
-const RangeBtn = styled.button<{ $active: boolean }>`
-  padding: 7px 14px;
-  font-size: 11px;
-  font-weight: 600;
-  border-radius: 5px;
-  border: none;
-  background: ${({ $active, theme }) => ($active ? theme.colors.accent : 'transparent')};
-  color: ${({ $active, theme }) => ($active ? '#fff' : theme.colors.textSecondary)};
-  transition: all ${({ theme }) => theme.transitions.fast};
-  cursor: pointer;
-  letter-spacing: 0.02em;
-
-  &:hover:not([disabled]) {
-    color: ${({ $active, theme }) => $active ? '#fff' : theme.colors.textPrimary};
-    background: ${({ $active, theme }) => $active ? theme.colors.accent : 'rgba(255,255,255,0.06)'};
-  }
-`;
-
 const SectionTitle = styled.h2`
   font-size: 11px;
   font-weight: 700;
@@ -93,12 +54,63 @@ const SectionTitle = styled.h2`
   color: ${({ theme }) => theme.colors.textMuted};
 `;
 
-const ViewHeader = styled.div`
+// ─── Filter bar ────────────────────────────────────────────────────────────────
+
+const FilterBar = styled.div`
+  background: ${({ theme }) => theme.colors.bgCard};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.borderRadius};
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+`;
+
+const PeriodGroup = styled.div`
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 3px;
+  background: ${({ theme }) => theme.colors.bgElevated};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.borderRadiusSm};
+  padding: 3px;
+
+  @media (max-width: 340px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+`;
+
+const PeriodBtn = styled.button<{ $active: boolean }>`
+  padding: 9px 4px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 5px;
+  border: none;
+  background: ${({ $active, theme }) => ($active ? theme.colors.accent : 'transparent')};
+  color: ${({ $active, theme }) => ($active ? '#fff' : theme.colors.textSecondary)};
+  transition: all ${({ theme }) => theme.transitions.fast};
+  cursor: pointer;
+  white-space: nowrap;
+  text-align: center;
+
+  &:hover:not([disabled]) {
+    color: ${({ $active, theme }) => $active ? '#fff' : theme.colors.textPrimary};
+    background: ${({ $active, theme }) => $active ? theme.colors.accent : 'rgba(255,255,255,0.06)'};
+  }
+`;
+
+const CustomDateRow = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+`;
+
+const TotalBar = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
 `;
 
 const TotalChip = styled.div`
@@ -106,8 +118,8 @@ const TotalChip = styled.div`
   align-items: center;
   gap: 8px;
   padding: 6px 14px;
-  background: rgba(204,34,34,0.08);
-  border: 1px solid rgba(204,34,34,0.22);
+  background: rgba(204, 34, 34, 0.08);
+  border: 1px solid rgba(204, 34, 34, 0.22);
   border-radius: 9999px;
   font-size: 11px;
   font-weight: 600;
@@ -123,6 +135,15 @@ const TotalValue = styled.span`
   color: ${({ theme }) => theme.colors.accent};
   letter-spacing: -0.01em;
   text-transform: none;
+`;
+
+const ExportRow = styled.div`
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  padding-top: 8px;
+  border-top: 1px solid ${({ theme }) => theme.colors.border};
 `;
 
 const HoursPage: React.FC = () => {
@@ -141,13 +162,26 @@ const HoursPage: React.FC = () => {
     exportToExcel,
   } = useHoursPage();
 
+  const totalMins = entries.reduce((acc, e) => acc + (e.totalMinutes || 0), 0);
+  const totalH = Math.floor(totalMins / 60);
+  const totalM = totalMins % 60;
+
   return (
     <>
       <PageTitle>Arbeitsstunden</PageTitle>
 
       <TabBar>
-        <Tab $active={tab === 'add'} onClick={() => setTab('add')}>Eintragen</Tab>
-        <Tab $active={tab === 'view'} onClick={() => setTab('view')}>Übersicht</Tab>
+        {isAdmin ? (
+          <>
+            <Tab $active={tab === 'view'} onClick={() => setTab('view')}>Übersicht</Tab>
+            <Tab $active={tab === 'add'} onClick={() => setTab('add')}>Eintragen</Tab>
+          </>
+        ) : (
+          <>
+            <Tab $active={tab === 'add'} onClick={() => setTab('add')}>Eintragen</Tab>
+            <Tab $active={tab === 'view'} onClick={() => setTab('view')}>Übersicht</Tab>
+          </>
+        )}
       </TabBar>
 
       {tab === 'add' && (
@@ -159,32 +193,15 @@ const HoursPage: React.FC = () => {
 
       {tab === 'view' && (
         <>
-          {(() => {
-            const totalMins = entries.reduce((acc, e) => acc + (e.totalMinutes || 0), 0);
-            const totalH = Math.floor(totalMins / 60);
-            const totalM = totalMins % 60;
-            return (
-              <ViewHeader>
-                <SectionTitle>Übersicht</SectionTitle>
-                {!loading && entries.length > 0 && (
-                  <TotalChip>
-                    Gesamt <TotalValue>{totalH}:{String(totalM).padStart(2, '0')} h</TotalValue>
-                  </TotalChip>
-                )}
-              </ViewHeader>
-            );
-          })()}
-
-          <Controls>
+          <FilterBar>
             {isAdmin && (
-              <FormGroup>
+              <FormGroup style={{ margin: 0 }}>
                 <Label>Mitarbeiter</Label>
                 <Select
                   value={selectedUser}
                   onChange={(e) => setSelectedUser(e.target.value)}
-                  style={{ minWidth: 180 }}
                 >
-                  <option value="">Alle</option>
+                  <option value="">Alle Mitarbeiter</option>
                   {users.map((u) => (
                     <option key={u.uid} value={u.uid}>{u.name}</option>
                   ))}
@@ -192,61 +209,68 @@ const HoursPage: React.FC = () => {
               </FormGroup>
             )}
 
-            <FormGroup>
-              <Label>Zeitraum</Label>
-              <RangeButtons>
-                <RangeBtn $active={range === 'week'} onClick={() => setRange('week')}>Diese Woche</RangeBtn>
-                <RangeBtn $active={range === 'month'} onClick={() => setRange('month')}>Dieser Monat</RangeBtn>
-                <RangeBtn $active={range === 'all'} onClick={() => setRange('all')}>Alle</RangeBtn>
-                <RangeBtn $active={range === 'custom'} onClick={() => setRange('custom')}>Benutzerdefiniert</RangeBtn>
-              </RangeButtons>
-            </FormGroup>
+            <div>
+              <Label style={{ marginBottom: 6 }}>Zeitraum</Label>
+              <PeriodGroup>
+                <PeriodBtn $active={range === 'week'} onClick={() => setRange('week')}>Diese Woche</PeriodBtn>
+                <PeriodBtn $active={range === 'month'} onClick={() => setRange('month')}>Dieser Monat</PeriodBtn>
+                <PeriodBtn $active={range === 'all'} onClick={() => setRange('all')}>Alle</PeriodBtn>
+                <PeriodBtn $active={range === 'custom'} onClick={() => setRange('custom')}>Eigener</PeriodBtn>
+              </PeriodGroup>
+            </div>
 
             {range === 'custom' && (
-              <>
-                <FormGroup>
-                  <Label>Von</Label>
-                  <Input type="date" value={customFrom} onChange={(e) => setCustomFrom(e.target.value)} />
-                </FormGroup>
-                <FormGroup>
-                  <Label>Bis</Label>
-                  <Input type="date" value={customTo} onChange={(e) => setCustomTo(e.target.value)} />
-                </FormGroup>
-              </>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <CustomDateRow>
+                  <FormGroup style={{ margin: 0 }}>
+                    <Label>Von</Label>
+                    <Input type="date" value={customFrom} onChange={(e) => setCustomFrom(e.target.value)} />
+                  </FormGroup>
+                  <FormGroup style={{ margin: 0 }}>
+                    <Label>Bis</Label>
+                    <Input type="date" value={customTo} onChange={(e) => setCustomTo(e.target.value)} />
+                  </FormGroup>
+                </CustomDateRow>
+                <Button onClick={load} $variant="secondary" style={{ width: '100%' }}>
+                  Laden
+                </Button>
+              </div>
             )}
 
-            <FormGroup>
-              <Label>&nbsp;</Label>
-              <Button onClick={load} $variant="secondary">Aktualisieren</Button>
-            </FormGroup>
-
             {isAdmin && (
-              <>
-                <FormGroup>
-                  <Label>Monat für Excel</Label>
+              <ExportRow>
+                <FormGroup style={{ margin: 0 }}>
+                  <Label>Excel-Export (Monat)</Label>
                   <Input
                     type="month"
                     value={exportMonth}
                     onChange={(e) => setExportMonth(e.target.value)}
-                    style={{ minWidth: 160 }}
+                    style={{ minWidth: 150 }}
                   />
                 </FormGroup>
-                <FormGroup>
-                  <Label>&nbsp;</Label>
-                  <Button $variant="secondary" onClick={exportToExcel}>
-                    Excel-Export
-                  </Button>
-                </FormGroup>
-              </>
+                <Button $variant="secondary" onClick={exportToExcel}>
+                  Exportieren
+                </Button>
+              </ExportRow>
             )}
-          </Controls>
+          </FilterBar>
 
           {loading ? (
             <div style={{ display: 'flex', justifyContent: 'center', padding: 40 }}>
               <Spinner />
             </div>
           ) : (
-            <HoursTable entries={entries} showWorker={isAdmin && !selectedUser} onDelete={load} />
+            <>
+              {!loading && entries.length > 0 && (
+                <TotalBar>
+                  <div />
+                  <TotalChip>
+                    Gesamt <TotalValue>{totalH}:{String(totalM).padStart(2, '0')} h</TotalValue>
+                  </TotalChip>
+                </TotalBar>
+              )}
+              <HoursTable entries={entries} showWorker={isAdmin && !selectedUser} onDelete={load} />
+            </>
           )}
         </>
       )}

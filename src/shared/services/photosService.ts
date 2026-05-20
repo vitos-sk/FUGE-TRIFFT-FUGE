@@ -6,7 +6,10 @@ import {
   onSnapshot,
   query,
   orderBy,
+  where,
   Timestamp,
+  getDocs,
+  writeBatch,
 } from 'firebase/firestore';
 import {
   ref,
@@ -55,7 +58,8 @@ export const uploadPhoto = async (
   caption: string,
   uploadedBy: string,
   uploadedByName: string,
-  onProgress?: (pct: number) => void
+  onProgress?: (pct: number) => void,
+  objectTitle?: string,
 ): Promise<Photo> => {
   const blob = await compressToJpeg(file);
   onProgress?.(5);
@@ -87,6 +91,33 @@ export const uploadPhoto = async (
             uploadedAt: now,
           });
           onProgress?.(100);
+
+          // Notify all other users
+          try {
+            const typeLabels: Record<PhotoType, string> = {
+              daily: 'Täglich', before: 'Vorher', after: 'Nachher', problem: 'Problem',
+            };
+            const usersSnap = await getDocs(collection(db, 'users'));
+            const batch = writeBatch(db);
+            const title = `Neues Foto — ${objectTitle || 'Objekt'}`;
+            const body = `${uploadedByName}: ${caption || typeLabels[type]}`;
+            usersSnap.docs.forEach((userDoc) => {
+              if (userDoc.id === uploadedBy) return;
+              const notifRef = doc(collection(db, 'notifications', userDoc.id, 'items'));
+              batch.set(notifRef, {
+                title,
+                body,
+                objectId,
+                photoId: docRef.id,
+                read: false,
+                createdAt: now,
+              });
+            });
+            await batch.commit();
+          } catch (err) {
+            console.error('[photosService] failed to send notifications:', err);
+          }
+
           resolve({
             id: docRef.id,
             url,
@@ -110,6 +141,21 @@ export const deletePhoto = async (objectId: string, photo: Photo): Promise<void>
   const path = photo.storagePath ?? extractStoragePath(photo.url);
   if (path) {
     await deleteObject(ref(storage, path)).catch(() => {});
+  }
+
+  // Remove notifications about this photo from all users
+  try {
+    const usersSnap = await getDocs(collection(db, 'users'));
+    const batch = writeBatch(db);
+    await Promise.all(usersSnap.docs.map(async (userDoc) => {
+      const notifSnap = await getDocs(
+        query(collection(db, 'notifications', userDoc.id, 'items'), where('photoId', '==', photo.id))
+      );
+      notifSnap.docs.forEach((d) => batch.delete(d.ref));
+    }));
+    await batch.commit();
+  } catch (err) {
+    console.error('[photosService] failed to delete photo notifications:', err);
   }
 };
 

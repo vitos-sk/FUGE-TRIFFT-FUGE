@@ -90,10 +90,11 @@ const AppRoutes: React.FC = () => {
       <Routes>
         <Route
           path="/login"
-          element={firebaseUser ? <Navigate to="/" replace /> : <LoginPage />}
+          element={firebaseUser ? <Navigate to="/hours" replace /> : <LoginPage />}
         />
+        <Route path="/" element={<Navigate to="/hours" replace />} />
         <Route
-          path="/"
+          path="/objects"
           element={
             <ProtectedRoute>
               <AppShell>
@@ -152,7 +153,7 @@ const AppRoutes: React.FC = () => {
             </AdminRoute>
           }
         />
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<Navigate to="/hours" replace />} />
       </Routes>
     </Suspense>
   );

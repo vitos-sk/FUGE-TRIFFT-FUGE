@@ -43,7 +43,7 @@ const exportExcel = (entries: WorkHourEntry[], monthLabel: string) => {
 
 export const useHoursPage = () => {
   const { isAdmin, uid } = useAuth();
-  const [tab, setTab] = useState<'add' | 'view'>('add');
+  const [tab, setTab] = useState<'add' | 'view'>(isAdmin ? 'view' : 'add');
   const [entries, setEntries] = useState<WorkHourEntry[]>([]);
   const [users, setUsers] = useState<AppUser[]>([]);
   const [selectedUser, setSelectedUser] = useState<string>('');

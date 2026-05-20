@@ -48,23 +48,27 @@ service cloud.firestore {
       match /photos/{photoId} {
         allow read: if isActive();
         allow create: if isActive();
-        allow delete: if isActive();
+        allow delete: if isAdmin() || (isActive() && resource.data.uploadedBy == request.auth.uid);
       }
     }
 
-    // Work hours — workers can only access their own entries
+    // Work hours
+    // Admin: read all, create for any worker. Cannot edit or delete anyone's entries.
+    // Worker: full access to own entries only.
     match /workHours/{entryId} {
-      allow read: if isAdmin() || (isActive() && resource.data.userId == request.auth.uid);
+      allow read:   if isAdmin() || (isActive() && resource.data.userId == request.auth.uid);
       allow create: if isActive() && request.resource.data.userId == request.auth.uid;
-      allow update: if isAdmin();
-      allow delete: if isAdmin() || (isActive() && resource.data.userId == request.auth.uid);
+      allow update: if isActive() && resource.data.userId == request.auth.uid;
+      allow delete: if isActive() && resource.data.userId == request.auth.uid;
     }
 
     // Notifications
+    // Any active user can delete any notification so that photo/note deletion
+    // can clean up notifications for all users.
     match /notifications/{userId}/items/{notifId} {
       allow read, update: if isActive() && request.auth.uid == userId;
       allow create: if isActive();
-      allow delete: if isActive() && request.auth.uid == userId;
+      allow delete: if isActive();
     }
   }
 }

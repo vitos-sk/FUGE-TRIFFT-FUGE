@@ -7,9 +7,7 @@ const StickyShell = styled.div`
   z-index: 100;
   margin: 0 -24px 20px;
   padding: 5px 24px 6px;
-  background: rgba(10, 10, 10, 0.55);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  background: transparent;
 
   @media (max-width: 768px) {
     margin: 0 -16px 16px;
@@ -36,7 +34,7 @@ const TabBtn = styled.button<{ $active: boolean }>`
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.02em;
-  color: ${({ $active, theme }) => ($active ? '#fff' : theme.colors.textMuted)};
+  color: ${({ $active, theme }) => ($active ? '#fff' : theme.colors.textSecondary)};
   background: ${({ $active, theme }) =>
     $active
       ? `linear-gradient(135deg, ${theme.colors.accent}e0 0%, ${theme.colors.accent}a0 100%)`
@@ -58,7 +56,7 @@ const TabBtn = styled.button<{ $active: boolean }>`
 
   svg {
     flex-shrink: 0;
-    opacity: ${({ $active }) => ($active ? 1 : 0.5)};
+    opacity: ${({ $active }) => ($active ? 1 : 0.75)};
     transition: opacity 0.15s ease;
   }
 
