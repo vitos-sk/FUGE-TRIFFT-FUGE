@@ -8,6 +8,12 @@ export const useFCM = (uid: string | null) => {
     if (!uid) return;
 
     const init = async () => {
+      // Request permission explicitly if not yet decided
+      if (Notification.permission === 'default') {
+        await Notification.requestPermission();
+      }
+      if (Notification.permission !== 'granted') return;
+
       const messaging = await getMessagingInstance();
       if (!messaging) return;
 
@@ -17,13 +23,18 @@ export const useFCM = (uid: string | null) => {
         });
         if (token) await updateFCMToken(uid, token);
       } catch {
-        // Notification permission denied or not supported
+        // Permission denied or messaging not supported in this browser
       }
 
+      // Show notification when app is in foreground
       onMessage(messaging, (payload) => {
         const { title, body } = payload.notification ?? {};
         if (title && Notification.permission === 'granted') {
-          new Notification(title, { body });
+          new Notification(title, {
+            body,
+            icon: '/favicon.svg',
+            badge: '/favicon.svg',
+          });
         }
       });
     };

@@ -11,6 +11,7 @@ import {
   doc,
   QueryConstraint,
 } from 'firebase/firestore';
+
 import { db } from './firebase';
 import type { WorkHourEntry } from '../types';
 
@@ -25,12 +26,19 @@ const toDateStr = (d: Date) => d.toISOString().slice(0, 10);
 export const addHourEntry = async (
   entry: Omit<WorkHourEntry, 'id' | 'createdAt' | 'totalMinutes'>
 ) => {
+  const now = Timestamp.now();
   const totalMinutes = calculateMinutes(entry.startTime, entry.endTime, entry.breakMinutes);
   const cleanEntry = Object.fromEntries(
-    Object.entries({ ...entry, totalMinutes, createdAt: Timestamp.now() })
+    Object.entries({ ...entry, totalMinutes, createdAt: now })
       .filter(([, v]) => v !== undefined)
   );
-  return addDoc(collection(db, 'workHours'), cleanEntry);
+  const ref = await addDoc(collection(db, 'workHours'), cleanEntry);
+
+  if (entry.objectId) {
+    await updateDoc(doc(db, 'objects', entry.objectId), { lastActivityAt: now });
+  }
+
+  return ref;
 };
 
 // Worker: own entries only, date range pushed to Firestore.

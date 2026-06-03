@@ -162,6 +162,36 @@ const TooltipValue = styled.div`
   color: #fff;
 `;
 
+const TooltipSub = styled.div`
+  font-size: 10px;
+  color: #555;
+  margin-top: 3px;
+`;
+
+const WeekSummary = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+`;
+
+const WeekTotal = styled.span`
+  font-size: 13px;
+  font-weight: 800;
+  color: ${({ theme }) => theme.colors.textPrimary};
+  letter-spacing: -0.01em;
+`;
+
+const TrendBadge = styled.span<{ $up: boolean }>`
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 9999px;
+  background: ${({ $up }) => $up ? 'rgba(34,163,90,0.12)' : 'rgba(204,34,34,0.1)'};
+  color: ${({ $up }) => $up ? '#22a35a' : '#cc2222'};
+`;
+
+
 const BarTooltip = ({ active, payload, label }: {
   active?: boolean;
   payload?: Array<{ value: number }>;
@@ -175,6 +205,31 @@ const BarTooltip = ({ active, payload, label }: {
     <TooltipBox>
       <TooltipLabel>{label}</TooltipLabel>
       <TooltipValue>{h}:{String(m).padStart(2, '0')} Std.</TooltipValue>
+    </TooltipBox>
+  );
+};
+
+const WeekTooltip = ({ active, payload }: {
+  active?: boolean;
+  payload?: Array<{ payload: { day: string; fullDate: string; minutes: number; workers: number } }>;
+}) => {
+  if (!active || !payload?.length) return null;
+  const { day, fullDate, minutes, workers } = payload[0].payload;
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return (
+    <TooltipBox>
+      <TooltipLabel>{day}, {fullDate}</TooltipLabel>
+      {minutes > 0 ? (
+        <>
+          <TooltipValue>{h}:{String(m).padStart(2, '0')} Std.</TooltipValue>
+          {workers > 0 && (
+            <TooltipSub>{workers} {workers === 1 ? 'Person' : 'Personen'} aktiv</TooltipSub>
+          )}
+        </>
+      ) : (
+        <TooltipValue style={{ color: '#333' }}>Kein Eintrag</TooltipValue>
+      )}
     </TooltipBox>
   );
 };
@@ -249,14 +304,37 @@ const DashboardPage: React.FC = () => {
   const activeObjects = objects.filter((o) => o.status === 'new' || o.status === 'in_progress').length;
   const totalWorkers = users.filter((u) => u.role === 'worker').length;
 
-  // Bar chart: last 30 days
-  const dailyData = eachDayOfInterval({ start: subDays(now, 29), end: now }).map((day) => {
+  // Bar chart: this week day-by-day
+  const weeklyData = eachDayOfInterval({
+    start: startOfWeek(now, { locale: de }),
+    end: endOfWeek(now, { locale: de }),
+  }).map((day) => {
     const dayStr = format(day, 'yyyy-MM-dd');
-    const mins = hours
-      .filter((e) => e.date === dayStr)
-      .reduce((acc, e) => acc + (e.totalMinutes || 0), 0);
-    return { day: format(day, 'dd.MM'), minutes: mins };
+    const dayHours = hours.filter((e) => e.date === dayStr);
+    const mins = dayHours.reduce((acc, e) => acc + (e.totalMinutes || 0), 0);
+    return {
+      day: format(day, 'EEE', { locale: de }),
+      fullDate: format(day, 'dd.MM.'),
+      minutes: mins,
+      workers: new Set(dayHours.map((e) => e.userId)).size,
+      isToday: dayStr === today,
+      isFuture: dayStr > today,
+    };
   });
+
+  const thisWeekMins = hours
+    .filter((e) => e.date >= weekStart && e.date <= weekEnd)
+    .reduce((acc, e) => acc + (e.totalMinutes || 0), 0);
+
+  const lastWeekStart = format(startOfWeek(subDays(now, 7), { locale: de }), 'yyyy-MM-dd');
+  const lastWeekEnd = format(endOfWeek(subDays(now, 7), { locale: de }), 'yyyy-MM-dd');
+  const lastWeekMins = hours
+    .filter((e) => e.date >= lastWeekStart && e.date <= lastWeekEnd)
+    .reduce((acc, e) => acc + (e.totalMinutes || 0), 0);
+
+  const weekDiffMins = thisWeekMins - lastWeekMins;
+  const weekDiffH = Math.abs(Math.floor(weekDiffMins / 60));
+  const weekDiffM = Math.abs(weekDiffMins % 60);
 
   // Pie chart: current month per worker
   const workerMap: Record<string, { name: string; minutes: number }> = {};
@@ -303,29 +381,58 @@ const DashboardPage: React.FC = () => {
       <ChartsGrid>
         <ChartSection>
           <ChartHeader>
-            <ChartTitle>Stunden pro Tag</ChartTitle>
-            <ChartSub>Letzte 30 Tage</ChartSub>
+            <div>
+              <ChartTitle>Diese Woche</ChartTitle>
+              <WeekSummary style={{ marginTop: 6 }}>
+                <WeekTotal>
+                  {Math.floor(thisWeekMins / 60)}:{String(thisWeekMins % 60).padStart(2, '0')} Std.
+                </WeekTotal>
+                {lastWeekMins > 0 && (
+                  <TrendBadge $up={weekDiffMins >= 0}>
+                    {weekDiffMins >= 0 ? '↑' : '↓'} {weekDiffH}:{String(weekDiffM).padStart(2, '0')}h vs. VW
+                  </TrendBadge>
+                )}
+              </WeekSummary>
+            </div>
+            <ChartSub>{format(now, "'KW' w", { locale: de })}</ChartSub>
           </ChartHeader>
-          <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={dailyData} margin={{ top: 0, right: 0, left: -22, bottom: 0 }}>
+          <ResponsiveContainer width="100%" height={200}>
+            <BarChart data={weeklyData} margin={{ top: 4, right: 4, left: -24, bottom: 0 }}>
               <XAxis
                 dataKey="day"
-                tick={{ fill: '#3a3a3a', fontSize: 10 }}
+                tick={({ x, y, payload, index }) => {
+                  const d = weeklyData[index];
+                  return (
+                    <g transform={`translate(${x},${y})`}>
+                      <text x={0} y={0} dy={12} textAnchor="middle" fill={d.isToday ? '#cc2222' : '#3a3a3a'} fontSize={11} fontWeight={d.isToday ? 700 : 500}>
+                        {payload.value}
+                      </text>
+                      <text x={0} y={0} dy={23} textAnchor="middle" fill="#2a2a2a" fontSize={9}>
+                        {d.fullDate}
+                      </text>
+                    </g>
+                  );
+                }}
                 tickLine={false}
                 axisLine={false}
-                interval={4}
+                height={34}
               />
               <YAxis
-                tick={{ fill: '#3a3a3a', fontSize: 10 }}
+                tick={{ fill: '#2a2a2a', fontSize: 10 }}
                 tickLine={false}
                 axisLine={false}
                 tickFormatter={(v) => `${Math.floor(v / 60)}h`}
               />
-              <Tooltip
-                content={<BarTooltip />}
-                cursor={{ fill: 'rgba(255,255,255,0.03)' }}
-              />
-              <Bar dataKey="minutes" fill="#cc2222" radius={[3, 3, 0, 0]} maxBarSize={28} />
+              <Tooltip content={<WeekTooltip />} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
+              <Bar dataKey="minutes" radius={[4, 4, 0, 0]} maxBarSize={40}>
+                {weeklyData.map((d, i) => (
+                  <Cell
+                    key={i}
+                    fill={d.isToday ? '#cc2222' : d.isFuture ? '#1a1a1a' : d.minutes > 0 ? '#7a1a1a' : '#161616'}
+                    opacity={d.isFuture ? 0.4 : 1}
+                  />
+                ))}
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </ChartSection>

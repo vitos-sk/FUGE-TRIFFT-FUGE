@@ -56,6 +56,7 @@ export const addNote = async (
     lastNoteAt: now,
     lastNoteAuthor: authorName,
     noteCount: increment(1),
+    lastActivityAt: now,
   });
 
   // Notify all other users about the new note

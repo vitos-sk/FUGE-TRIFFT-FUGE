@@ -39,6 +39,7 @@ export interface CRMObject {
   lastNoteAt?: Timestamp | null;
   lastNoteAuthor?: string;
   noteCount?: number;
+  lastActivityAt?: Timestamp | null;
   materials: Material[];
   checklist: ChecklistItem[];
   archived?: boolean;

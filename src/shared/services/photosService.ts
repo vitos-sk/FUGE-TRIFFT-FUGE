@@ -10,6 +10,7 @@ import {
   Timestamp,
   getDocs,
   writeBatch,
+  updateDoc,
 } from 'firebase/firestore';
 import {
   ref,
@@ -90,6 +91,7 @@ export const uploadPhoto = async (
             uploadedByName,
             uploadedAt: now,
           });
+          await updateDoc(doc(db, 'objects', objectId), { lastActivityAt: now });
           onProgress?.(100);
 
           // Notify all other users

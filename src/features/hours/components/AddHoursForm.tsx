@@ -2,9 +2,10 @@ import React, { useState, useEffect, useCallback } from 'react';
 import styled from 'styled-components';
 import { Input, Select, FormGroup, Label } from '@shared/ui/Input';
 import { Button } from '@shared/ui/Button';
+import { Modal } from '@shared/ui/Modal';
 import { addHourEntry } from '@shared/services/hoursService';
 import { subscribeToObjects } from '@shared/services/objectsService';
-import { FiAlertTriangle, FiWifi } from 'react-icons/fi';
+import { FiAlertTriangle, FiWifi, FiClock, FiRefreshCw } from 'react-icons/fi';
 import { useAuth } from '@shared/hooks/useAuth';
 import { useToast } from '@shared/ui/Toast';
 import type { CRMObject } from '@shared/types';
@@ -107,7 +108,11 @@ const calcMinutes = (start: string, end: string, brk: number): number => {
   if (!start || !end) return 0;
   const [sh, sm] = start.split(':').map(Number);
   const [eh, em] = end.split(':').map(Number);
-  return Math.max(0, (eh * 60 + em) - (sh * 60 + sm) - brk);
+  let endMins = eh * 60 + em;
+  const startMins = sh * 60 + sm;
+  // overnight shift: end is on the next day
+  if (endMins <= startMins) endMins += 24 * 60;
+  return Math.max(0, endMins - startMins - brk);
 };
 
 const formatMinutes = (mins: number): string => {
@@ -124,20 +129,32 @@ export const AddHoursForm: React.FC<Props> = ({ onAdded }) => {
   const today = new Date().toISOString().slice(0, 10);
   const [date, setDate] = useState(today);
   const [startTime, setStartTime] = useState('07:00');
-  const [endTime, setEndTime] = useState('16:00');
+  const [endTime, setEndTime] = useState('17:00');
   const [breakMins, setBreakMins] = useState(30);
   const [objectId, setObjectId] = useState('');
   const [objects, setObjects] = useState<CRMObject[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [locationNote, setLocationNote] = useState('');
+  const [showLocationModal, setShowLocationModal] = useState(false);
+  const [pendingEntry, setPendingEntry] = useState<QueuedEntry | null>(null);
+  const [modalObjectId, setModalObjectId] = useState('');
   const { user, uid } = useAuth();
   const toast = useToast();
 
   const totalMins = calcMinutes(startTime, endTime, breakMins);
 
   useEffect(() => {
-    const unsub = subscribeToObjects((data) => setObjects(data));
+    const unsub = subscribeToObjects((data) => {
+      const active = data.filter((o) => !o.archived);
+      active.sort((a, b) => {
+        const ta = (a.lastActivityAt ?? a.lastNoteAt ?? a.createdAt)?.toDate?.()?.getTime() ?? 0;
+        const tb = (b.lastActivityAt ?? b.lastNoteAt ?? b.createdAt)?.toDate?.()?.getTime() ?? 0;
+        return tb - ta;
+      });
+      setObjects(active);
+    });
     return unsub;
   }, []);
 
@@ -175,66 +192,73 @@ export const AddHoursForm: React.FC<Props> = ({ onAdded }) => {
   const resetForm = () => {
     setDate(today);
     setStartTime('07:00');
-    setEndTime('16:00');
+    setEndTime('17:00');
     setBreakMins(30);
     setObjectId('');
+    setLocationNote('');
+    setModalObjectId('');
+    setPendingEntry(null);
+  };
+
+  const saveEntry = async (entry: QueuedEntry) => {
+    if (!navigator.onLine) {
+      saveQueue([...loadQueue(), entry]);
+      toast.success('Kein Internet – Eintrag gespeichert, wird automatisch übertragen');
+      resetForm(); onAdded?.(); return;
+    }
+    setLoading(true);
+    try {
+      await addHourEntry(entry);
+      toast.success('Stunden eingetragen');
+      resetForm(); onAdded?.();
+    } catch (err: unknown) {
+      const msg = (err as { message?: string }).message ?? '';
+      if (msg.includes('offline') || msg.includes('network') || msg.includes('unavailable')) {
+        saveQueue([...loadQueue(), entry]);
+        toast.success('Kein Internet – Eintrag gespeichert, wird automatisch übertragen');
+        resetForm(); onAdded?.();
+      } else {
+        setError(`Fehler: ${msg || 'Bitte erneut versuchen.'}`);
+      }
+    } finally { setLoading(false); }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-
-    if (!uid) {
-      setError('Fehler: Benutzer nicht angemeldet. Bitte neu einloggen.');
-      return;
-    }
+    if (!uid) { setError('Fehler: Benutzer nicht angemeldet. Bitte neu einloggen.'); return; }
 
     const selectedObj = objects.find((o) => o.id === objectId);
     const entry: QueuedEntry = {
-      userId: uid,
-      userName: user?.name ?? uid,
+      userId: uid, userName: user?.name ?? uid,
       objectId: objectId || undefined,
-      objectTitle: selectedObj?.title ?? undefined,
-      date,
-      startTime,
-      endTime,
-      breakMinutes: breakMins,
+      objectTitle: selectedObj?.title,
+      date, startTime, endTime, breakMinutes: breakMins,
     };
 
-    if (!navigator.onLine) {
-      const q = loadQueue();
-      saveQueue([...q, entry]);
-      toast.success('Kein Internet – Eintrag wurde gespeichert und wird automatisch übertragen, sobald du wieder online bist');
-      resetForm();
-      onAdded?.();
-      return;
-    }
+    if (objectId) { await saveEntry(entry); return; }
 
-    setLoading(true);
-    try {
-      await addHourEntry(entry);
-      toast.success('Stunden eingetragen');
-      resetForm();
-      onAdded?.();
-    } catch (err: unknown) {
-      const msg = (err as { message?: string }).message ?? '';
-      if (msg.includes('offline') || msg.includes('network') || msg.includes('unavailable')) {
-        const q = loadQueue();
-        saveQueue([...q, entry]);
-        toast.success('Kein Internet – Eintrag wurde gespeichert und wird automatisch übertragen');
-        resetForm();
-        onAdded?.();
-      } else {
-        setError(`Fehler: ${msg || 'Bitte erneut versuchen.'}`);
-      }
-    } finally {
-      setLoading(false);
-    }
+    setPendingEntry(entry);
+    setModalObjectId('');
+    setLocationNote('');
+    setShowLocationModal(true);
+  };
+
+  const handleLocationConfirm = async () => {
+    if (!pendingEntry) return;
+    const modalObj = objects.find((o) => o.id === modalObjectId);
+    await saveEntry({
+      ...pendingEntry,
+      objectId: modalObjectId || undefined,
+      objectTitle: modalObjectId ? modalObj?.title : locationNote.trim() || undefined,
+    });
+    setShowLocationModal(false);
   };
 
   const pendingCount = loadQueue().length;
 
   return (
+    <>
     <Form onSubmit={handleSubmit}>
       {error && <ErrorBox><FiAlertTriangle size={14} />{error}</ErrorBox>}
       {!uid && (
@@ -281,9 +305,12 @@ export const AddHoursForm: React.FC<Props> = ({ onAdded }) => {
       </FormGroup>
 
       <FormGroup>
-        <Label>Objekt (optional)</Label>
+        <Label style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+          Objekt
+          {!objectId && <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#cc2222', boxShadow: '0 0 6px #cc222299', display: 'inline-block', flexShrink: 0 }} />}
+        </Label>
         <Select value={objectId} onChange={(e) => setObjectId(e.target.value)}>
-          <option value="">— Kein Objekt —</option>
+          <option value="">⚠ kein Objekt</option>
           {objects.map((o) => (
             <option key={o.id} value={o.id}>{o.title}</option>
           ))}
@@ -297,11 +324,62 @@ export const AddHoursForm: React.FC<Props> = ({ onAdded }) => {
         </FormGroup>
         <FormGroup style={{ justifyContent: 'flex-end' }}>
           <Label>&nbsp;</Label>
-          <Button type="submit" disabled={loading || totalMins <= 0}>
-            {loading ? 'Speichern…' : 'Stunden eintragen'}
+          <Button type="submit" disabled={loading || totalMins <= 0} style={{ padding: '10px 18px', fontSize: 14 }}>
+            {loading ? <FiRefreshCw size={17} /> : <FiClock size={17} />}
           </Button>
         </FormGroup>
       </Row>
     </Form>
+
+    <Modal
+      isOpen={showLocationModal}
+      onClose={() => setShowLocationModal(false)}
+      title="Wo hast du gearbeitet?"
+    >
+      <FormGroup style={{ marginBottom: 16 }}>
+        <Label style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+          Objekt auswählen
+          {!modalObjectId && <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#cc2222', boxShadow: '0 0 6px #cc222299', display: 'inline-block', flexShrink: 0 }} />}
+        </Label>
+        <Select value={modalObjectId} onChange={(e) => { setModalObjectId(e.target.value); setLocationNote(''); }}>
+          <option value="">⚠ kein Objekt</option>
+          {objects.map((o) => (
+            <option key={o.id} value={o.id}>{o.title}</option>
+          ))}
+        </Select>
+      </FormGroup>
+
+      {!modalObjectId && (
+        <FormGroup style={{ marginBottom: 20 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 7 }}>
+            <Label style={{ margin: 0 }}>Kurzbeschreibung *</Label>
+            <span style={{ fontSize: 11, color: locationNote.length >= 13 ? '#cc2222' : '#555', fontVariantNumeric: 'tabular-nums' }}>
+              {locationNote.length} / 15
+            </span>
+          </div>
+          <Input
+            value={locationNote}
+            onChange={(e) => setLocationNote(e.target.value)}
+            placeholder="z.B. Baustelle FB…"
+            maxLength={15}
+            autoFocus
+          />
+        </FormGroup>
+      )}
+
+      <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+        <Button $variant="secondary" type="button" onClick={() => setShowLocationModal(false)}>
+          Abbrechen
+        </Button>
+        <Button
+          type="button"
+          disabled={loading || (!modalObjectId && !locationNote.trim())}
+          onClick={handleLocationConfirm}
+        >
+          {loading ? 'Speichern…' : 'Eintragen'}
+        </Button>
+      </div>
+    </Modal>
+  </>
   );
 };

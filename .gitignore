@@ -26,3 +26,4 @@ serviceAccountKey.json
 *.sln
 *.sw?
 .env.production
+functions/lib

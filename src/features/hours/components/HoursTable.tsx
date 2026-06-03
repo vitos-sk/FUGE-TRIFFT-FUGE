@@ -201,7 +201,10 @@ const calcMins = (start: string, end: string, brk: number): number => {
   if (!start || !end) return 0;
   const [sh, sm] = start.split(':').map(Number);
   const [eh, em] = end.split(':').map(Number);
-  return Math.max(0, (eh * 60 + em) - (sh * 60 + sm) - brk);
+  let endMins = eh * 60 + em;
+  const startMins = sh * 60 + sm;
+  if (endMins <= startMins) endMins += 24 * 60;
+  return Math.max(0, endMins - startMins - brk);
 };
 
 const formatMinutes = (mins: number): string => {
@@ -229,11 +232,20 @@ export const HoursTable: React.FC<Props> = ({ entries, showWorker = false, onDel
   const [editEnd, setEditEnd] = useState('');
   const [editBreak, setEditBreak] = useState(0);
   const [editObjectId, setEditObjectId] = useState('');
+  const [editLocationText, setEditLocationText] = useState('');
   const [objects, setObjects] = useState<CRMObject[]>([]);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    const unsub = subscribeToObjects((data) => setObjects(data));
+    const unsub = subscribeToObjects((data) => {
+      const active = data.filter((o) => !o.archived);
+      active.sort((a, b) => {
+        const ta = (a.lastActivityAt ?? a.lastNoteAt ?? a.createdAt)?.toDate?.()?.getTime() ?? 0;
+        const tb = (b.lastActivityAt ?? b.lastNoteAt ?? b.createdAt)?.toDate?.()?.getTime() ?? 0;
+        return tb - ta;
+      });
+      setObjects(active);
+    });
     return unsub;
   }, []);
 
@@ -244,6 +256,7 @@ export const HoursTable: React.FC<Props> = ({ entries, showWorker = false, onDel
     setEditEnd(entry.endTime);
     setEditBreak(entry.breakMinutes);
     setEditObjectId(entry.objectId ?? '');
+    setEditLocationText(!entry.objectId && entry.objectTitle ? entry.objectTitle : '');
   };
 
   const handleSave = async () => {
@@ -260,7 +273,9 @@ export const HoursTable: React.FC<Props> = ({ entries, showWorker = false, onDel
         breakMinutes: editBreak,
         totalMinutes,
         objectId: editObjectId || null,
-        objectTitle: selectedObj?.title,
+        objectTitle: editObjectId
+          ? selectedObj?.title
+          : editLocationText.trim() || undefined,
       });
       toast.success('Stunden aktualisiert');
       setEditEntry(null);
@@ -384,14 +399,34 @@ export const HoursTable: React.FC<Props> = ({ entries, showWorker = false, onDel
           </FormGroup>
 
           <FormGroup>
-            <Label>Objekt (optional)</Label>
+            <Label style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+              Objekt
+              {!editObjectId && <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#cc2222', boxShadow: '0 0 6px #cc222299', display: 'inline-block', flexShrink: 0 }} />}
+            </Label>
             <Select value={editObjectId} onChange={(e) => setEditObjectId(e.target.value)}>
-              <option value="">— Kein Objekt —</option>
+              <option value="">⚠ kein Objekt</option>
               {objects.map((o) => (
                 <option key={o.id} value={o.id}>{o.title}</option>
               ))}
             </Select>
           </FormGroup>
+
+          {!editObjectId && (
+            <FormGroup>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 7 }}>
+                <Label style={{ margin: 0 }}>Wo gearbeitet?</Label>
+                <span style={{ fontSize: 11, color: editLocationText.length >= 13 ? '#cc2222' : '#555', fontVariantNumeric: 'tabular-nums' }}>
+                  {editLocationText.length} / 15
+                </span>
+              </div>
+              <Input
+                value={editLocationText}
+                onChange={(e) => setEditLocationText(e.target.value)}
+                placeholder="z.B. Baustelle Freiburg…"
+                maxLength={15}
+              />
+            </FormGroup>
+          )}
 
           <ModalFooter>
             <FooterTotal>{editTotal > 0 ? formatMinutes(editTotal) : '—'}</FooterTotal>

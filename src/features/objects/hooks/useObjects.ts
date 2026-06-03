@@ -10,7 +10,13 @@ export const useObjects = () => {
   useEffect(() => {
     const unsub = subscribeToObjects(
       (data) => {
-        setObjects(data.filter((o) => !o.archived));
+        const active = data.filter((o) => !o.archived);
+        active.sort((a, b) => {
+          const ta = (a.lastActivityAt ?? a.lastNoteAt ?? a.createdAt)?.toDate?.()?.getTime() ?? 0;
+          const tb = (b.lastActivityAt ?? b.lastNoteAt ?? b.createdAt)?.toDate?.()?.getTime() ?? 0;
+          return tb - ta;
+        });
+        setObjects(active);
         setLoading(false);
       },
       (err) => {

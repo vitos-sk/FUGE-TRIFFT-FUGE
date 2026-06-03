@@ -6,6 +6,7 @@ import { de } from 'date-fns/locale';
 import { FiMapPin, FiAlertTriangle, FiMessageSquare, FiCheckSquare, FiCalendar, FiMoreVertical, FiArchive, FiTrash2 } from 'react-icons/fi';
 import { useAuth } from '@shared/hooks/useAuth';
 import { useObjectCard } from '../hooks/useObjectCard';
+import { MapPreview } from '@shared/ui/MapPreview';
 import type { CRMObject } from '@shared/types';
 
 // ─── Animations ───────────────────────────────────────────────────────────────
@@ -267,6 +268,7 @@ export const ObjectCard: React.FC<Props> = ({ object }) => {
       $archiving={archiving}
       onClick={() => !archiving && navigate(`/objects/${object.id}`)}
     >
+      <MapPreview address={object.address} city={object.city} height={140} borderRadiusTop="8px" />
       <CardHeader>
         <CardTop>
           <Title>{object.title}</Title>

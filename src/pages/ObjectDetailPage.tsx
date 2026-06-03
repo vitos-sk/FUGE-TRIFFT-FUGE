@@ -1,7 +1,8 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { FiMapPin, FiX, FiMessageSquare, FiCamera, FiCheckSquare, FiInfo, FiPlus } from 'react-icons/fi';
+import { FiMapPin, FiX, FiMessageSquare, FiCamera, FiCheckSquare, FiInfo, FiPlus, FiCopy, FiCheck } from 'react-icons/fi';
+import { SiGooglemaps } from 'react-icons/si';
 import { Tabs } from '@shared/ui/Tabs';
 import { NotesFeed } from '@features/notes/components/NotesFeed';
 import { PhotoGrid } from '@features/photos/components/PhotoGrid';
@@ -31,6 +32,31 @@ const BackLink = styled(Link)`
 
 const PageHeader = styled.div`
   margin-bottom: 24px;
+`;
+
+const MapsBtn = styled.a`
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #e8e8e8;
+  border: 1px solid rgba(234,67,53,0.35);
+  background: rgba(234,67,53,0.08);
+  border-radius: ${({ theme }) => theme.borderRadiusSm};
+  padding: 7px 13px;
+  transition: all ${({ theme }) => theme.transitions.fast};
+  white-space: nowrap;
+  cursor: pointer;
+
+  &:hover {
+    color: #fff;
+    border-color: rgba(234,67,53,0.7);
+    background: rgba(234,67,53,0.16);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(234,67,53,0.2);
+  }
+  &:active { transform: none; }
 `;
 
 const TitleRow = styled.div`
@@ -150,6 +176,19 @@ const InfoValue = styled.div`
   font-size: 14px;
   color: ${({ theme }) => theme.colors.textPrimary};
   font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+`;
+
+const CopyBtn = styled.button`
+  color: ${({ theme }) => theme.colors.textMuted};
+  padding: 2px;
+  border-radius: 4px;
+  transition: color 0.15s;
+  flex-shrink: 0;
+  &:hover { color: ${({ theme }) => theme.colors.textPrimary}; }
 `;
 
 const AddRow = styled.div`
@@ -220,6 +259,14 @@ const ObjectDetailPage: React.FC = () => {
     checklistPct,
   } = useObjectDetail(id, () => navigate('/'));
 
+  const [copied, setCopied] = useState(false);
+  const copyAddress = () => {
+    if (!object) return;
+    navigator.clipboard.writeText(`${object.address}, ${object.city}`);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   useEffect(() => {
     if (photoParam) setTab('photos');
     else if (noteParam) setTab('notes');
@@ -250,6 +297,14 @@ const ObjectDetailPage: React.FC = () => {
           </div>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
             <Badge $status={object.status}>{statusLabels[object.status]}</Badge>
+            <MapsBtn
+              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${object.address}, ${object.city}`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <SiGooglemaps size={15} color="#EA4335" />
+              Google Maps
+            </MapsBtn>
           </div>
         </TitleRow>
       </PageHeader>
@@ -284,26 +339,22 @@ const ObjectDetailPage: React.FC = () => {
                     style={{ accentColor: '#22a35a', width: 17, height: 17, cursor: 'pointer', flexShrink: 0 }}
                   />
                   <CheckText $done={item.done}>{item.text}</CheckText>
-                  {isAdmin && (
-                    <Button $variant="ghost" $size="sm" onClick={() => removeCheckItem(item.id)}
-                      style={{ color: '#777', flexShrink: 0 }}><FiX size={14} /></Button>
-                  )}
+                  <Button $variant="ghost" $size="sm" onClick={() => removeCheckItem(item.id)}
+                    style={{ color: '#555', flexShrink: 0 }}><FiX size={14} /></Button>
                 </CheckItem>
               ))}
             </CheckList>
-            {isAdmin && (
-              <AddRow>
-                <Input
-                  value={newCheckItem}
-                  onChange={(e) => setNewCheckItem(e.target.value)}
-                  placeholder="Aufgabe hinzufügen…"
-                  onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addCheckItem())}
-                />
-                <Button onClick={addCheckItem} disabled={!newCheckItem.trim()} title="Hinzufügen" style={{ flexShrink: 0, padding: '10px 13px' }}>
-                  <FiPlus size={15} />
-                </Button>
-              </AddRow>
-            )}
+            <AddRow>
+              <Input
+                value={newCheckItem}
+                onChange={(e) => setNewCheckItem(e.target.value)}
+                placeholder="Aufgabe hinzufügen…"
+                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addCheckItem())}
+              />
+              <Button onClick={addCheckItem} disabled={!newCheckItem.trim()} title="Hinzufügen" style={{ flexShrink: 0, padding: '10px 13px' }}>
+                <FiPlus size={15} />
+              </Button>
+            </AddRow>
           </div>
         )}
 
@@ -320,13 +371,14 @@ const ObjectDetailPage: React.FC = () => {
                   <Badge $status={object.status}>{statusLabels[object.status]}</Badge>
                 </InfoValue>
               </InfoItem>
-              <InfoItem>
+              <InfoItem style={{ gridColumn: '1 / -1' }}>
                 <InfoLabel>Adresse</InfoLabel>
-                <InfoValue>{object.address}</InfoValue>
-              </InfoItem>
-              <InfoItem>
-                <InfoLabel>Stadt</InfoLabel>
-                <InfoValue>{object.city}</InfoValue>
+                <InfoValue>
+                  <span>{object.address}, {object.city}</span>
+                  <CopyBtn onClick={copyAddress} title="Adresse kopieren">
+                    {copied ? <FiCheck size={14} color="#22a35a" /> : <FiCopy size={14} />}
+                  </CopyBtn>
+                </InfoValue>
               </InfoItem>
               <InfoItem>
                 <InfoLabel>Deadline</InfoLabel>
