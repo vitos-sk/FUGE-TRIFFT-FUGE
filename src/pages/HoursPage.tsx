@@ -23,18 +23,16 @@ function buildReport(entries: WorkHourEntry[], periodLabel: string, workerLabel:
   const lines = sorted.map((e) => {
     const dateStr = format(new Date(e.date + 'T12:00:00'), 'dd.MM. EEE', { locale: de });
     const time    = `${e.startTime}–${e.endTime}`;
-    const pause   = e.breakMinutes > 0 ? `Pause ${e.breakMinutes} Min` : 'keine Pause';
+    const pause   = e.breakMinutes > 0 ? `-${e.breakMinutes}min` : '';
     const obj     = e.objectTitle || '–';
-    const h       = Math.floor(e.totalMinutes / 60);
-    const m       = e.totalMinutes % 60;
-    const total   = `${h}:${String(m).padStart(2, '0')} h`;
-    return `${dateStr} | ${time} | ${pause} | ${obj} | ${total}`;
+    const parts   = [dateStr, time, pause, obj].filter(Boolean);
+    return parts.join(' · ');
   });
 
   const totalMins = entries.reduce((acc, e) => acc + (e.totalMinutes || 0), 0);
   const th = Math.floor(totalMins / 60);
   const tm = totalMins % 60;
-  const footer = `Gesamt: ${th}:${String(tm).padStart(2, '0')} h  (${entries.length} Einträge)`;
+  const footer = `Gesamt: ${th}:${String(tm).padStart(2, '0')} h`;
 
   return `${header}\n\n${lines.join('\n')}\n\n${footer}`;
 }
@@ -645,10 +643,12 @@ const HoursPage: React.FC = () => {
             {copied ? <FiCheck size={15} /> : <FiCopy size={15} />}
             {copied ? 'Kopiert!' : 'Bericht kopieren'}
           </ActionBtn>
-          <ActionBtn $variant="wage" onClick={() => setShowWageModal(true)}>
-            <LuCalculator size={14} />
-            € Lohn berechnen
-          </ActionBtn>
+          {isAdmin && (
+            <ActionBtn $variant="wage" onClick={() => setShowWageModal(true)}>
+              <LuCalculator size={14} />
+              € Lohn berechnen
+            </ActionBtn>
+          )}
         </ActionRow>
       )}
 
