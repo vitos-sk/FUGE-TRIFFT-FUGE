@@ -1,19 +1,37 @@
-import React, { useEffect, useState } from 'react';
-import styled from 'styled-components';
+import React, { useEffect, useState } from "react";
+import styled from "styled-components";
 import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, Legend,
-} from 'recharts';
-import { onSnapshot, collection, query, where } from 'firebase/firestore';
-import { subDays, format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
-import { de } from 'date-fns/locale';
-import { db } from '@shared/services/firebase';
-import { getAllUsers } from '@shared/services/authService';
-import { useObjects } from '@features/objects/hooks/useObjects';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@shared/hooks/useAuth';
-import { Spinner } from '@shared/ui/Spinner';
-import type { WorkHourEntry, AppUser } from '@shared/types';
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
+} from "recharts";
+import { onSnapshot, collection, query, where } from "firebase/firestore";
+import {
+  subDays,
+  format,
+  startOfWeek,
+  endOfWeek,
+  startOfMonth,
+  endOfMonth,
+  eachDayOfInterval,
+} from "date-fns";
+import { de } from "date-fns/locale";
+import { db } from "@shared/services/firebase";
+import { getAllUsers } from "@shared/services/authService";
+import { useObjects } from "@features/objects/hooks/useObjects";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@shared/hooks/useAuth";
+import { Spinner } from "@shared/ui/Spinner";
+import { OfflineBanner } from "@shared/ui/OfflineBanner";
+import { useOnlineStatus } from "@shared/hooks/useOnlineStatus";
+import type { WorkHourEntry, AppUser } from "@shared/types";
 
 // ─── Styled ────────────────────────────────────────────────────────────────────
 
@@ -44,8 +62,12 @@ const CardsRow = styled.div`
   gap: 12px;
   margin-bottom: 24px;
 
-  @media (max-width: 900px) { grid-template-columns: repeat(2, 1fr); }
-  @media (max-width: 480px) { grid-template-columns: 1fr 1fr; }
+  @media (max-width: 900px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr 1fr;
+  }
 `;
 
 const StatCard = styled.div`
@@ -57,7 +79,7 @@ const StatCard = styled.div`
   overflow: hidden;
 
   &::after {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     left: 0;
@@ -98,7 +120,9 @@ const ChartsGrid = styled.div`
   grid-template-columns: 1fr 1fr;
   gap: 16px;
 
-  @media (max-width: 900px) { grid-template-columns: 1fr; }
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+  }
 `;
 
 const ChartSection = styled.div`
@@ -136,7 +160,7 @@ const EmptyState = styled.p`
   padding: 60px 0;
 `;
 
-const COLORS = ['#cc2222', '#c9a84c', '#22a35a', '#3b82f6', '#8b5cf6', '#f97316'];
+const COLORS = ["#cc2222", "#c9a84c", "#22a35a", "#3b82f6", "#8b5cf6", "#f97316"];
 
 // ─── Custom Tooltips ───────────────────────────────────────────────────────────
 
@@ -145,7 +169,7 @@ const TooltipBox = styled.div`
   border: 1px solid #2a2a2a;
   border-radius: 6px;
   padding: 9px 13px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
   pointer-events: none;
 `;
 
@@ -187,12 +211,15 @@ const TrendBadge = styled.span<{ $up: boolean }>`
   font-weight: 700;
   padding: 2px 7px;
   border-radius: 9999px;
-  background: ${({ $up }) => $up ? 'rgba(34,163,90,0.12)' : 'rgba(204,34,34,0.1)'};
-  color: ${({ $up }) => $up ? '#22a35a' : '#cc2222'};
+  background: ${({ $up }) => ($up ? "rgba(34,163,90,0.12)" : "rgba(204,34,34,0.1)")};
+  color: ${({ $up }) => ($up ? "#22a35a" : "#cc2222")};
 `;
 
-
-const BarTooltip = ({ active, payload, label }: {
+const BarTooltip = ({
+  active,
+  payload,
+  label,
+}: {
   active?: boolean;
   payload?: Array<{ value: number }>;
   label?: string;
@@ -204,14 +231,21 @@ const BarTooltip = ({ active, payload, label }: {
   return (
     <TooltipBox>
       <TooltipLabel>{label}</TooltipLabel>
-      <TooltipValue>{h}:{String(m).padStart(2, '0')} Std.</TooltipValue>
+      <TooltipValue>
+        {h}:{String(m).padStart(2, "0")} Std.
+      </TooltipValue>
     </TooltipBox>
   );
 };
 
-const WeekTooltip = ({ active, payload }: {
+const WeekTooltip = ({
+  active,
+  payload,
+}: {
   active?: boolean;
-  payload?: Array<{ payload: { day: string; fullDate: string; minutes: number; workers: number } }>;
+  payload?: Array<{
+    payload: { day: string; fullDate: string; minutes: number; workers: number };
+  }>;
 }) => {
   if (!active || !payload?.length) return null;
   const { day, fullDate, minutes, workers } = payload[0].payload;
@@ -219,22 +253,31 @@ const WeekTooltip = ({ active, payload }: {
   const m = minutes % 60;
   return (
     <TooltipBox>
-      <TooltipLabel>{day}, {fullDate}</TooltipLabel>
+      <TooltipLabel>
+        {day}, {fullDate}
+      </TooltipLabel>
       {minutes > 0 ? (
         <>
-          <TooltipValue>{h}:{String(m).padStart(2, '0')} Std.</TooltipValue>
+          <TooltipValue>
+            {h}:{String(m).padStart(2, "0")} Std.
+          </TooltipValue>
           {workers > 0 && (
-            <TooltipSub>{workers} {workers === 1 ? 'Person' : 'Personen'} aktiv</TooltipSub>
+            <TooltipSub>
+              {workers} {workers === 1 ? "Person" : "Personen"} aktiv
+            </TooltipSub>
           )}
         </>
       ) : (
-        <TooltipValue style={{ color: '#333' }}>Kein Eintrag</TooltipValue>
+        <TooltipValue style={{ color: "#333" }}>Kein Eintrag</TooltipValue>
       )}
     </TooltipBox>
   );
 };
 
-const PieTooltip = ({ active, payload }: {
+const PieTooltip = ({
+  active,
+  payload,
+}: {
   active?: boolean;
   payload?: Array<{ name: string; value: number; payload: { hours: number } }>;
 }) => {
@@ -258,9 +301,13 @@ const DashboardPage: React.FC = () => {
   const [hours, setHours] = useState<WorkHourEntry[]>([]);
   const [users, setUsers] = useState<AppUser[]>([]);
   const [loading, setLoading] = useState(true);
+  const isOnline = useOnlineStatus();
 
   useEffect(() => {
-    if (!isAdmin) { navigate('/'); return; }
+    if (!isAdmin) {
+      navigate("/");
+      return;
+    }
   }, [isAdmin, navigate]);
 
   useEffect(() => {
@@ -268,53 +315,59 @@ const DashboardPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const from = format(subDays(new Date(), 29), 'yyyy-MM-dd');
-    const q = query(collection(db, 'workHours'), where('date', '>=', from));
+    const from = format(subDays(new Date(), 29), "yyyy-MM-dd");
+    const q = query(collection(db, "workHours"), where("date", ">=", from));
     const unsub = onSnapshot(q, (snap) => {
-      setHours(snap.docs.map((d) => ({ id: d.id, ...d.data() } as WorkHourEntry)));
+      setHours(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as WorkHourEntry));
       setLoading(false);
     });
     return unsub;
   }, []);
 
   if (loading) {
+    if (!isOnline) {
+      return (
+        <OfflineBanner message="Kein Internet – Dashboard kann nicht geladen werden" />
+      );
+    }
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', padding: 80 }}>
+      <div style={{ display: "flex", justifyContent: "center", padding: 80 }}>
         <Spinner size={32} />
       </div>
     );
   }
 
   const now = new Date();
-  const today = format(now, 'yyyy-MM-dd');
-  const weekStart = format(startOfWeek(now, { locale: de }), 'yyyy-MM-dd');
-  const weekEnd = format(endOfWeek(now, { locale: de }), 'yyyy-MM-dd');
-  const monthStart = format(startOfMonth(now), 'yyyy-MM-dd');
-  const monthEnd = format(endOfMonth(now), 'yyyy-MM-dd');
-  const currentMonth = format(now, 'MMMM yyyy', { locale: de });
+  const today = format(now, "yyyy-MM-dd");
+  const weekStart = format(startOfWeek(now, { locale: de }), "yyyy-MM-dd");
+  const weekEnd = format(endOfWeek(now, { locale: de }), "yyyy-MM-dd");
+  const monthStart = format(startOfMonth(now), "yyyy-MM-dd");
+  const monthEnd = format(endOfMonth(now), "yyyy-MM-dd");
+  const currentMonth = format(now, "MMMM yyyy", { locale: de });
 
-  const todayWorkers = new Set(
-    hours.filter((e) => e.date === today).map((e) => e.userId)
-  ).size;
+  const todayWorkers = new Set(hours.filter((e) => e.date === today).map((e) => e.userId))
+    .size;
 
   const weekMins = hours
     .filter((e) => e.date >= weekStart && e.date <= weekEnd)
     .reduce((acc, e) => acc + (e.totalMinutes || 0), 0);
 
-  const activeObjects = objects.filter((o) => o.status === 'new' || o.status === 'in_progress').length;
-  const totalWorkers = users.filter((u) => u.role === 'worker').length;
+  const activeObjects = objects.filter(
+    (o) => o.status === "new" || o.status === "in_progress",
+  ).length;
+  const totalWorkers = users.filter((u) => u.role === "worker").length;
 
   // Bar chart: this week day-by-day
   const weeklyData = eachDayOfInterval({
     start: startOfWeek(now, { locale: de }),
     end: endOfWeek(now, { locale: de }),
   }).map((day) => {
-    const dayStr = format(day, 'yyyy-MM-dd');
+    const dayStr = format(day, "yyyy-MM-dd");
     const dayHours = hours.filter((e) => e.date === dayStr);
     const mins = dayHours.reduce((acc, e) => acc + (e.totalMinutes || 0), 0);
     return {
-      day: format(day, 'EEE', { locale: de }),
-      fullDate: format(day, 'dd.MM.'),
+      day: format(day, "EEE", { locale: de }),
+      fullDate: format(day, "dd.MM."),
       minutes: mins,
       workers: new Set(dayHours.map((e) => e.userId)).size,
       isToday: dayStr === today,
@@ -326,8 +379,11 @@ const DashboardPage: React.FC = () => {
     .filter((e) => e.date >= weekStart && e.date <= weekEnd)
     .reduce((acc, e) => acc + (e.totalMinutes || 0), 0);
 
-  const lastWeekStart = format(startOfWeek(subDays(now, 7), { locale: de }), 'yyyy-MM-dd');
-  const lastWeekEnd = format(endOfWeek(subDays(now, 7), { locale: de }), 'yyyy-MM-dd');
+  const lastWeekStart = format(
+    startOfWeek(subDays(now, 7), { locale: de }),
+    "yyyy-MM-dd",
+  );
+  const lastWeekEnd = format(endOfWeek(subDays(now, 7), { locale: de }), "yyyy-MM-dd");
   const lastWeekMins = hours
     .filter((e) => e.date >= lastWeekStart && e.date <= lastWeekEnd)
     .reduce((acc, e) => acc + (e.totalMinutes || 0), 0);
@@ -356,17 +412,23 @@ const DashboardPage: React.FC = () => {
     <>
       <Header>
         <PageTitle>Dashboard</PageTitle>
-        <DateTag>{format(now, 'dd. MMMM yyyy', { locale: de })}</DateTag>
+        <DateTag>{format(now, "dd. MMMM yyyy", { locale: de })}</DateTag>
       </Header>
 
       <CardsRow>
         <StatCard>
           <StatLabel>Heute aktiv</StatLabel>
-          <StatValue>{todayWorkers}<StatUnit>Pers.</StatUnit></StatValue>
+          <StatValue>
+            {todayWorkers}
+            <StatUnit>Pers.</StatUnit>
+          </StatValue>
         </StatCard>
         <StatCard>
           <StatLabel>Stunden diese Woche</StatLabel>
-          <StatValue>{(weekMins / 60).toFixed(1)}<StatUnit>Std.</StatUnit></StatValue>
+          <StatValue>
+            {(weekMins / 60).toFixed(1)}
+            <StatUnit>Std.</StatUnit>
+          </StatValue>
         </StatCard>
         <StatCard>
           <StatLabel>Aktive Objekte</StatLabel>
@@ -385,11 +447,13 @@ const DashboardPage: React.FC = () => {
               <ChartTitle>Diese Woche</ChartTitle>
               <WeekSummary style={{ marginTop: 6 }}>
                 <WeekTotal>
-                  {Math.floor(thisWeekMins / 60)}:{String(thisWeekMins % 60).padStart(2, '0')} Std.
+                  {Math.floor(thisWeekMins / 60)}:
+                  {String(thisWeekMins % 60).padStart(2, "0")} Std.
                 </WeekTotal>
                 {lastWeekMins > 0 && (
                   <TrendBadge $up={weekDiffMins >= 0}>
-                    {weekDiffMins >= 0 ? '↑' : '↓'} {weekDiffH}:{String(weekDiffM).padStart(2, '0')}h vs. VW
+                    {weekDiffMins >= 0 ? "↑" : "↓"} {weekDiffH}:
+                    {String(weekDiffM).padStart(2, "0")}h vs. VW
                   </TrendBadge>
                 )}
               </WeekSummary>
@@ -397,17 +461,35 @@ const DashboardPage: React.FC = () => {
             <ChartSub>{format(now, "'KW' w", { locale: de })}</ChartSub>
           </ChartHeader>
           <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={weeklyData} margin={{ top: 4, right: 4, left: -24, bottom: 0 }}>
+            <BarChart
+              data={weeklyData}
+              margin={{ top: 4, right: 4, left: -24, bottom: 0 }}
+            >
               <XAxis
                 dataKey="day"
                 tick={({ x, y, payload, index }) => {
                   const d = weeklyData[index];
                   return (
                     <g transform={`translate(${x},${y})`}>
-                      <text x={0} y={0} dy={12} textAnchor="middle" fill={d.isToday ? '#cc2222' : '#3a3a3a'} fontSize={11} fontWeight={d.isToday ? 700 : 500}>
+                      <text
+                        x={0}
+                        y={0}
+                        dy={12}
+                        textAnchor="middle"
+                        fill={d.isToday ? "#cc2222" : "#3a3a3a"}
+                        fontSize={11}
+                        fontWeight={d.isToday ? 700 : 500}
+                      >
                         {payload.value}
                       </text>
-                      <text x={0} y={0} dy={23} textAnchor="middle" fill="#2a2a2a" fontSize={9}>
+                      <text
+                        x={0}
+                        y={0}
+                        dy={23}
+                        textAnchor="middle"
+                        fill="#2a2a2a"
+                        fontSize={9}
+                      >
                         {d.fullDate}
                       </text>
                     </g>
@@ -418,17 +500,28 @@ const DashboardPage: React.FC = () => {
                 height={34}
               />
               <YAxis
-                tick={{ fill: '#2a2a2a', fontSize: 10 }}
+                tick={{ fill: "#2a2a2a", fontSize: 10 }}
                 tickLine={false}
                 axisLine={false}
                 tickFormatter={(v) => `${Math.floor(v / 60)}h`}
               />
-              <Tooltip content={<WeekTooltip />} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
+              <Tooltip
+                content={<WeekTooltip />}
+                cursor={{ fill: "rgba(255,255,255,0.03)" }}
+              />
               <Bar dataKey="minutes" radius={[4, 4, 0, 0]} maxBarSize={40}>
                 {weeklyData.map((d, i) => (
                   <Cell
                     key={i}
-                    fill={d.isToday ? '#cc2222' : d.isFuture ? '#1a1a1a' : d.minutes > 0 ? '#7a1a1a' : '#161616'}
+                    fill={
+                      d.isToday
+                        ? "#cc2222"
+                        : d.isFuture
+                          ? "#1a1a1a"
+                          : d.minutes > 0
+                            ? "#7a1a1a"
+                            : "#161616"
+                    }
                     opacity={d.isFuture ? 0.4 : 1}
                   />
                 ))}
@@ -440,7 +533,7 @@ const DashboardPage: React.FC = () => {
         <ChartSection>
           <ChartHeader>
             <ChartTitle>Stunden pro Mitarbeiter</ChartTitle>
-            <ChartSub style={{ textTransform: 'capitalize' }}>{currentMonth}</ChartSub>
+            <ChartSub style={{ textTransform: "capitalize" }}>{currentMonth}</ChartSub>
           </ChartHeader>
           {workerData.length === 0 ? (
             <EmptyState>Keine Daten für diesen Monat</EmptyState>
@@ -467,7 +560,7 @@ const DashboardPage: React.FC = () => {
                   iconType="circle"
                   iconSize={7}
                   formatter={(value) => (
-                    <span style={{ color: '#666', fontSize: 11 }}>{value}</span>
+                    <span style={{ color: "#666", fontSize: 11 }}>{value}</span>
                   )}
                 />
               </PieChart>
@@ -481,7 +574,7 @@ const DashboardPage: React.FC = () => {
               >
                 <XAxis
                   type="number"
-                  tick={{ fill: '#3a3a3a', fontSize: 10 }}
+                  tick={{ fill: "#3a3a3a", fontSize: 10 }}
                   tickLine={false}
                   axisLine={false}
                   tickFormatter={(v) => `${Math.floor(v / 60)}h`}
@@ -489,12 +582,15 @@ const DashboardPage: React.FC = () => {
                 <YAxis
                   type="category"
                   dataKey="name"
-                  tick={{ fill: '#666', fontSize: 11 }}
+                  tick={{ fill: "#666", fontSize: 11 }}
                   tickLine={false}
                   axisLine={false}
                   width={90}
                 />
-                <Tooltip content={<BarTooltip />} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
+                <Tooltip
+                  content={<BarTooltip />}
+                  cursor={{ fill: "rgba(255,255,255,0.03)" }}
+                />
                 <Bar dataKey="minutes" radius={[0, 3, 3, 0]} maxBarSize={20}>
                   {workerData.map((_, i) => (
                     <Cell key={i} fill={COLORS[i % COLORS.length]} />

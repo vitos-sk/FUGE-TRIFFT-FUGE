@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { FiDownload, FiCopy, FiCheck, FiList, FiPlus } from 'react-icons/fi';
+import { FiDownload, FiCopy, FiCheck, FiList } from 'react-icons/fi';
+import { HiPlus } from 'react-icons/hi';
 import { LuCalculator } from 'react-icons/lu';
 import styled, { css } from 'styled-components';
 import { format, startOfWeek, endOfWeek } from 'date-fns';
@@ -8,9 +9,10 @@ import { AddHoursForm } from '@features/hours/components/AddHoursForm';
 import { HoursTable } from '@features/hours/components/HoursTable';
 import { Button } from '@shared/ui/Button';
 import { Select, Input, FormGroup, Label } from '@shared/ui/Input';
-import { Spinner } from '@shared/ui/Spinner';
 import { Modal } from '@shared/ui/Modal';
 import { useHoursPage } from '@features/hours/hooks/useHoursPage';
+import { useOnlineStatus } from '@shared/hooks/useOnlineStatus';
+import { OfflineBanner } from '@shared/ui/OfflineBanner';
 import type { WorkHourEntry } from '@shared/types';
 
 // ─── Report builder ───────────────────────────────────────────────────────────
@@ -306,21 +308,21 @@ const Tab = styled.button<{ $active: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
-  padding: 11px 24px;
-  font-size: 13px;
-  font-weight: 700;
-  border-radius: 7px;
-  border: none;
+  gap: 6px;
+  padding: 4px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 6px;
+  border: 1px solid transparent;
   cursor: pointer;
   white-space: nowrap;
-  transition: all 0.18s ease;
-  min-height: 44px;
+  transition: all 0.15s ease;
 
-  ${({ $active, theme }) => $active ? css`
-    background: ${theme.colors.accent};
-    color: #fff;
-    box-shadow: 0 2px 12px ${theme.colors.accent}55;
+  ${({ $active }) => $active ? css`
+    background: rgba(255,255,255,0.1);
+    border-color: rgba(255,255,255,0.14);
+    color: rgba(255,255,255,0.9);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
   ` : css`
     background: transparent;
     color: rgba(255,255,255,0.3);
@@ -328,14 +330,14 @@ const Tab = styled.button<{ $active: boolean }>`
 
   &:hover:not(:disabled) {
     ${({ $active }) => !$active && css`
-      color: rgba(255,255,255,0.65);
-      background: rgba(255,255,255,0.06);
+      color: rgba(255,255,255,0.55);
+      background: rgba(255,255,255,0.05);
     `}
   }
 
   @media (max-width: 480px) {
-    font-size: 14px;
-    padding: 13px 16px;
+    font-size: 13px;
+    padding: 5px 14px;
   }
 `;
 
@@ -384,15 +386,23 @@ const PeriodBtn = styled.button<{ $active: boolean }>`
   font-size: 11px;
   font-weight: 600;
   border-radius: 5px;
-  border: none;
-  background: ${({ $active, theme }) => ($active ? theme.colors.accent : 'transparent')};
-  color: ${({ $active, theme }) => ($active ? '#fff' : theme.colors.textSecondary)};
+  border: 1px solid transparent;
   transition: all ${({ theme }) => theme.transitions.fast};
   cursor: pointer;
   white-space: nowrap;
   text-align: center;
   overflow: hidden;
   text-overflow: ellipsis;
+
+  ${({ $active }) => $active ? css`
+    background: rgba(255,255,255,0.1);
+    border-color: rgba(255,255,255,0.14);
+    color: rgba(255,255,255,0.9);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+  ` : css`
+    background: transparent;
+    color: rgba(255,255,255,0.35);
+  `}
 
   @media (max-width: 480px) {
     font-size: 9px;
@@ -401,16 +411,28 @@ const PeriodBtn = styled.button<{ $active: boolean }>`
   }
 
   &:hover:not([disabled]) {
-    color: ${({ $active, theme }) => $active ? '#fff' : theme.colors.textPrimary};
-    background: ${({ $active, theme }) => $active ? theme.colors.accent : 'rgba(255,255,255,0.06)'};
+    ${({ $active }) => !$active && css`
+      color: rgba(255,255,255,0.6);
+      background: rgba(255,255,255,0.05);
+    `}
   }
 `;
 
-const CustomDateRow = styled.div`
-  display: flex;
-  align-items: flex-end;
-  gap: 8px;
-  flex-wrap: wrap;
+const MonthBtnWrap = styled.div`
+  position: relative;
+`;
+
+const MonthDropdown = styled.div`
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 50;
+  background: ${({ theme }) => theme.colors.bgCard};
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+  padding: 8px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.55);
+  min-width: 150px;
 `;
 
 const TotalChip = styled.div`
@@ -460,8 +482,8 @@ const PeriodWrapper = styled.div`
 
 const ExportRow = styled.div`
   display: flex;
-  gap: 8px;
-  align-items: flex-end;
+  gap: 4px;
+  align-items: center;
   flex-shrink: 0;
   margin-left: auto;
 
@@ -489,42 +511,112 @@ const ActionBtn = styled.button<{ $variant: 'copy' | 'wage'; $done?: boolean }>`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
-  padding: 7px 16px;
+  gap: 6px;
+  padding: 4px 16px;
   font-size: 12px;
-  font-weight: 700;
-  border-radius: 7px;
+  font-weight: 600;
+  border-radius: 6px;
   cursor: pointer;
   white-space: nowrap;
   transition: all 0.15s;
-  min-height: 34px;
 
   @media (max-width: 480px) {
     flex: 1;
     min-width: 0;
-    padding: 9px 12px;
-    font-size: 12px;
-    min-height: 40px;
+    padding: 5px 14px;
+    font-size: 13px;
   }
 
-  ${({ $variant, $done, theme }) => $variant === 'copy' && !$done && css`
-    border: 1px solid rgba(255,255,255,0.12);
-    background: rgba(255,255,255,0.04);
-    color: ${theme.colors.textSecondary};
-    &:hover { background: rgba(255,255,255,0.09); color: ${theme.colors.textPrimary}; border-color: rgba(255,255,255,0.2); }
+  ${({ $variant, $done }) => $variant === 'copy' && !$done && css`
+    border: 1px solid rgba(255,255,255,0.14);
+    background: rgba(255,255,255,0.07);
+    color: rgba(255,255,255,0.7);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+    &:hover { background: rgba(255,255,255,0.11); color: rgba(255,255,255,0.9); }
   `}
   ${({ $variant, $done }) => $variant === 'copy' && $done && css`
     border: 1px solid rgba(34,163,90,0.45);
     background: rgba(34,163,90,0.1);
     color: #22a35a;
   `}
-  ${({ $variant, theme }) => $variant === 'wage' && css`
-    border: 1px solid ${theme.colors.accent}55;
-    background: rgba(204,34,34,0.07);
-    color: ${theme.colors.accent};
-    &:hover { background: rgba(204,34,34,0.14); border-color: ${theme.colors.accent}88; }
+  ${({ $variant }) => $variant === 'wage' && css`
+    border: 1px solid rgba(255,255,255,0.14);
+    background: rgba(255,255,255,0.07);
+    color: rgba(255,255,255,0.7);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+    &:hover { background: rgba(255,255,255,0.11); color: rgba(255,255,255,0.9); }
   `}
 `;
+
+// ─── Skeleton ─────────────────────────────────────────────────────────────────
+
+const SkeletonWrap = styled.div`
+  border-radius: ${({ theme }) => theme.borderRadius};
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.06);
+`;
+
+const SkeletonRow = styled.div<{ $w?: string }>`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  &:last-child { border-bottom: none; }
+`;
+
+const SkeletonCell = styled.div<{ $w?: string; $h?: string }>`
+  height: ${({ $h }) => $h ?? '11px'};
+  width: ${({ $w }) => $w ?? '80px'};
+  border-radius: 5px;
+  background: linear-gradient(90deg,
+    rgba(255,255,255,0.04) 0%,
+    rgba(255,255,255,0.08) 50%,
+    rgba(255,255,255,0.04) 100%
+  );
+  background-size: 200% 100%;
+  animation: skshimmer 1.6s ease-in-out infinite;
+  flex-shrink: 0;
+
+  @keyframes skshimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+`;
+
+const RefreshDot = styled.span`
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.25);
+  animation: pulse 1.2s ease-in-out infinite;
+  margin-left: 6px;
+  vertical-align: middle;
+
+  @keyframes pulse {
+    0%, 100% { opacity: 0.25; }
+    50%       { opacity: 0.7; }
+  }
+`;
+
+const SKELETON_ROWS = 5;
+
+function TableSkeleton() {
+  return (
+    <SkeletonWrap>
+      {Array.from({ length: SKELETON_ROWS }).map((_, i) => (
+        <SkeletonRow key={i}>
+          <SkeletonCell $w="60px" />
+          <SkeletonCell $w="90px" />
+          <SkeletonCell $w="70px" />
+          <SkeletonCell $w="110px" style={{ flex: 1, maxWidth: 160 }} />
+          <SkeletonCell $w="44px" style={{ marginLeft: 'auto' }} />
+        </SkeletonRow>
+      ))}
+    </SkeletonWrap>
+  );
+}
 
 const HoursPage: React.FC = () => {
   const {
@@ -534,13 +626,14 @@ const HoursPage: React.FC = () => {
     users,
     selectedUser, setSelectedUser,
     range, setRange,
-    customFrom, setCustomFrom,
-    customTo, setCustomTo,
+    pickedMonth, setPickedMonth,
     loading,
+    refreshing,
     exportMonth, setExportMonth,
     load,
     exportToExcel,
   } = useHoursPage();
+  const isOnline = useOnlineStatus();
 
   const [copied, setCopied] = useState(false);
   const [showWageModal, setShowWageModal] = useState(false);
@@ -583,8 +676,9 @@ const HoursPage: React.FC = () => {
       const ws = startOfWeek(now, { locale: de });
       const we = endOfWeek(now, { locale: de });
       periodLabel = `${format(ws, 'dd.MM.')}–${format(we, 'dd.MM.yyyy')}`;
-    } else if (range === 'custom' && customFrom && customTo) {
-      periodLabel = `${customFrom} – ${customTo}`;
+    } else if (range === 'pick') {
+      const [y, m] = pickedMonth.split('-').map(Number);
+      periodLabel = format(new Date(y, m - 1), 'MMMM yyyy', { locale: de });
     } else {
       periodLabel = format(now, 'yyyy');
     }
@@ -621,11 +715,11 @@ const HoursPage: React.FC = () => {
           {isAdmin ? (
             <>
               <Tab $active={tab === 'view'} onClick={() => setTab('view')}><FiList size={15} />Übersicht</Tab>
-              <Tab $active={tab === 'add'} onClick={() => setTab('add')}><FiPlus size={15} />Eintragen</Tab>
+              <Tab $active={tab === 'add'} onClick={() => setTab('add')}><HiPlus size={17} />Eintragen</Tab>
             </>
           ) : (
             <>
-              <Tab $active={tab === 'add'} onClick={() => setTab('add')}><FiPlus size={15} />Eintragen</Tab>
+              <Tab $active={tab === 'add'} onClick={() => setTab('add')}><HiPlus size={17} />Eintragen</Tab>
               <Tab $active={tab === 'view'} onClick={() => setTab('view')}><FiList size={15} />Übersicht</Tab>
             </>
           )}
@@ -686,54 +780,51 @@ const HoursPage: React.FC = () => {
                 <PeriodBtn $active={range === 'month'} onClick={() => setRange('month')}>Dieser Monat</PeriodBtn>
                 <PeriodBtn $active={range === 'week'} onClick={() => setRange('week')}>Diese Woche</PeriodBtn>
                 <PeriodBtn $active={range === 'all'} onClick={() => setRange('all')}>Alle</PeriodBtn>
-                <PeriodBtn $active={range === 'custom'} onClick={() => setRange('custom')}>Eigener</PeriodBtn>
+                <MonthBtnWrap>
+                  <PeriodBtn $active={range === 'pick'} onClick={() => setRange(range === 'pick' ? 'month' : 'pick')} style={{ width: '100%' }}>Monat ▾</PeriodBtn>
+                  {range === 'pick' && (
+                    <>
+                      <div onClick={() => setRange('month')} style={{ position: 'fixed', inset: 0, zIndex: 49 }} />
+                      <MonthDropdown>
+                        <Input
+                          type="month"
+                          value={pickedMonth}
+                          onChange={(e) => setPickedMonth(e.target.value)}
+                          style={{ width: '100%', fontSize: 13, padding: '6px 10px' }}
+                        />
+                      </MonthDropdown>
+                    </>
+                  )}
+                </MonthBtnWrap>
               </PeriodGroup>
             </PeriodWrapper>
 
             {isAdmin && (
               <ExportRow>
-                <FormGroup style={{ margin: 0 }}>
-                  <Label>Excel-Export (Monat)</Label>
-                  <Input
-                    type="month"
-                    value={exportMonth}
-                    onChange={(e) => setExportMonth(e.target.value)}
-                    style={{ minWidth: 150 }}
-                  />
-                </FormGroup>
-                <FormGroup style={{ margin: 0 }}>
-                  <Label style={{ visibility: 'hidden', userSelect: 'none' }}>_</Label>
-                  <Button onClick={exportToExcel} title="Excel exportieren" style={{ padding: '10px 13px', width: '100%' }}>
-                    <FiDownload size={16} />
-                  </Button>
-                </FormGroup>
+                <Input
+                  type="month"
+                  value={exportMonth}
+                  onChange={(e) => setExportMonth(e.target.value)}
+                  style={{ padding: '7px 8px', fontSize: 11, minWidth: 130 }}
+                />
+                <Button onClick={exportToExcel} title="Excel exportieren" style={{ padding: '7px 10px', flexShrink: 0 }}>
+                  <FiDownload size={14} />
+                </Button>
               </ExportRow>
             )}
 
-            {range === 'custom' && (
-              <CustomDateRow style={{ flexBasis: '100%', paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-                <FormGroup style={{ margin: 0 }}>
-                  <Label>Von</Label>
-                  <Input type="date" value={customFrom} onChange={(e) => setCustomFrom(e.target.value)} style={{ width: 150 }} />
-                </FormGroup>
-                <FormGroup style={{ margin: 0 }}>
-                  <Label>Bis</Label>
-                  <Input type="date" value={customTo} onChange={(e) => setCustomTo(e.target.value)} style={{ width: 150 }} />
-                </FormGroup>
-                <FormGroup style={{ margin: 0 }}>
-                  <Label style={{ visibility: 'hidden', userSelect: 'none' }}>_</Label>
-                  <Button onClick={load} $variant="secondary">Laden</Button>
-                </FormGroup>
-              </CustomDateRow>
-            )}
           </FilterBar>
 
+          {!isOnline && !loading && entries.length === 0 && (
+            <OfflineBanner message="Kein Internet – Stunden können nicht geladen werden" />
+          )}
           {loading ? (
-            <div style={{ display: 'flex', justifyContent: 'center', padding: 40 }}>
-              <Spinner />
-            </div>
+            <TableSkeleton />
           ) : (
-            <HoursTable entries={entries} showWorker={isAdmin && !selectedUser} onDelete={load} />
+            <>
+              <HoursTable entries={entries} showWorker={isAdmin && !selectedUser} onDelete={load} />
+              {refreshing && <div style={{ textAlign: 'center', padding: '10px 0 2px', fontSize: 11, color: 'rgba(255,255,255,0.25)' }}>Aktualisierung<RefreshDot /></div>}
+            </>
           )}
         </>
       )}

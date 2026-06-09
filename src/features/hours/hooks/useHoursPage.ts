@@ -2,12 +2,12 @@ import { useState, useEffect, useCallback } from 'react';
 import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, format } from 'date-fns';
 import { de } from 'date-fns/locale';
 import * as XLSX from 'xlsx';
-import { getAllHours, getHoursForUser } from '@shared/services/hoursService';
+import { getAllHours, getAllHoursFromCache, getHoursForUser, getHoursForUserFromCache } from '@shared/services/hoursService';
 import { getAllUsers } from '@shared/services/authService';
 import { useAuth } from '@shared/hooks/useAuth';
 import type { WorkHourEntry, AppUser } from '@shared/types';
 
-type RangePreset = 'week' | 'month' | 'all' | 'custom';
+export type RangePreset = 'week' | 'month' | 'all' | 'pick';
 
 const exportExcel = (entries: WorkHourEntry[], monthLabel: string) => {
   const totalMins = entries.reduce((acc, e) => acc + (e.totalMinutes || 0), 0);
@@ -48,9 +48,9 @@ export const useHoursPage = () => {
   const [users, setUsers] = useState<AppUser[]>([]);
   const [selectedUser, setSelectedUser] = useState<string>('');
   const [range, setRange] = useState<RangePreset>('month');
-  const [customFrom, setCustomFrom] = useState('');
-  const [customTo, setCustomTo] = useState('');
+  const [pickedMonth, setPickedMonth] = useState(() => format(new Date(), 'yyyy-MM'));
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [exportMonth, setExportMonth] = useState(() => format(new Date(), 'yyyy-MM'));
 
   useEffect(() => {
@@ -61,16 +61,39 @@ export const useHoursPage = () => {
 
   const getDateRange = (): [Date | undefined, Date | undefined] => {
     const now = new Date();
-    if (range === 'week') return [startOfWeek(now, { locale: de }), endOfWeek(now, { locale: de })];
+    if (range === 'week')  return [startOfWeek(now, { locale: de }), endOfWeek(now, { locale: de })];
     if (range === 'month') return [startOfMonth(now), endOfMonth(now)];
-    if (range === 'all') return [undefined, undefined];
-    if (customFrom && customTo) return [new Date(customFrom), new Date(customTo)];
-    return [startOfWeek(now, { locale: de }), endOfWeek(now, { locale: de })];
+    if (range === 'all')   return [undefined, undefined];
+    if (range === 'pick') {
+      const [y, m] = pickedMonth.split('-').map(Number);
+      const d = new Date(y, m - 1);
+      return [startOfMonth(d), endOfMonth(d)];
+    }
+    return [startOfMonth(now), endOfMonth(now)];
   };
 
   const load = useCallback(async () => {
-    setLoading(true);
     const [from, to] = getDateRange();
+
+    // Phase 1: serve from local Firestore cache immediately
+    try {
+      let cached: typeof entries = [];
+      if (isAdmin) {
+        const all = await getAllHoursFromCache(from, to);
+        cached = selectedUser ? all.filter((e) => e.userId === selectedUser) : all;
+      } else if (uid) {
+        cached = await getHoursForUserFromCache(uid, from, to);
+      }
+      if (cached.length > 0) {
+        setEntries(cached);
+        setLoading(false);
+      }
+    } catch {
+      // cache miss
+    }
+
+    // Phase 2: fetch fresh from server
+    setRefreshing(true);
     try {
       if (isAdmin) {
         const all = await getAllHours(from, to);
@@ -82,8 +105,9 @@ export const useHoursPage = () => {
       }
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
-  }, [isAdmin, uid, range, selectedUser, customFrom, customTo]);
+  }, [isAdmin, uid, range, selectedUser, pickedMonth]);
 
   useEffect(() => {
     load();
@@ -109,11 +133,10 @@ export const useHoursPage = () => {
     setSelectedUser,
     range,
     setRange,
-    customFrom,
-    setCustomFrom,
-    customTo,
-    setCustomTo,
+    pickedMonth,
+    setPickedMonth,
     loading,
+    refreshing,
     exportMonth,
     setExportMonth,
     load,

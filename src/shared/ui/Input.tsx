@@ -26,6 +26,17 @@ export const Input = styled.input`
     box-shadow: none;
   }
   &:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  &[type="date"]::-webkit-calendar-picker-indicator,
+  &[type="month"]::-webkit-calendar-picker-indicator,
+  &[type="time"]::-webkit-calendar-picker-indicator {
+    filter: invert(30%) sepia(80%) saturate(600%) hue-rotate(320deg) brightness(1.1);
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    opacity: 0.85;
+    &:hover { opacity: 1; }
+  }
 `;
 
 export const Textarea = styled.textarea`

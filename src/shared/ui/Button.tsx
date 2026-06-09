@@ -55,16 +55,17 @@ export const Button = styled.button<ButtonProps>`
         `;
       case 'secondary':
         return css`
-          background: ${theme.colors.bgElevated};
-          color: ${theme.colors.textSecondary};
-          border-color: ${theme.colors.border};
+          background: rgba(255,255,255,0.07);
+          color: rgba(255,255,255,0.65);
+          border-color: rgba(255,255,255,0.14);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
           &:hover:not(:disabled) {
-            color: ${theme.colors.textPrimary};
-            border-color: ${theme.colors.borderHover};
-            background: #242424;
+            background: rgba(255,255,255,0.11);
+            color: rgba(255,255,255,0.9);
+            border-color: rgba(255,255,255,0.2);
           }
           &:active:not(:disabled) {
-            background: ${theme.colors.bgCard};
+            background: rgba(255,255,255,0.05);
           }
         `;
       case 'danger':

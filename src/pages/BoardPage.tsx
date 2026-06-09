@@ -7,6 +7,8 @@ import { ObjectCard } from "@features/objects/components/ObjectCard";
 import { ObjectForm } from "@features/objects/components/ObjectForm";
 import { Modal } from "@shared/ui/Modal";
 import { Spinner } from "@shared/ui/Spinner";
+import { OfflineBanner } from "@shared/ui/OfflineBanner";
+import { useOnlineStatus } from "@shared/hooks/useOnlineStatus";
 import { createObject } from "@shared/services/objectsService";
 import type { CRMObject } from "@shared/types";
 
@@ -108,6 +110,7 @@ const FAB = styled.button`
 const BoardPage: React.FC = () => {
   const { objects, loading } = useObjects();
   const { isAdmin, uid } = useAuth();
+  const isOnline = useOnlineStatus();
   const [showModal, setShowModal] = useState(false);
 
   const handleCreate = async (data: Partial<CRMObject>) => {
@@ -125,6 +128,9 @@ const BoardPage: React.FC = () => {
         <PageTitle>Objekte — {objects.length}</PageTitle>
       </Header>
 
+      {!isOnline && !loading && objects.length === 0 && (
+        <OfflineBanner message="Kein Internet – Objekte können nicht geladen werden" />
+      )}
       {loading ? (
         <div style={{ display: "flex", justifyContent: "center", padding: 80 }}>
           <Spinner size={28} />

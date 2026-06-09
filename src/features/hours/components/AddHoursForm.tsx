@@ -5,7 +5,8 @@ import { Button } from '@shared/ui/Button';
 import { Modal } from '@shared/ui/Modal';
 import { addHourEntry } from '@shared/services/hoursService';
 import { subscribeToObjects } from '@shared/services/objectsService';
-import { FiAlertTriangle, FiWifi, FiClock, FiRefreshCw } from 'react-icons/fi';
+import { FiAlertTriangle, FiWifi, FiRefreshCw } from 'react-icons/fi';
+import { HiPlus } from 'react-icons/hi';
 import { useAuth } from '@shared/hooks/useAuth';
 import { useToast } from '@shared/ui/Toast';
 import type { CRMObject } from '@shared/types';
@@ -18,12 +19,32 @@ const Form = styled.form`
   display: flex;
   flex-direction: column;
   gap: 16px;
+
+  @media (min-width: 640px) {
+    max-width: 580px;
+  }
 `;
 
 const Row = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: 12px;
+`;
+
+/* On desktop: Datum + [Beginn/Ende] side by side */
+const TopRow = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  @media (min-width: 640px) {
+    flex-direction: row;
+    align-items: flex-end;
+    gap: 12px;
+
+    > *:first-child { flex: 1; }
+    > *:last-child  { flex: 2; }
+  }
 `;
 
 const BreakGroup = styled.div`
@@ -41,28 +62,58 @@ const BreakBtn = styled.button<{ $active: boolean }>`
   font-size: 11px;
   font-weight: 600;
   border-radius: 5px;
-  border: none;
-  background: ${({ $active, theme }) => ($active ? theme.colors.accent : 'transparent')};
-  color: ${({ $active, theme }) => ($active ? '#fff' : theme.colors.textSecondary)};
+  border: 1px solid transparent;
   transition: all ${({ theme }) => theme.transitions.fast};
   cursor: pointer;
 
+  ${({ $active }) => $active ? `
+    background: rgba(255,255,255,0.1);
+    border-color: rgba(255,255,255,0.14);
+    color: rgba(255,255,255,0.9);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+  ` : `
+    background: transparent;
+    color: rgba(255,255,255,0.35);
+  `}
+
   &:hover {
-    color: ${({ $active, theme }) => $active ? '#fff' : theme.colors.textPrimary};
-    background: ${({ $active, theme }) => $active ? theme.colors.accent : 'rgba(255,255,255,0.06)'};
+    ${({ $active }: { $active: boolean }) => !$active && `
+      color: rgba(255,255,255,0.6);
+      background: rgba(255,255,255,0.05);
+    `}
+  }
+`;
+
+const BottomRow = styled.div`
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  justify-content: flex-end;
+
+  @media (max-width: 640px) {
+    justify-content: stretch;
   }
 `;
 
 const TotalDisplay = styled.div`
-  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 18px;
+  min-width: 110px;
   background: ${({ theme }) => theme.colors.bgElevated};
   border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.borderRadiusSm};
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 800;
   color: ${({ theme }) => theme.colors.accent};
-  text-align: center;
   letter-spacing: 0.04em;
+  white-space: nowrap;
+
+  @media (max-width: 640px) {
+    flex: 1;
+    padding: 10px 14px;
+  }
 `;
 
 const ErrorBox = styled.div`
@@ -277,12 +328,13 @@ export const AddHoursForm: React.FC<Props> = ({ onAdded }) => {
         </OfflineBanner>
       )}
 
-      <FormGroup>
-        <Label>Datum</Label>
-        <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
-      </FormGroup>
+      <TopRow>
+        <FormGroup>
+          <Label>Datum</Label>
+          <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
+        </FormGroup>
 
-      <Row>
+        <Row>
         <FormGroup>
           <Label>Beginn</Label>
           <Input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} required />
@@ -291,7 +343,8 @@ export const AddHoursForm: React.FC<Props> = ({ onAdded }) => {
           <Label>Ende</Label>
           <Input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} required />
         </FormGroup>
-      </Row>
+        </Row>
+      </TopRow>
 
       <FormGroup>
         <Label>Pause</Label>
@@ -317,18 +370,12 @@ export const AddHoursForm: React.FC<Props> = ({ onAdded }) => {
         </Select>
       </FormGroup>
 
-      <Row>
-        <FormGroup>
-          <Label>Gesamt</Label>
-          <TotalDisplay>{totalMins > 0 ? formatMinutes(totalMins) : '—'}</TotalDisplay>
-        </FormGroup>
-        <FormGroup style={{ justifyContent: 'flex-end' }}>
-          <Label>&nbsp;</Label>
-          <Button type="submit" disabled={loading || totalMins <= 0} style={{ padding: '10px 18px', fontSize: 14 }}>
-            {loading ? <FiRefreshCw size={17} /> : <FiClock size={17} />}
-          </Button>
-        </FormGroup>
-      </Row>
+      <BottomRow>
+        <TotalDisplay>{totalMins > 0 ? formatMinutes(totalMins) : '—'}</TotalDisplay>
+        <Button type="submit" disabled={loading || totalMins <= 0} style={{ padding: '10px 22px' }}>
+          {loading ? <FiRefreshCw size={17} /> : <HiPlus size={20} />}
+        </Button>
+      </BottomRow>
     </Form>
 
     <Modal
