@@ -20,6 +20,11 @@ const Form = styled.form`
   flex-direction: column;
   gap: 16px;
 
+  @media (max-width: 374px) {
+    padding: 14px 12px;
+    gap: 12px;
+  }
+
   @media (min-width: 640px) {
     max-width: 580px;
   }
@@ -49,22 +54,34 @@ const TopRow = styled.div`
 
 const BreakGroup = styled.div`
   display: flex;
-  gap: 4px;
+  gap: 3px;
   background: ${({ theme }) => theme.colors.bgElevated};
   border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.borderRadiusSm};
   padding: 3px;
+
+  @media (max-width: 374px) {
+    gap: 2px;
+    padding: 2px;
+  }
 `;
 
 const BreakBtn = styled.button<{ $active: boolean }>`
   flex: 1;
-  padding: 7px 4px;
+  padding: 6px 2px;
   font-size: 11px;
   font-weight: 600;
-  border-radius: 5px;
+  border-radius: 4px;
   border: 1px solid transparent;
   transition: all ${({ theme }) => theme.transitions.fast};
   cursor: pointer;
+  white-space: nowrap;
+  min-width: 0;
+
+  @media (max-width: 374px) {
+    padding: 5px 1px;
+    font-size: 10px;
+  }
 
   ${({ $active }) => $active ? `
     background: rgba(255,255,255,0.1);
