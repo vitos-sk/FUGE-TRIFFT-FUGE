@@ -1,28 +1,10 @@
 import React from 'react';
-import styled from 'styled-components';
 import { NoteItem } from './NoteItem';
 import { AddNoteForm } from './AddNoteForm';
 import { useNotes } from '../hooks/useNotes';
 import { useAuth } from '@shared/hooks/useAuth';
 import { Spinner } from '@shared/ui/Spinner';
-
-const Wrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-`;
-
-const Feed = styled.div`
-  display: flex;
-  flex-direction: column;
-`;
-
-const Empty = styled.p`
-  color: ${({ theme }) => theme.colors.textMuted};
-  font-size: 14px;
-  text-align: center;
-  padding: 32px 0;
-`;
+import { Wrapper, Feed, Empty } from './NotesFeed.styles';
 
 interface Props {
   objectId: string;

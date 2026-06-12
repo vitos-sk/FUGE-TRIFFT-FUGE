@@ -27,3 +27,4 @@ serviceAccountKey.json
 *.sw?
 .env.production
 functions/lib
+CLAUDE.md

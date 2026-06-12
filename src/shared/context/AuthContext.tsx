@@ -16,10 +16,15 @@ const AuthContext = createContext<AuthContextValue>({
   loading: true,
 });
 
+// Optimistic session flag — if user was logged in before, skip the loading spinner
+// on return visits (Firebase restores session in ~200ms but we want instant UI)
+const SESSION_KEY = 'ftf_uid';
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const hadSession = !!localStorage.getItem(SESSION_KEY);
   const [firebaseUser, setFirebaseUser] = useState<User | null>(null);
   const [appUser, setAppUser] = useState<AppUser | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!hadSession);
   const profileUnsubRef = useRef<(() => void) | null>(null);
 
   const buildFallback = (user: User): AppUser => ({
@@ -39,10 +44,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setFirebaseUser(user);
 
       if (!user) {
+        localStorage.removeItem(SESSION_KEY);
         setAppUser(null);
         setLoading(false);
         return;
       }
+
+      localStorage.setItem(SESSION_KEY, user.uid);
 
       // Subscribe to profile in real-time — detects disabled flag immediately
       const profileUnsub = onSnapshot(

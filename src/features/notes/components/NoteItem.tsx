@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from 'react';
-import styled, { keyframes } from 'styled-components';
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { FiTrash2, FiEdit2, FiCheck, FiX } from 'react-icons/fi';
@@ -9,65 +8,7 @@ import { useToast } from '@shared/ui/Toast';
 import { useConfirm } from '@shared/ui/ConfirmDialog';
 import { deleteNote, updateNote } from '@shared/services/notesService';
 import type { Note } from '@shared/types';
-
-const flashHighlight = keyframes`
-  0%   { background: rgba(204,34,34,0.18); }
-  60%  { background: rgba(204,34,34,0.10); }
-  100% { background: transparent; }
-`;
-
-const Item = styled.div<{ $highlighted?: boolean }>`
-  padding: 14px 16px;
-  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
-  transition: background ${({ theme }) => theme.transitions.fast};
-  animation: ${({ $highlighted }) => $highlighted ? flashHighlight : 'none'} 0.9s ease-out;
-
-  &:last-child { border-bottom: none; }
-  &:hover { background: rgba(255,255,255,0.02); }
-`;
-
-const Header = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
-  flex-wrap: wrap;
-`;
-
-const Author = styled.span`
-  font-size: 12px;
-  font-weight: 600;
-  color: ${({ theme }) => theme.colors.textSecondary};
-`;
-
-const Time = styled.span`
-  font-size: 11px;
-  color: ${({ theme }) => theme.colors.textMuted};
-  margin-left: auto;
-`;
-
-const Text = styled.p`
-  font-size: 14px;
-  color: ${({ theme }) => theme.colors.textPrimary};
-  line-height: 1.6;
-  white-space: pre-wrap;
-`;
-
-const Actions = styled.div`
-  display: flex;
-  gap: 2px;
-  margin-left: 6px;
-  flex-shrink: 0;
-`;
-
-const EditRow = styled.div`
-  display: flex;
-  gap: 8px;
-  align-items: flex-end;
-  margin-top: 10px;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-`;
+import { Item, Header, Author, Time, NoteText, Actions, EditRow } from './NoteItem.styles';
 
 const MAX_CHARS = 600;
 
@@ -182,7 +123,7 @@ export const NoteItem: React.FC<Props> = ({ note, objectId, uid, isAdmin, highli
           </EditRow>
         </>
       ) : (
-        <Text>{note.text}</Text>
+        <NoteText>{note.text}</NoteText>
       )}
     </Item>
   );

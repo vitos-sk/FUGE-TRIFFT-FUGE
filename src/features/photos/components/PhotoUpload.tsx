@@ -1,5 +1,4 @@
 import React, { useRef, useState } from 'react';
-import styled, { keyframes } from 'styled-components';
 import { FiCamera, FiImage, FiX } from 'react-icons/fi';
 import { uploadPhoto } from '@shared/services/photosService';
 import { useAuth } from '@shared/hooks/useAuth';
@@ -7,124 +6,18 @@ import { Button } from '@shared/ui/Button';
 import { Select, FormGroup, Label, Input } from '@shared/ui/Input';
 import { useToast } from '@shared/ui/Toast';
 import type { PhotoType } from '@shared/types';
-
-const pulse = keyframes`
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.6; }
-`;
-
-const PickerRow = styled.div`
-  display: flex;
-  gap: 8px;
-`;
-
-const PickerBtn = styled.label`
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
-  border: 1px dashed ${({ theme }) => theme.colors.border};
-  border-radius: ${({ theme }) => theme.borderRadiusSm};
-  background: ${({ theme }) => theme.colors.bgCard};
-  color: ${({ theme }) => theme.colors.textMuted};
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: all ${({ theme }) => theme.transitions.spring};
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
-
-  &:hover, &:active {
-    border-color: ${({ theme }) => theme.colors.accent};
-    color: ${({ theme }) => theme.colors.accent};
-    background: ${({ theme }) => `${theme.colors.accent}08`};
-  }
-`;
-
-const PreviewBox = styled.div`
-  position: relative;
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${({ theme }) => theme.borderRadius};
-  padding: 12px;
-  background: ${({ theme }) => theme.colors.bgCard};
-  text-align: center;
-`;
-
-const Preview = styled.img`
-  max-height: 200px;
-  max-width: 100%;
-  border-radius: ${({ theme }) => theme.borderRadiusSm};
-  object-fit: contain;
-`;
-
-const ClearBtn = styled.button`
-  position: absolute;
-  top: -10px;
-  right: -10px;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: ${({ theme }) => theme.colors.accent};
-  color: #fff;
-  font-size: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 2px solid ${({ theme }) => theme.colors.bgPrimary};
-  cursor: pointer;
-  transition: transform 0.15s;
-
-  &:hover { transform: scale(1.1); }
-`;
-
-const Row = styled.div`
-  display: flex;
-  gap: 8px;
-  align-items: flex-end;
-  margin-top: 14px;
-`;
-
-const ProgressBar = styled.div<{ $progress: number }>`
-  height: 4px;
-  background: ${({ theme }) => theme.colors.border};
-  border-radius: 9999px;
-  margin-top: 10px;
-  overflow: hidden;
-
-  &::after {
-    content: '';
-    display: block;
-    height: 100%;
-    width: ${({ $progress }) => $progress}%;
-    background: ${({ theme }) => theme.colors.accent};
-    border-radius: 9999px;
-    transition: width 0.4s ease;
-  }
-`;
-
-const UploadingLabel = styled.p`
-  font-size: 12px;
-  color: ${({ theme }) => theme.colors.textMuted};
-  margin-top: 6px;
-  text-align: center;
-  animation: ${pulse} 1.5s infinite;
-`;
-
-const ErrorBox = styled.div`
-  padding: 10px 14px;
-  background: ${({ theme }) => theme.colors.accentDim};
-  border: 1px solid ${({ theme }) => theme.colors.accent}44;
-  border-radius: ${({ theme }) => theme.borderRadiusSm};
-  font-size: 13px;
-  color: ${({ theme }) => theme.colors.accent};
-  margin-top: 10px;
-`;
-
-const HiddenInput = styled.input`
-  display: none;
-`;
+import {
+  PickerRow,
+  PickerBtn,
+  PreviewBox,
+  Preview,
+  ClearBtn,
+  Row,
+  ProgressBar,
+  UploadingLabel,
+  ErrorBox,
+  HiddenInput,
+} from './PhotoUpload.styles';
 
 const TYPE_OPTIONS: { value: PhotoType; label: string }[] = [
   { value: 'daily',   label: 'Täglich' },

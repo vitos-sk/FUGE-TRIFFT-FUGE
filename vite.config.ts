@@ -55,6 +55,7 @@ export default defineConfig({
     alias: {
       '@shared': path.resolve(__dirname, './src/shared'),
       '@features': path.resolve(__dirname, './src/features'),
+      '@constants': path.resolve(__dirname, './src/constants'),
     },
   },
   build: {

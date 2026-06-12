@@ -1,9 +1,19 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import styled from 'styled-components';
 import { Timestamp } from 'firebase/firestore';
 import { Input, FormGroup, Label } from '@shared/ui/Input';
 import { Button } from '@shared/ui/Button';
 import type { CRMObject } from '@shared/types';
+import {
+  Form,
+  Row,
+  AddressWrap,
+  SuggestionList,
+  SuggestionItem,
+  SuggMain,
+  SuggSub,
+  Hint,
+  Actions,
+} from './ObjectForm.styles';
 
 // ─── Google Maps loader (new Places API) ──────────────────────────────────────
 
@@ -29,76 +39,6 @@ function loadMaps(): Promise<void> {
   });
   return _mapsPromise;
 }
-
-// ─── Styled ───────────────────────────────────────────────────────────────────
-
-const Form = styled.form`
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-`;
-
-const Row = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  @media (max-width: 480px) { grid-template-columns: 1fr; }
-`;
-
-const AddressWrap = styled.div`
-  position: relative;
-`;
-
-const SuggestionList = styled.ul`
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 0; right: 0;
-  background: #1c1c1c;
-  border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 6px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.65);
-  z-index: 99999;
-  list-style: none;
-  padding: 4px 0;
-  margin: 0;
-  max-height: 240px;
-  overflow-y: auto;
-`;
-
-const SuggestionItem = styled.li`
-  padding: 9px 14px;
-  cursor: pointer;
-  transition: background 0.1s;
-  & + & { border-top: 1px solid rgba(255,255,255,0.04); }
-  &:hover { background: rgba(255,255,255,0.07); }
-`;
-
-const SuggMain = styled.span`
-  display: block;
-  font-size: 13px;
-  font-weight: 600;
-  color: ${({ theme }) => theme.colors.textPrimary};
-`;
-
-const SuggSub = styled.span`
-  display: block;
-  font-size: 11px;
-  color: ${({ theme }) => theme.colors.textMuted};
-  margin-top: 1px;
-`;
-
-const Hint = styled.p`
-  font-size: 11px;
-  color: ${({ theme }) => theme.colors.textMuted};
-  margin-top: -4px;
-`;
-
-const Actions = styled.div`
-  display: flex;
-  gap: 8px;
-  justify-content: flex-end;
-  margin-top: 8px;
-`;
 
 // ─── Component ────────────────────────────────────────────────────────────────
 

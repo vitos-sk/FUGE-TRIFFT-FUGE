@@ -55,7 +55,9 @@ export const useHoursPage = () => {
 
   useEffect(() => {
     if (isAdmin) {
-      getAllUsers().then((u) => setUsers(u.filter((x) => x.role === 'worker' || x.role === 'admin')));
+      getAllUsers()
+        .then((u) => setUsers(u.filter((x) => x.role === 'worker' || x.role === 'admin')))
+        .catch(() => {});
     }
   }, [isAdmin]);
 
