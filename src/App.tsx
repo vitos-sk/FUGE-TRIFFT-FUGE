@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useEffect } from "react";
+import React, { Suspense, lazy } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "styled-components";
 import { theme } from "./styles/theme";
@@ -123,14 +123,6 @@ const AppRoutes: React.FC = () => {
 };
 
 const App: React.FC = () => {
-  useEffect(() => {
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
-        window.location.reload();
-      });
-    }
-  }, []);
-
   return (
     <BrowserRouter>
       <ThemeProvider theme={theme}>
