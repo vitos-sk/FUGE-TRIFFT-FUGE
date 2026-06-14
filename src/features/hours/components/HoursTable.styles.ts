@@ -8,9 +8,36 @@ export const Outer = styled.div`
 `;
 
 export const TableWrapper = styled.div`
-  overflow-x: auto;
+  overflow-x: scroll;
   -webkit-overflow-scrolling: touch;
   background: rgba(18,18,18,0.85);
+  /* Скрываем нативный — заменяем кастомным */
+  &::-webkit-scrollbar { display: none; }
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+`;
+
+export const ScrollTrack = styled.div`
+  height: 6px;
+  background: rgba(255,255,255,0.05);
+  position: relative;
+  cursor: pointer;
+  flex-shrink: 0;
+`;
+
+export const ScrollThumb = styled.div`
+  position: absolute;
+  top: 0;
+  height: 100%;
+  background: rgba(255,255,255,0.22);
+  border-radius: 3px;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  transition: background 0.15s;
+
+  &:hover { background: rgba(255,255,255,0.38); }
+  &:active { cursor: grabbing; background: rgba(255,255,255,0.5); }
 `;
 
 export const Table = styled.table`

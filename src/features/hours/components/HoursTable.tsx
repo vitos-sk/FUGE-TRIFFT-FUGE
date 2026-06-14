@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { FiX, FiEdit2 } from 'react-icons/fi';
@@ -31,6 +31,8 @@ import {
   ModalFooter,
   FooterTotal,
   FooterBtns,
+  ScrollTrack,
+  ScrollThumb,
 } from './HoursTable.styles';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────────
@@ -66,6 +68,68 @@ export const HoursTable: React.FC<Props> = ({ entries, showWorker = false, onDel
   const { uid } = useAuth();
   const toast = useToast();
   const confirm = useConfirm();
+
+  // ── Кастомный скроллбар ──────────────────────────────────────────────────
+  const tableWrapperRef = useRef<HTMLDivElement>(null);
+  const thumbRef = useRef<HTMLDivElement>(null);
+  const [thumbState, setThumbState] = useState({ left: 0, width: 100 });
+  const [hasOverflow, setHasOverflow] = useState(false);
+
+  const updateThumb = useCallback(() => {
+    const el = tableWrapperRef.current;
+    if (!el) return;
+    const ratio = el.clientWidth / el.scrollWidth;
+    const overflows = ratio < 0.999;
+    setHasOverflow(overflows);
+    if (!overflows) return;
+    const thumbW = Math.max(ratio * 100, 8);
+    const maxScroll = el.scrollWidth - el.clientWidth;
+    const scrollRatio = maxScroll > 0 ? el.scrollLeft / maxScroll : 0;
+    setThumbState({ left: scrollRatio * (100 - thumbW), width: thumbW });
+  }, []);
+
+  useEffect(() => {
+    const el = tableWrapperRef.current;
+    if (!el) return;
+    el.addEventListener('scroll', updateThumb, { passive: true });
+    const ro = new ResizeObserver(updateThumb);
+    ro.observe(el);
+    updateThumb();
+    return () => { el.removeEventListener('scroll', updateThumb); ro.disconnect(); };
+  }, [updateThumb]);
+
+  const handleTrackClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target !== e.currentTarget) return;
+    const el = tableWrapperRef.current;
+    if (!el) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const ratio = (e.clientX - rect.left) / rect.width;
+    el.scrollLeft = ratio * (el.scrollWidth - el.clientWidth);
+  };
+
+  const handleThumbPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    const el = tableWrapperRef.current;
+    const thumb = thumbRef.current;
+    if (!el || !thumb) return;
+    const startX = e.clientX;
+    const startScroll = el.scrollLeft;
+    const trackW = thumb.parentElement!.clientWidth;
+    const thumbW = thumb.clientWidth;
+    const maxScroll = el.scrollWidth - el.clientWidth;
+    thumb.setPointerCapture(e.pointerId);
+    const onMove = (ev: PointerEvent) => {
+      const dx = ev.clientX - startX;
+      el.scrollLeft = startScroll + (dx / (trackW - thumbW)) * maxScroll;
+    };
+    const onUp = () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+    };
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+  };
+  // ────────────────────────────────────────────────────────────────────────
 
   const [editEntry, setEditEntry] = useState<WorkHourEntry | null>(null);
   const [editDate, setEditDate] = useState('');
@@ -159,7 +223,7 @@ export const HoursTable: React.FC<Props> = ({ entries, showWorker = false, onDel
   return (
     <>
       <Outer>
-        <TableWrapper>
+        <TableWrapper ref={tableWrapperRef}>
           <Table>
             <thead>
               <tr>
@@ -209,6 +273,15 @@ export const HoursTable: React.FC<Props> = ({ entries, showWorker = false, onDel
             </tbody>
           </Table>
         </TableWrapper>
+        {hasOverflow && (
+          <ScrollTrack onClick={handleTrackClick}>
+            <ScrollThumb
+              ref={thumbRef}
+              style={{ left: `${thumbState.left}%`, width: `${thumbState.width}%` }}
+              onPointerDown={handleThumbPointerDown}
+            />
+          </ScrollTrack>
+        )}
       </Outer>
 
       <Modal isOpen={!!editEntry} onClose={() => setEditEntry(null)} title="Stunden bearbeiten" width="460px">
