@@ -13,14 +13,13 @@ import { useObjects } from '@features/objects/hooks/useObjects';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@shared/hooks/useAuth';
 import { useDashboardData } from '@shared/hooks/useDashboardData';
-import { Spinner } from '@shared/ui/Spinner';
 import { OfflineBanner } from '@shared/ui/OfflineBanner';
 import { useOnlineStatus } from '@shared/hooks/useOnlineStatus';
 import { ROLE, OBJECT_STATUS } from '../../constants';
 import { StatsCards } from './components/StatsCards';
 import { WeekChart } from './components/WeekChart';
 import { WorkerChart } from './components/WorkerChart';
-import { Header, PageTitle, DateTag, ChartsGrid, LoadingWrapper } from './DashboardPage.styles';
+import { Header, PageTitle, DateTag, ChartsGrid } from './DashboardPage.styles';
 
 const DashboardPage: React.FC = () => {
   const { isAdmin } = useAuth();
@@ -34,17 +33,8 @@ const DashboardPage: React.FC = () => {
     return null;
   }
 
-  if (loading) {
-    if (!isOnline) {
-      return (
-        <OfflineBanner message="Kein Internet – Dashboard kann nicht geladen werden" />
-      );
-    }
-    return (
-      <LoadingWrapper>
-        <Spinner size={32} />
-      </LoadingWrapper>
-    );
+  if (loading && !isOnline) {
+    return <OfflineBanner message="Kein Internet – Dashboard kann nicht geladen werden" />;
   }
 
   const now = new Date();

@@ -3,7 +3,7 @@ import { NoteItem } from './NoteItem';
 import { AddNoteForm } from './AddNoteForm';
 import { useNotes } from '../hooks/useNotes';
 import { useAuth } from '@shared/hooks/useAuth';
-import { Spinner } from '@shared/ui/Spinner';
+import { Loader } from '@shared/ui/Loader';
 import { Wrapper, Feed, Empty } from './NotesFeed.styles';
 
 interface Props {
@@ -20,9 +20,7 @@ export const NotesFeed: React.FC<Props> = ({ objectId, objectTitle, highlightNot
     <Wrapper>
       <AddNoteForm objectId={objectId} objectTitle={objectTitle} />
       {loading ? (
-        <div style={{ display: 'flex', justifyContent: 'center', padding: '32px' }}>
-          <Spinner />
-        </div>
+        <Loader />
       ) : notes.length === 0 ? (
         <Empty>Noch keine Notizen vorhanden.</Empty>
       ) : (

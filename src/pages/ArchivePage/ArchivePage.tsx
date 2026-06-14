@@ -4,7 +4,6 @@ import { restoreObject, deleteObjectPermanently } from '@shared/services/objects
 import { useArchivedObjects } from '@features/objects/hooks/useObjects';
 import { useToast } from '@shared/ui/Toast';
 import { useConfirm } from '@shared/ui/ConfirmDialog';
-import { Spinner } from '@shared/ui/Spinner';
 import { useAuth } from '@shared/hooks/useAuth';
 import type { CRMObject } from '@shared/types';
 import { ArchiveCard } from './components/ArchiveCard';
@@ -18,11 +17,10 @@ import {
   Grid,
   Empty,
   EmptyIcon,
-  LoadingWrapper,
 } from './ArchivePage.styles';
 
 const ArchivePage: React.FC = () => {
-  const { objects, loading } = useArchivedObjects();
+  const { objects } = useArchivedObjects();
   const { isAdmin } = useAuth();
   const toast = useToast();
   const confirm = useConfirm();
@@ -60,14 +58,6 @@ const ArchivePage: React.FC = () => {
       toast.error('Fehler beim Löschen.');
     }
   };
-
-  if (loading) {
-    return (
-      <LoadingWrapper>
-        <Spinner size={32} />
-      </LoadingWrapper>
-    );
-  }
 
   return (
     <>

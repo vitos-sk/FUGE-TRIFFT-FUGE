@@ -18,7 +18,9 @@ import {
   Form,
   Row,
   TopRow,
-  BottomRow,
+  ObjektRow,
+  ObjektSelectWrap,
+  ObjektRowActions,
   TotalDisplay,
   ErrorBox,
   OfflineBannerDiv,
@@ -230,27 +232,31 @@ export const AddHoursForm: React.FC<Props> = ({ onAdded }) => {
         <SegmentedControl options={BREAK_OPTIONS} value={breakMins} onChange={(v) => setBreakMins(v as number)} />
       </FormGroup>
 
-      <CustomSelect
-        labelNode={
-          <LabelWithIndicator>
-            Objekt{!objectId && <RequiredDot />}
-          </LabelWithIndicator>
-        }
-        value={objectId}
-        onChange={setObjectId}
-        dropUp
-        options={[
-          { value: '', label: '⚠ kein Objekt' },
-          ...objects.map((o) => ({ value: o.id, label: o.title })),
-        ]}
-      />
+      <ObjektRow>
+        <ObjektSelectWrap>
+          <CustomSelect
+            labelNode={
+              <LabelWithIndicator>
+                Objekt{!objectId && <RequiredDot />}
+              </LabelWithIndicator>
+            }
+            value={objectId}
+            onChange={setObjectId}
+            dropUp
+            options={[
+              { value: '', label: '⚠ kein Objekt' },
+              ...objects.map((o) => ({ value: o.id, label: o.title })),
+            ]}
+          />
+        </ObjektSelectWrap>
 
-      <BottomRow>
-        <TotalDisplay>{totalMins > 0 ? formatMinutes(totalMins) : '—'}</TotalDisplay>
-        <SubmitButton loading={loading} disabled={totalMins <= 0}>
-          <HiPlus size={20} />
-        </SubmitButton>
-      </BottomRow>
+        <ObjektRowActions>
+          <TotalDisplay>{totalMins > 0 ? formatMinutes(totalMins) : '—'}</TotalDisplay>
+          <SubmitButton loading={loading} disabled={totalMins <= 0}>
+            <HiPlus size={20} />
+          </SubmitButton>
+        </ObjektRowActions>
+      </ObjektRow>
     </Form>
 
     <Modal

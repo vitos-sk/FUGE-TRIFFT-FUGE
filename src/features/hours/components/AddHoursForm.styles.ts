@@ -44,6 +44,35 @@ export const TopRow = styled.div`
   }
 `;
 
+// На десктопе — один ряд [Objekt] [9:30 h] [+], на мобиле — колонка
+export const ObjektRow = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  @media (min-width: 640px) {
+    flex-direction: row;
+    align-items: flex-end;
+    gap: 10px;
+  }
+`;
+
+// Обёртка селектора — на десктопе занимает оставшееся место (~70%)
+export const ObjektSelectWrap = styled.div`
+  @media (min-width: 640px) {
+    flex: 1;
+    min-width: 0;
+  }
+`;
+
+// [TotalDisplay] + [SubmitButton] рядом
+export const ObjektRowActions = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+`;
+
 export const BottomRow = styled.div`
   display: flex;
   align-items: center;

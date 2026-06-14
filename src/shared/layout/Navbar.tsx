@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FiPower, FiLock, FiInbox, FiSliders } from 'react-icons/fi';
+import { FiPower, FiLock, FiInbox, FiSliders, FiUsers } from 'react-icons/fi';
 import { logoutUser } from '../services/authService';
 import { useAuth } from '../hooks/useAuth';
 import { useArchivedCount } from '@features/objects/hooks/useObjects';
 import { NotifBell } from '@features/notifications/components/NotifBell';
 import { ChangePasswordModal } from '../ui/ChangePasswordModal';
+import { UsersManagementModal } from '../../pages/AdminUsersPage/components/UsersManagementModal';
 import {
   Nav,
   Logo,
@@ -31,6 +32,7 @@ export const Navbar: React.FC = () => {
   const navigate = useNavigate();
   const archivedCount = useArchivedCount();
   const [showPwModal, setShowPwModal] = useState(false);
+  const [showUsersModal, setShowUsersModal] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -54,6 +56,11 @@ export const Navbar: React.FC = () => {
     setShowPwModal(true);
   };
 
+  const openUsers = () => {
+    setShowMenu(false);
+    setShowUsersModal(true);
+  };
+
   const initials = user?.name
     ? user.name.split(' ').map((w) => w[0]).join('').toUpperCase().slice(0, 2)
     : '?';
@@ -72,7 +79,6 @@ export const Navbar: React.FC = () => {
           <>
             <Divider />
             <NavItem to="/dashboard">Dashboard</NavItem>
-            <NavItem to="/admin/users">Benutzer</NavItem>
           </>
         )}
       </NavLinks>
@@ -98,11 +104,17 @@ export const Navbar: React.FC = () => {
                 Passwort ändern
               </MenuItem>
               {isAdmin && (
-                <MenuItemLink to="/archiv" onClick={() => setShowMenu(false)}>
-                  <FiInbox size={14} />
-                  Archiv
-                  {archivedCount > 0 && <MenuBadge>{archivedCount}</MenuBadge>}
-                </MenuItemLink>
+                <>
+                  <MenuItem onClick={openUsers}>
+                    <FiUsers size={14} />
+                    Benutzer verwalten
+                  </MenuItem>
+                  <MenuItemLink to="/archiv" onClick={() => setShowMenu(false)}>
+                    <FiInbox size={14} />
+                    Archiv
+                    {archivedCount > 0 && <MenuBadge>{archivedCount}</MenuBadge>}
+                  </MenuItemLink>
+                </>
               )}
             </DropMenu>
           )}
@@ -117,6 +129,7 @@ export const Navbar: React.FC = () => {
     </Nav>
 
     <ChangePasswordModal isOpen={showPwModal} onClose={() => setShowPwModal(false)} />
+    {isAdmin && <UsersManagementModal isOpen={showUsersModal} onClose={() => setShowUsersModal(false)} />}
     </>
   );
 };

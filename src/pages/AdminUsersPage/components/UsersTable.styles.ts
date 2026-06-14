@@ -10,11 +10,12 @@ export const TableWrapper = styled.div`
 export const Table = styled.table`
   width: 100%;
   border-collapse: collapse;
-  min-width: 480px;
+  min-width: 560px;
+  table-layout: auto;
 `;
 
 export const Th = styled.th<{ $hide?: boolean }>`
-  padding: 11px 14px;
+  padding: 11px 12px;
   text-align: left;
   font-size: 10px;
   font-weight: 700;
@@ -27,22 +28,22 @@ export const Th = styled.th<{ $hide?: boolean }>`
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   white-space: nowrap;
 
-  @media (max-width: 600px) {
+  @media (max-width: 700px) {
     display: ${({ $hide }) => ($hide ? 'none' : 'table-cell')};
-    padding: 10px 10px;
+    padding: 10px 8px;
   }
 `;
 
 export const Td = styled.td<{ $hide?: boolean }>`
-  padding: 12px 14px;
+  padding: 12px 12px;
   font-size: 13px;
   color: ${({ theme }) => theme.colors.textPrimary};
   border-bottom: 1px solid ${({ theme }) => theme.colors.border};
   vertical-align: middle;
 
-  @media (max-width: 600px) {
+  @media (max-width: 700px) {
     display: ${({ $hide }) => ($hide ? 'none' : 'table-cell')};
-    padding: 10px 10px;
+    padding: 10px 8px;
   }
 `;
 

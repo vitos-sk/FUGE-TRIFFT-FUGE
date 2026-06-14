@@ -11,28 +11,25 @@ import { useFCM } from "@shared/hooks/useFCM";
 import { Navbar } from "@shared/layout/Navbar";
 import { MobileTabBar } from "@shared/layout/MobileTabBar";
 import { PageWrapper } from "@shared/layout/PageWrapper";
-import { Spinner } from "@shared/ui/Spinner";
-import { AppSkeleton } from "@shared/ui/AppSkeleton";
-import { SuspenseCenter } from "./App.styles";
+import { FullPageLoader } from "@shared/ui/Loader";
 
 const LoginPage = lazy(() => import("./pages/LoginPage/LoginPage"));
 const BoardPage = lazy(() => import("./pages/BoardPage/BoardPage"));
 const ObjectDetailPage = lazy(() => import("./pages/ObjectDetailPage/ObjectDetailPage"));
 const HoursPage = lazy(() => import("./pages/HoursPage/HoursPage"));
-const AdminUsersPage = lazy(() => import("./pages/AdminUsersPage/AdminUsersPage"));
 const DashboardPage = lazy(() => import("./pages/DashboardPage/DashboardPage"));
 const ArchivePage = lazy(() => import("./pages/ArchivePage/ArchivePage"));
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { firebaseUser, loading } = useAuth();
-  if (loading) return <AppSkeleton />;
+  if (loading) return <FullPageLoader />;
   if (!firebaseUser) return <Navigate to="/login" replace />;
   return <>{children}</>;
 };
 
 const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { firebaseUser, loading, isAdmin } = useAuth();
-  if (loading) return <AppSkeleton />;
+  if (loading) return <FullPageLoader />;
   if (!firebaseUser) return <Navigate to="/login" replace />;
   if (!isAdmin) return <Navigate to="/" replace />;
   return <>{children}</>;
@@ -46,13 +43,7 @@ const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     <>
       <Navbar />
       <PageWrapper>
-        <Suspense
-          fallback={
-            <SuspenseCenter>
-              <Spinner size={32} />
-            </SuspenseCenter>
-          }
-        >
+        <Suspense fallback={null}>
           {children}
         </Suspense>
       </PageWrapper>
@@ -62,12 +53,12 @@ const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 };
 
 const AppRoutes: React.FC = () => {
-  const { firebaseUser, loading } = useAuth();
+  const { firebaseUser, loading, initializing } = useAuth();
 
-  if (loading) return <AppSkeleton />;
+  if (initializing || loading) return <FullPageLoader />;
 
   return (
-    <Suspense fallback={<AppSkeleton />}>
+    <Suspense fallback={null}>
       <Routes>
         <Route
           path="/login"
@@ -104,16 +95,7 @@ const AppRoutes: React.FC = () => {
             </ProtectedRoute>
           }
         />
-        <Route
-          path="/admin/users"
-          element={
-            <AdminRoute>
-              <AppShell>
-                <AdminUsersPage />
-              </AppShell>
-            </AdminRoute>
-          }
-        />
+        <Route path="/admin/users" element={<Navigate to="/" replace />} />
         <Route
           path="/dashboard"
           element={

@@ -1,6 +1,9 @@
 import React, { useEffect } from 'react';
 import { FiX } from 'react-icons/fi';
-import { Overlay, ModalBox, ModalHeader, ModalTitle, CloseBtn, ModalBody } from './Modal.styles';
+import {
+  Overlay, ModalBox, ModalHeader, ModalTitle, CloseBtn,
+  ModalSubheader, ModalBody, ModalFooterRow,
+} from './Modal.styles';
 
 interface ModalProps {
   isOpen: boolean;
@@ -9,9 +12,13 @@ interface ModalProps {
   children: React.ReactNode;
   width?: string;
   height?: string;
+  subheader?: React.ReactNode;
+  footer?: React.ReactNode;
 }
 
-export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, width, height }) => {
+export const Modal: React.FC<ModalProps> = ({
+  isOpen, onClose, title, children, width, height, subheader, footer,
+}) => {
   useEffect(() => {
     if (!isOpen) return;
     const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
@@ -34,7 +41,9 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, 
           <ModalTitle>{title}</ModalTitle>
           <CloseBtn onClick={onClose} aria-label="Schließen"><FiX size={16} /></CloseBtn>
         </ModalHeader>
+        {subheader && <ModalSubheader>{subheader}</ModalSubheader>}
         <ModalBody>{children}</ModalBody>
+        {footer && <ModalFooterRow>{footer}</ModalFooterRow>}
       </ModalBox>
     </Overlay>
   );

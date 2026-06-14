@@ -5,12 +5,11 @@ import { FiPlus } from "react-icons/fi";
 import { ObjectCard } from "@features/objects/components/ObjectCard";
 import { ObjectForm } from "@features/objects/components/ObjectForm";
 import { Modal } from "@shared/ui/Modal";
-import { Spinner } from "@shared/ui/Spinner";
 import { OfflineBanner } from "@shared/ui/OfflineBanner";
 import { useOnlineStatus } from "@shared/hooks/useOnlineStatus";
 import { createObject } from "@shared/services/objectsService";
 import type { CRMObject } from "@shared/types";
-import { Header, PageTitle, Grid, Empty, FAB, LoadingWrapper } from "./BoardPage.styles";
+import { Header, PageTitle, Grid, Empty, FAB } from "./BoardPage.styles";
 
 const BoardPage: React.FC = () => {
   const { objects, loading } = useObjects();
@@ -33,22 +32,16 @@ const BoardPage: React.FC = () => {
         <PageTitle>Objekte — {objects.length}</PageTitle>
       </Header>
 
-      {!isOnline && !loading && objects.length === 0 && (
+      {!isOnline && objects.length === 0 && (
         <OfflineBanner message="Kein Internet – Objekte können nicht geladen werden" />
       )}
-      {loading ? (
-        <LoadingWrapper>
-          <Spinner size={28} />
-        </LoadingWrapper>
-      ) : (
-        <Grid>
-          {objects.length === 0 ? (
-            <Empty>Keine Objekte gefunden</Empty>
-          ) : (
-            objects.map((obj) => <ObjectCard key={obj.id} object={obj} />)
-          )}
-        </Grid>
-      )}
+      <Grid>
+        {objects.length === 0 && !loading ? (
+          <Empty>Keine Objekte gefunden</Empty>
+        ) : (
+          objects.map((obj) => <ObjectCard key={obj.id} object={obj} />)
+        )}
+      </Grid>
 
       {isAdmin && (
         <>

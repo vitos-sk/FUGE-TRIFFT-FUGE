@@ -13,6 +13,7 @@ export const PickerRow = styled.div`
 export const PickerBtn = styled.label`
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
   padding: 8px 14px;
   border: 1px dashed ${({ theme }) => theme.colors.border};
@@ -34,6 +35,13 @@ export const PickerBtn = styled.label`
     border-color: ${({ theme }) => theme.colors.accent};
     color: ${({ theme }) => theme.colors.accent};
     background: ${({ theme }) => `${theme.colors.accent}08`};
+  }
+
+  @media (max-width: 640px) {
+    flex: 1;
+    padding: 12px 16px;
+    font-size: 13px;
+    gap: 8px;
   }
 `;
 
@@ -81,6 +89,12 @@ export const Row = styled.div`
   gap: 8px;
   align-items: flex-end;
   margin-top: 14px;
+
+  @media (max-width: 560px) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
 `;
 
 export const ProgressBar = styled.div<{ $progress: number }>`

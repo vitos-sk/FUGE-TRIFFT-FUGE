@@ -12,6 +12,7 @@ import {
   MonthBtnWrap,
   MonthDropdown,
   ExportMonthInput,
+  ExportMonthWrap,
   ExportBtn,
   RowLabel,
   RowGroup,
@@ -46,6 +47,17 @@ export const FilterBar: React.FC<FilterBarProps> = ({
 }) => {
   const [pickerOpen, setPickerOpen] = useState(false);
   const monthBtnRef = useRef<HTMLDivElement>(null);
+  const exportWrapRef = useRef<HTMLDivElement>(null);
+
+  const handleExportWrapClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const input = exportWrapRef.current?.querySelector<HTMLInputElement>('input[type="month"]');
+    if (!input) return;
+    const rect = input.getBoundingClientRect();
+    // если кликнули не по иконке календаря (последние 32px) — открываем пикер
+    if (e.clientX < rect.right - 32) {
+      try { (input as any).showPicker(); } catch { input.focus(); }
+    }
+  };
 
   useEffect(() => {
     if (!pickerOpen) return;
@@ -140,7 +152,9 @@ export const FilterBar: React.FC<FilterBarProps> = ({
         <RowGroup>
           <RowLabel>Excel Export</RowLabel>
           <FilterRow>
-            <ExportMonthInput value={exportMonth} onChange={setExportMonth} />
+            <ExportMonthWrap ref={exportWrapRef} onClick={handleExportWrapClick}>
+              <ExportMonthInput value={exportMonth} onChange={setExportMonth} />
+            </ExportMonthWrap>
             <ExportBtn onClick={exportToExcel}>
               <FiDownload size={13} />
               Export

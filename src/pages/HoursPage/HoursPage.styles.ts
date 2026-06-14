@@ -40,7 +40,7 @@ export const ViewPanel = styled.div`
       0 4px 24px rgba(0, 0, 0, 0.5);
     border-radius: ${({ theme }) => theme.borderRadius};
     padding: 20px;
-    max-width: 680px;
+    max-width: 580px;
     margin-bottom: 20px;
   }
 `;

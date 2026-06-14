@@ -1,34 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import { FiUserPlus } from 'react-icons/fi';
 import { getAllUsers, toggleUserDisabled } from '@shared/services/authService';
-import { useAuth } from '@shared/hooks/useAuth';
-import { useNavigate } from 'react-router-dom';
 import { useToast } from '@shared/ui/Toast';
 import { useConfirm } from '@shared/ui/ConfirmDialog';
 import { Button } from '@shared/ui/Button';
 import { Loader } from '@shared/ui/Loader';
+import { Modal } from '@shared/ui/Modal';
 import type { AppUser } from '@shared/types';
-import { UsersTable } from './components/UsersTable';
-import { EditNameModal, CreateUserModal } from './components/UserModals';
-import { PageTitle, TableHeader, UserCount } from './AdminUsersPage.styles';
+import { UsersTable } from './UsersTable';
+import { EditNameModal, CreateUserModal } from './UserModals';
+import { TableHeader, UserCount } from '../AdminUsersPage.styles';
 
-const AdminUsersPage: React.FC = () => {
-  const { isAdmin } = useAuth();
-  const navigate = useNavigate();
+interface Props {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export const UsersManagementModal: React.FC<Props> = ({ isOpen, onClose }) => {
   const toast = useToast();
   const confirm = useConfirm();
   const [users, setUsers] = useState<AppUser[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingUser, setEditingUser] = useState<AppUser | null>(null);
 
   useEffect(() => {
-    if (!isAdmin) {
-      navigate('/');
-      return;
-    }
-    loadUsers();
-  }, [isAdmin]);
+    if (isOpen) loadUsers();
+  }, [isOpen]);
 
   const loadUsers = async () => {
     setLoading(true);
@@ -57,25 +55,25 @@ const AdminUsersPage: React.FC = () => {
 
   return (
     <>
-      <PageTitle>Benutzerverwaltung</PageTitle>
+      <Modal isOpen={isOpen} onClose={onClose} title="Benutzerverwaltung" width="960px">
+        <TableHeader>
+          <UserCount>{users.length} Benutzer</UserCount>
+          <Button $variant="secondary" onClick={() => setShowCreateModal(true)}>
+            <FiUserPlus size={15} />
+            Neuen Benutzer
+          </Button>
+        </TableHeader>
 
-      <TableHeader>
-        <UserCount>{users.length} Benutzer</UserCount>
-        <Button $variant="secondary" onClick={() => setShowCreateModal(true)}>
-          <FiUserPlus size={15} />
-          Neuen Benutzer
-        </Button>
-      </TableHeader>
-
-      {loading ? (
-        <Loader />
-      ) : (
-        <UsersTable
-          users={users}
-          onEdit={(user) => setEditingUser(user)}
-          onToggle={handleToggle}
-        />
-      )}
+        {loading ? (
+          <Loader />
+        ) : (
+          <UsersTable
+            users={users}
+            onEdit={(user) => setEditingUser(user)}
+            onToggle={handleToggle}
+          />
+        )}
+      </Modal>
 
       <EditNameModal
         user={editingUser}
@@ -91,5 +89,3 @@ const AdminUsersPage: React.FC = () => {
     </>
   );
 };
-
-export default AdminUsersPage;

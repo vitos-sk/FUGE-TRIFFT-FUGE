@@ -35,10 +35,15 @@ export const FilterRow = styled.div`
   }
 `;
 
-// Mitarbeiter dropdown — stretches to fill available space
+// Mitarbeiter dropdown — stretches on mobile, fixed width on desktop
 export const FilterUserSelect = styled(CustomSelect)`
   flex: 1;
   min-width: 90px;
+
+  @media (min-width: 769px) {
+    flex: none;
+    width: 200px;
+  }
 `;
 
 // Zeitraum button group — compact alongside dropdown; full width when alone (non-admin)
@@ -53,11 +58,18 @@ export const RangeGroup = styled(SegGroup)`
 `;
 
 export const RangeBtn = styled(SegBtn)`
-  padding: 5px 10px;
+  padding: 5px 13px;
   font-size: 10px;
+  overflow: visible;
+  text-overflow: clip;
+  min-width: max-content;
+
+  @media (min-width: 769px) {
+    padding: 5px 14px;
+  }
 
   @media (max-width: 480px) {
-    padding: 5px 7px;
+    padding: 5px 9px;
     font-size: 10px;
   }
 
@@ -116,11 +128,20 @@ export const RowGroup = styled.div<{ $elevated?: boolean }>`
     `}
 `;
 
-// Export row: month input + button
-export const ExportMonthInput = styled(MonthInput)`
+// Wrapper for the export month input — handles layout and click-to-open
+export const ExportMonthWrap = styled.div`
   flex: 1;
   min-width: 0;
+  cursor: pointer;
+
+  @media (min-width: 769px) {
+    flex: none;
+    width: 180px;
+  }
 `;
+
+// Export row: month input (no own flex — ExportMonthWrap handles it)
+export const ExportMonthInput = styled(MonthInput)``;
 
 export const ExportBtn = styled.button`
   display: flex;

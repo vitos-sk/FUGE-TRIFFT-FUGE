@@ -8,12 +8,14 @@ interface AuthContextValue {
   firebaseUser: User | null;
   appUser: AppUser | null;
   loading: boolean;
+  initializing: boolean;
 }
 
 const AuthContext = createContext<AuthContextValue>({
   firebaseUser: null,
   appUser: null,
   loading: true,
+  initializing: true,
 });
 
 // Optimistic session flag — if user was logged in before, skip the loading spinner
@@ -25,6 +27,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [firebaseUser, setFirebaseUser] = useState<User | null>(null);
   const [appUser, setAppUser] = useState<AppUser | null>(null);
   const [loading, setLoading] = useState(!hadSession);
+  const [initializing, setInitializing] = useState(true);
   const profileUnsubRef = useRef<(() => void) | null>(null);
 
   const buildFallback = (user: User): AppUser => ({
@@ -38,6 +41,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     const unsubAuth = onAuthStateChanged(auth, (user) => {
+      setInitializing(false);
       profileUnsubRef.current?.();
       profileUnsubRef.current = null;
 
@@ -88,7 +92,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   return (
-    <AuthContext.Provider value={{ firebaseUser, appUser, loading }}>
+    <AuthContext.Provider value={{ firebaseUser, appUser, loading, initializing }}>
       {children}
     </AuthContext.Provider>
   );
