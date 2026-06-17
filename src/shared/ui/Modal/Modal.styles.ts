@@ -10,25 +10,25 @@ export const slideIn = keyframes`
   to   { opacity: 1; transform: translateY(0) scale(1); }
 `;
 
-export const Overlay = styled.div`
+export const Overlay = styled.div<{ $alignTop?: boolean }>`
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.55);
   display: flex;
-  align-items: center;
+  align-items: ${({ $alignTop }) => ($alignTop ? 'flex-start' : 'center')};
   justify-content: center;
   z-index: 1000;
-  padding: 20px;
+  padding: ${({ $alignTop }) => ($alignTop ? '10vh 20px 20px' : '20px')};
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   animation: ${fadeIn} 0.18s ease;
 
   @media (min-width: 768px) {
-    padding: 32px;
+    padding: ${({ $alignTop }) => ($alignTop ? '10vh 32px 32px' : '32px')};
   }
 `;
 
-export const ModalBox = styled.div<{ width?: string; $height?: string }>`
+export const ModalBox = styled.div<{ width?: string; $height?: string; $minHeight?: string }>`
   background: rgba(10, 7, 7, 0.5);
   backdrop-filter: blur(40px);
   -webkit-backdrop-filter: blur(40px);
@@ -45,6 +45,7 @@ export const ModalBox = styled.div<{ width?: string; $height?: string }>`
     max-width: min(${({ width }) => width || '480px'}, calc(100vw - 64px));
   }
   ${({ $height }) => $height && `height: ${$height};`}
+  ${({ $minHeight }) => $minHeight && `min-height: ${$minHeight};`}
   display: flex;
   flex-direction: column;
   overflow: hidden;

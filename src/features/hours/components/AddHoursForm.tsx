@@ -263,7 +263,24 @@ export const AddHoursForm: React.FC<Props> = ({ onAdded }) => {
       isOpen={showLocationModal}
       onClose={() => setShowLocationModal(false)}
       title="Wo hast du gearbeitet?"
-      height="80dvh"
+      alignTop
+      minHeight="460px"
+      footer={
+        <ModalFooter>
+          <Button $variant="secondary" type="button" onClick={() => setShowLocationModal(false)}>
+            Abbrechen
+          </Button>
+          <SubmitButton
+            type="button"
+            loading={loading}
+            loadingText="Speichern…"
+            disabled={!modalObjectId && !locationNote.trim()}
+            onClick={handleLocationConfirm}
+          >
+            Eintragen
+          </SubmitButton>
+        </ModalFooter>
+      }
     >
       <CustomSelect
         labelNode={
@@ -297,21 +314,6 @@ export const AddHoursForm: React.FC<Props> = ({ onAdded }) => {
           />
         </ModalFormGroupLast>
       )}
-
-      <ModalFooter>
-        <Button $variant="secondary" type="button" onClick={() => setShowLocationModal(false)}>
-          Abbrechen
-        </Button>
-        <SubmitButton
-          type="button"
-          loading={loading}
-          loadingText="Speichern…"
-          disabled={!modalObjectId && !locationNote.trim()}
-          onClick={handleLocationConfirm}
-        >
-          Eintragen
-        </SubmitButton>
-      </ModalFooter>
     </Modal>
   </>
   );

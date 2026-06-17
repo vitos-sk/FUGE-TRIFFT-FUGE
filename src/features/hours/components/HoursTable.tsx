@@ -239,7 +239,7 @@ export const HoursTable: React.FC<Props> = ({ entries, showWorker = false, onDel
             </thead>
             <tbody>
               {entries.map((e) => {
-                const dateFormatted = format(new Date(e.date), 'dd.MM.yyyy', { locale: de });
+                const dateFormatted = format(new Date(e.date + 'T12:00:00'), 'dd.MM.yyyy', { locale: de });
                 const isOwn = e.userId === uid;
                 return (
                   <Tr key={e.id}>

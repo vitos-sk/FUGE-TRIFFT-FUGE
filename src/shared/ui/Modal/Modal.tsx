@@ -12,12 +12,14 @@ interface ModalProps {
   children: React.ReactNode;
   width?: string;
   height?: string;
+  minHeight?: string;
   subheader?: React.ReactNode;
   footer?: React.ReactNode;
+  alignTop?: boolean;
 }
 
 export const Modal: React.FC<ModalProps> = ({
-  isOpen, onClose, title, children, width, height, subheader, footer,
+  isOpen, onClose, title, children, width, height, minHeight, subheader, footer, alignTop,
 }) => {
   const dialogRef = useRef<HTMLDivElement>(null);
   const titleId = useId();
@@ -71,7 +73,7 @@ export const Modal: React.FC<ModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <Overlay onClick={(e) => e.target === e.currentTarget && onClose()}>
+    <Overlay $alignTop={alignTop} onClick={(e) => e.target === e.currentTarget && onClose()}>
       <ModalBox
         role="dialog"
         aria-modal="true"
@@ -79,6 +81,7 @@ export const Modal: React.FC<ModalProps> = ({
         ref={dialogRef}
         width={width}
         $height={height}
+        $minHeight={minHeight}
       >
         <ModalHeader>
           <ModalTitle id={titleId}>{title}</ModalTitle>
