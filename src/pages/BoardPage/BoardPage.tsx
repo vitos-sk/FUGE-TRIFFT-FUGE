@@ -45,7 +45,7 @@ const BoardPage: React.FC = () => {
 
       {isAdmin && (
         <>
-          <FAB onClick={() => setShowModal(true)} title="Neues Objekt">
+          <FAB onClick={() => setShowModal(true)} title="Neues Objekt anlegen" aria-label="Neues Objekt anlegen">
             <FiPlus size={18} />
           </FAB>
           <Modal

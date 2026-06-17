@@ -1,1 +1,1 @@
-export { FormGroup, Label } from './FormGroup.styles';
+export { FormGroup, Label, ErrorText } from './FormGroup.styles';

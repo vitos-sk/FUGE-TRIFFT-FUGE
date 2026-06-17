@@ -1,7 +1,10 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
+
+interface InvalidProp {
+  $invalid?: boolean;
+}
 
 const inputBase = `
-  border-radius: 6px;
   font-size: 13px;
   width: 100%;
   transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
@@ -9,17 +12,26 @@ const inputBase = `
   outline: none;
 `;
 
-export const Input = styled.input`
+const invalidState = css<InvalidProp>`
+  ${({ $invalid, theme }) => $invalid && css`
+    border-color: ${theme.colors.danger}99;
+    &:focus {
+      border-color: ${theme.colors.danger};
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 0 0 1px ${theme.colors.danger}55;
+    }
+  `}
+`;
+
+export const Input = styled.input<InvalidProp>`
   ${inputBase}
+  border-radius: ${({ theme }) => theme.borderRadiusSm};
   background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 2px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
   color: ${({ theme }) => theme.colors.textPrimary};
   padding: 6px 12px;
 
-  &::placeholder { color: ${({ theme }) => theme.colors.textMuted}; }
+  &::placeholder { color: ${({ theme }) => theme.colors.textPlaceholder}; }
   &:hover:not(:disabled):not(:focus) {
     border-color: rgba(255, 255, 255, 0.14);
     background: rgba(255, 255, 255, 0.07);
@@ -30,6 +42,7 @@ export const Input = styled.input`
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.06);
   }
   &:disabled { opacity: 0.4; cursor: not-allowed; }
+  ${invalidState}
 
   &[type="date"]::-webkit-calendar-picker-indicator,
   &[type="month"]::-webkit-calendar-picker-indicator,
@@ -43,13 +56,12 @@ export const Input = styled.input`
   }
 `;
 
-export const Textarea = styled.textarea`
+export const Textarea = styled.textarea<InvalidProp>`
   ${inputBase}
+  border-radius: ${({ theme }) => theme.borderRadiusSm};
   background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 2px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
   color: ${({ theme }) => theme.colors.textPrimary};
   padding: 10px 14px;
   resize: vertical;
@@ -57,7 +69,7 @@ export const Textarea = styled.textarea`
   font-family: inherit;
   line-height: 1.6;
 
-  &::placeholder { color: ${({ theme }) => theme.colors.textMuted}; }
+  &::placeholder { color: ${({ theme }) => theme.colors.textPlaceholder}; }
   &:hover:not(:disabled):not(:focus) {
     border-color: rgba(255, 255, 255, 0.14);
     background: rgba(255, 255, 255, 0.07);
@@ -67,15 +79,16 @@ export const Textarea = styled.textarea`
     background: rgba(255, 255, 255, 0.08);
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.06);
   }
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
+  ${invalidState}
 `;
 
-export const Select = styled.select`
+export const Select = styled.select<InvalidProp>`
   ${inputBase}
+  border-radius: ${({ theme }) => theme.borderRadiusSm};
   background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 2px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
   color: ${({ theme }) => theme.colors.textPrimary};
   padding: 6px 32px 6px 12px;
   cursor: pointer;
@@ -84,7 +97,7 @@ export const Select = styled.select`
   background-repeat: no-repeat;
   background-position: right 12px center;
 
-  &:hover:not(:focus) {
+  &:hover:not(:disabled):not(:focus) {
     border-color: rgba(255, 255, 255, 0.14);
     background-color: rgba(255, 255, 255, 0.07);
   }
@@ -92,5 +105,7 @@ export const Select = styled.select`
     border-color: rgba(255, 255, 255, 0.18);
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.06);
   }
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
+  ${invalidState}
   option { background: ${({ theme }) => theme.colors.bgCard}; }
 `;

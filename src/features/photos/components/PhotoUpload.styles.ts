@@ -15,26 +15,28 @@ export const PickerBtn = styled.label`
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 8px 14px;
-  border: 1px dashed ${({ theme }) => theme.colors.border};
+  padding: 10px 18px;
+  border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.borderRadiusSm};
-  background: rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  color: ${({ theme }) => theme.colors.textMuted};
+  background: ${({ theme }) => theme.colors.bgCard};
+  color: ${({ theme }) => theme.colors.textSecondary};
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   cursor: pointer;
-  transition: all ${({ theme }) => theme.transitions.spring};
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
 
-  &:hover, &:active {
+  &:hover {
     border-color: ${({ theme }) => theme.colors.accent};
     color: ${({ theme }) => theme.colors.accent};
     background: ${({ theme }) => `${theme.colors.accent}08`};
+  }
+
+  &:active {
+    opacity: 0.85;
   }
 
   @media (max-width: 640px) {
@@ -47,13 +49,10 @@ export const PickerBtn = styled.label`
 
 export const PreviewBox = styled.div`
   position: relative;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.borderRadius};
   padding: 12px;
-  background: rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  background: ${({ theme }) => theme.colors.bgCard};
   text-align: center;
 `;
 

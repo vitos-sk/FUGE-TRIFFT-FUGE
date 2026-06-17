@@ -10,7 +10,7 @@ export type { SelectOption } from "./SelectInput/SelectInput";
 export { CustomSelect } from "./CustomSelect/CustomSelect";
 export type { CustomSelectOption } from "./CustomSelect/CustomSelect";
 export { SubmitButton } from "./SubmitButton/SubmitButton";
-export { Input, Textarea, Select, FormGroup, Label } from "./Input/Input";
+export { Input, Textarea, Select, FormGroup, Label, ErrorText } from "./Input/Input";
 export { Badge, NotifDot } from "./Badge/Badge";
 export { Modal } from "./Modal/Modal";
 export { Spinner, FullPageSpinner } from "./Spinner/Spinner";

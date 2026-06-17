@@ -29,7 +29,6 @@ export const Dialog = styled.div`
   backdrop-filter: blur(40px);
   -webkit-backdrop-filter: blur(40px);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-top: 1px solid rgba(204, 34, 34, 0.35);
   box-shadow:
     0 32px 80px rgba(0, 0, 0, 0.7),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);

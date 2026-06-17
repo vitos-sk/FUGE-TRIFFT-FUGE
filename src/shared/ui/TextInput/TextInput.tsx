@@ -1,17 +1,38 @@
-import React from 'react';
-import { Input, FormGroup, Label } from '../Input';
+import React, { useId } from 'react';
+import { Input, FormGroup, Label, ErrorText } from '../Input';
+import { FiAlertCircle } from 'react-icons/fi';
 
 interface Props extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
+  error?: string;
 }
 
 export const TextInput = React.forwardRef<HTMLInputElement, Props>(
-  ({ label, ...rest }, ref) => (
-    <FormGroup>
-      {label && <Label>{label}</Label>}
-      <Input ref={ref} {...rest} />
-    </FormGroup>
-  )
+  ({ label, id, error, ...rest }, ref) => {
+    const generatedId = useId();
+    const inputId = id ?? generatedId;
+    const errorId = `${inputId}-error`;
+
+    return (
+      <FormGroup>
+        {label && <Label htmlFor={inputId}>{label}</Label>}
+        <Input
+          id={inputId}
+          ref={ref}
+          $invalid={!!error}
+          aria-invalid={!!error || undefined}
+          aria-describedby={error ? errorId : undefined}
+          {...rest}
+        />
+        {error && (
+          <ErrorText id={errorId}>
+            <FiAlertCircle size={12} />
+            {error}
+          </ErrorText>
+        )}
+      </FormGroup>
+    );
+  }
 );
 
 TextInput.displayName = 'TextInput';

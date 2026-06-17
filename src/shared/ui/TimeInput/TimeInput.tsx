@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useId } from 'react';
 import { Input, FormGroup, Label } from '../Input';
 
 interface Props {
@@ -10,15 +10,19 @@ interface Props {
   className?: string;
 }
 
-export const TimeInput: React.FC<Props> = ({ label, value, onChange, ...rest }) => (
-  <FormGroup className={rest.className}>
-    {label && <Label>{label}</Label>}
-    <Input
-      type="time"
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      required={rest.required}
-      disabled={rest.disabled}
-    />
-  </FormGroup>
-);
+export const TimeInput: React.FC<Props> = ({ label, value, onChange, ...rest }) => {
+  const id = useId();
+  return (
+    <FormGroup className={rest.className}>
+      {label && <Label htmlFor={id}>{label}</Label>}
+      <Input
+        id={id}
+        type="time"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        required={rest.required}
+        disabled={rest.disabled}
+      />
+    </FormGroup>
+  );
+};

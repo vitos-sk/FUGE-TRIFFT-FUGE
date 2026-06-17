@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useId } from 'react';
 import { Input, FormGroup, Label } from '../Input';
 
 interface Props {
@@ -12,8 +12,10 @@ interface Props {
 }
 
 export const MonthInput: React.FC<Props> = ({ label, value, onChange, compact, style, className }) => {
+  const id = useId();
   const input = (
     <Input
+      id={compact ? undefined : id}
       type="month"
       value={value}
       onChange={(e) => onChange(e.target.value)}
@@ -26,7 +28,7 @@ export const MonthInput: React.FC<Props> = ({ label, value, onChange, compact, s
 
   return (
     <FormGroup className={className}>
-      {label && <Label>{label}</Label>}
+      {label && <Label htmlFor={id}>{label}</Label>}
       {input}
     </FormGroup>
   );

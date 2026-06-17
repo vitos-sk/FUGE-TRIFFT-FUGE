@@ -47,9 +47,9 @@ export const ConfirmProvider: React.FC<{ children: React.ReactNode }> = ({ child
       {children}
       {pending && (
         <Overlay onClick={(e) => e.target === e.currentTarget && handleResponse(false)}>
-          <Dialog>
-            <Title>{pending.options.title}</Title>
-            <Message>{pending.options.message}</Message>
+          <Dialog role="alertdialog" aria-modal="true" aria-labelledby="confirm-title" aria-describedby="confirm-msg">
+            <Title id="confirm-title">{pending.options.title}</Title>
+            <Message id="confirm-msg">{pending.options.message}</Message>
             <Actions>
               <Button $variant="secondary" onClick={() => handleResponse(false)}>
                 {pending.options.cancelLabel ?? 'Abbrechen'}

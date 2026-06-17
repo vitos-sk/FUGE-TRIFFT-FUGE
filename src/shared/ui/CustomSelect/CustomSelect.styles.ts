@@ -5,18 +5,16 @@ export const Wrap = styled.div`
   width: 100%;
 `;
 
-export const Trigger = styled.button<{ $open: boolean }>`
+export const Trigger = styled.button<{ $open: boolean; $invalid?: boolean }>`
   width: 100%;
-  border-radius: 6px;
+  border-radius: ${({ theme }) => theme.borderRadiusSm};
   font-size: 13px;
   font-family: inherit;
   font-weight: 400;
   line-height: 1.4;
   background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   border: 1px solid ${({ $open }) => $open ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.08)'};
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 2px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
   color: ${({ theme }) => theme.colors.textPrimary};
   padding: 6px 12px;
   cursor: pointer;
@@ -25,16 +23,31 @@ export const Trigger = styled.button<{ $open: boolean }>`
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+  outline: none;
   transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
 
-  &:hover {
+  &:hover:not(:disabled) {
     border-color: rgba(255, 255, 255, 0.14);
     background: rgba(255, 255, 255, 0.07);
+  }
+
+  &:focus-visible {
+    border-color: rgba(255, 255, 255, 0.18);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.06);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
   }
 
   ${({ $open }) => $open && `
     background: rgba(255, 255, 255, 0.08);
     box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 0 0 1px rgba(255,255,255,0.06);
+  `}
+
+  ${({ $invalid, theme }) => $invalid && `
+    border-color: ${theme.colors.danger}99;
   `}
 
   @media (max-width: 560px) {
@@ -78,7 +91,7 @@ export const Dropdown = styled.div<{ $dropUp?: boolean }>`
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
+  border-radius: ${({ theme }) => theme.borderRadius};
   padding: 4px;
   box-shadow:
     0 12px 32px rgba(0, 0, 0, 0.85),
@@ -101,20 +114,22 @@ export const Dropdown = styled.div<{ $dropUp?: boolean }>`
   }
 `;
 
-export const OptionBtn = styled.button<{ $active: boolean }>`
+export const OptionBtn = styled.button<{ $active: boolean; $highlighted?: boolean }>`
   width: 100%;
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 8px 10px;
-  border-radius: 6px;
+  border-radius: ${({ theme }) => theme.borderRadiusSm};
   font-size: 13px;
   font-family: inherit;
   text-align: left;
   cursor: pointer;
   border: none;
-  background: ${({ $active }) => $active ? 'rgba(204, 34, 34, 0.14)' : 'transparent'};
-  color: ${({ $active }) => $active ? '#ff6060' : 'rgba(255, 255, 255, 0.72)'};
+  background: ${({ $active, $highlighted }) =>
+    $active ? 'rgba(204, 34, 34, 0.14)' : $highlighted ? 'rgba(255, 255, 255, 0.07)' : 'transparent'};
+  color: ${({ $active, $highlighted }) =>
+    $active ? '#ff6060' : $highlighted ? 'rgba(255, 255, 255, 0.95)' : 'rgba(255, 255, 255, 0.72)'};
   transition: background 0.12s, color 0.12s;
 
   &:hover {

@@ -58,25 +58,12 @@ export const RangeGroup = styled(SegGroup)`
 `;
 
 export const RangeBtn = styled(SegBtn)`
-  padding: 5px 13px;
-  font-size: 10px;
-  overflow: visible;
-  text-overflow: clip;
-  min-width: max-content;
+  padding: 5px clamp(5px, 2.5vw, 13px);
+  font-size: clamp(9px, 2.6vw, 11px);
 
   @media (min-width: 769px) {
     padding: 5px 14px;
-  }
-
-  @media (max-width: 480px) {
-    padding: 5px 9px;
-    font-size: 10px;
-  }
-
-  @media (max-width: 360px) {
-    padding: 4px 5px;
-    font-size: 9px;
-    letter-spacing: 0;
+    font-size: 12px;
   }
 `;
 

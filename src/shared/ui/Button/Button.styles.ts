@@ -27,8 +27,12 @@ export const Button = styled.button<ButtonProps>`
     box-shadow: ${({ theme }) => theme.shadows.focus};
   }
 
+  &:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+
   ${({ $size = 'md' }) => {
-    if ($size === 'sm') return css`padding: 5px 12px; font-size: 10px; letter-spacing: 0.06em;`;
+    if ($size === 'sm') return css`padding: 5px 12px; font-size: 11px; letter-spacing: 0.03em;`;
     if ($size === 'lg') return css`padding: 13px 28px; font-size: 12px;`;
     return css`padding: 8px 16px; font-size: 12px;`;
   }}
@@ -98,8 +102,8 @@ export const Button = styled.button<ButtonProps>`
           color: #fff;
           border-color: ${theme.colors.success};
           &:hover:not(:disabled) {
-            background: #27ae60;
-            border-color: #27ae60;
+            background: ${theme.colors.successHover};
+            border-color: ${theme.colors.successHover};
             box-shadow: 0 4px 20px rgba(34,163,90,0.35), 0 1px 4px rgba(0,0,0,0.3);
             transform: translateY(-1px);
           }

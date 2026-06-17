@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-import { FiCopy, FiCheck } from 'react-icons/fi';
-import { format } from 'date-fns';
-import { de } from 'date-fns/locale';
-import { Button } from '@shared/ui/Button';
-import { Modal } from '@shared/ui/Modal';
-import type { WorkHourEntry } from '@shared/types';
+import React, { useState } from "react";
+import { FiCopy, FiCheck } from "react-icons/fi";
+import { format } from "date-fns";
+import { de } from "date-fns/locale";
+import { Button } from "@shared/ui/Button";
+import { Modal } from "@shared/ui/Modal";
+import type { WorkHourEntry } from "@shared/types";
 import {
   RateRow,
   RateInputWrap,
@@ -31,13 +31,14 @@ import {
   WageRowAmount,
   WageModalFooter,
   WageCopyBtn,
-} from './WageModal.styles';
+} from "./WageModal.styles";
 
 const fmtH = (mins: number) =>
-  `${Math.floor(mins / 60)}:${String(mins % 60).padStart(2, '0')} h`;
+  `${Math.floor(mins / 60)}:${String(mins % 60).padStart(2, "0")} h`;
 
 const fmtEur = (amount: number) =>
-  amount.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+  amount.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) +
+  " €";
 
 function buildWageReport(
   entries: WorkHourEntry[],
@@ -52,26 +53,26 @@ function buildWageReport(
   const totalWage = (totalMins / 60) * rate;
 
   const fmt2 = (n: number) =>
-    n.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    n.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-  const header = `Lohnabrechnung ${periodLabel}${workerLabel ? ' – ' + workerLabel : ''}`;
+  const header = `Lohnabrechnung ${periodLabel}${workerLabel ? " – " + workerLabel : ""}`;
   const lines = sorted.map((e) => {
-    const dateStr = format(new Date(e.date + 'T12:00:00'), 'dd.MM. EEE', { locale: de });
-    const time  = `${e.startTime}–${e.endTime}`;
-    const pause = e.breakMinutes > 0 ? `-${e.breakMinutes}min` : '';
-    const obj   = e.objectTitle || '–';
-    return [dateStr, time, pause, obj].filter(Boolean).join(' · ');
+    const dateStr = format(new Date(e.date + "T12:00:00"), "dd.MM. EEE", { locale: de });
+    const time = `${e.startTime}–${e.endTime}`;
+    const pause = e.breakMinutes > 0 ? `-${e.breakMinutes}min` : "";
+    const obj = e.objectTitle || "–";
+    return [dateStr, time, pause, obj].filter(Boolean).join(" · ");
   });
 
   return [
     header,
-    '',
+    "",
     ...lines,
-    '',
-    `Gesamt: ${th}:${String(tm).padStart(2, '0')} h`,
+    "",
+    `Gesamt: ${th}:${String(tm).padStart(2, "0")} h`,
     `Stundenlohn: ${fmt2(rate)} €/h`,
     `Lohn gesamt: ${fmt2(totalWage)} €`,
-  ].join('\n');
+  ].join("\n");
 }
 
 interface WageModalProps {
@@ -87,17 +88,19 @@ export const WageModal: React.FC<WageModalProps> = ({
   entries,
   getPeriodAndWorker,
 }) => {
-  const [hourlyRate, setHourlyRate] = useState('');
+  const [hourlyRate, setHourlyRate] = useState("");
   const [wageCopied, setWageCopied] = useState(false);
 
-  const rate = parseFloat(hourlyRate.replace(',', '.')) || 0;
+  const rate = parseFloat(hourlyRate.replace(",", ".")) || 0;
   const totalMins = entries.reduce((acc, e) => acc + (e.totalMinutes || 0), 0);
   const totalWage = (totalMins / 60) * rate;
   const sortedEntries = [...entries].sort((a, b) => a.date.localeCompare(b.date));
 
   const handleCopyWage = () => {
     const { periodLabel, workerLabel } = getPeriodAndWorker();
-    navigator.clipboard.writeText(buildWageReport(entries, periodLabel, workerLabel, rate));
+    navigator.clipboard.writeText(
+      buildWageReport(entries, periodLabel, workerLabel, rate),
+    );
     setWageCopied(true);
     setTimeout(() => setWageCopied(false), 2500);
   };
@@ -111,6 +114,7 @@ export const WageModal: React.FC<WageModalProps> = ({
           value={hourlyRate}
           onChange={(e) => setHourlyRate(e.target.value)}
           placeholder="0,00"
+          aria-label="Stundenlohn in Euro"
           autoFocus
         />
         <RateSuffix>€/h</RateSuffix>
@@ -123,7 +127,7 @@ export const WageModal: React.FC<WageModalProps> = ({
       {rate > 0 && (
         <WageCopyBtn $done={wageCopied} onClick={handleCopyWage}>
           {wageCopied ? <FiCheck size={13} /> : <FiCopy size={13} />}
-          {wageCopied ? 'Kopiert!' : 'Abrechnung kopieren'}
+          {wageCopied ? "Kopiert!" : "Abrechnung kopieren"}
         </WageCopyBtn>
       )}
       <Button $variant="secondary" $size="sm" onClick={onClose}>
@@ -164,14 +168,18 @@ export const WageModal: React.FC<WageModalProps> = ({
           <WageBreakdownTitle>Aufschlüsselung</WageBreakdownTitle>
           <WageBreakdownList>
             {sortedEntries.map((e) => {
-              const dateStr = format(new Date(e.date + 'T12:00:00'), 'dd.MM. EEE', { locale: de });
+              const dateStr = format(new Date(e.date + "T12:00:00"), "dd.MM. EEE", {
+                locale: de,
+              });
               const entryWage = (e.totalMinutes / 60) * rate;
               return (
                 <WageBreakdownRow key={e.id}>
                   <WageRowMeta>
                     <WageRowDate>{dateStr}</WageRowDate>
                     <WageDot>·</WageDot>
-                    <WageRowTime>{e.startTime}–{e.endTime}</WageRowTime>
+                    <WageRowTime>
+                      {e.startTime}–{e.endTime}
+                    </WageRowTime>
                     {e.breakMinutes > 0 && (
                       <>
                         <WageDot>·</WageDot>
@@ -180,7 +188,7 @@ export const WageModal: React.FC<WageModalProps> = ({
                     )}
                   </WageRowMeta>
                   <WageRowBottom>
-                    <WageRowObj>{e.objectTitle || '—'}</WageRowObj>
+                    <WageRowObj>{e.objectTitle || "—"}</WageRowObj>
                     <WageRowHours>{fmtH(e.totalMinutes)}</WageRowHours>
                     <WageRowAmount>{fmtEur(entryWage)}</WageRowAmount>
                   </WageRowBottom>

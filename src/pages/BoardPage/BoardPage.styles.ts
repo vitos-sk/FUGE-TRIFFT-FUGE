@@ -60,17 +60,17 @@ export const FAB = styled.button`
   position: fixed;
   bottom: 24px;
   right: 22px;
-  width: 42px;
-  height: 42px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
-  background: rgba(204, 34, 34, 0.75);
-  border: 1px solid rgba(204, 34, 34, 0.4);
+  background: ${({ theme }) => theme.colors.accent};
+  border: 1px solid ${({ theme }) => theme.colors.accentHover};
   color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow:
-    0 4px 16px rgba(204, 34, 34, 0.25),
+    0 4px 16px rgba(204, 34, 34, 0.3),
     0 2px 6px rgba(0, 0, 0, 0.4);
   transition: all ${({ theme }) => theme.transitions.spring};
   z-index: 100;
@@ -89,8 +89,8 @@ export const FAB = styled.button`
 
   @media (max-width: 768px) {
     bottom: 76px;
-    width: 38px;
-    height: 38px;
+    width: 48px;
+    height: 48px;
   }
 `;
 

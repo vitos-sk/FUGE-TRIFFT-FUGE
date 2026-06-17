@@ -25,6 +25,7 @@ import {
   MenuItem,
   MenuItemLink,
   MenuBadge,
+  MenuLogoutItem,
 } from './Navbar.styles';
 
 export const Navbar: React.FC = () => {
@@ -92,7 +93,7 @@ export const Navbar: React.FC = () => {
         </UserChip>
 
         <MenuAnchor ref={menuRef}>
-          <SettingsBtn $active={showMenu} onClick={() => setShowMenu((v) => !v)} title="Einstellungen">
+          <SettingsBtn $active={showMenu} onClick={() => setShowMenu((v) => !v)} title="Einstellungen" aria-label="Einstellungen" aria-haspopup="true" aria-expanded={showMenu}>
             <FiSliders size={15} />
             <span className="settings-label">Einstellungen</span>
           </SettingsBtn>
@@ -116,13 +117,17 @@ export const Navbar: React.FC = () => {
                   </MenuItemLink>
                 </>
               )}
+              <MenuLogoutItem onClick={handleLogout}>
+                <FiPower size={14} />
+                Abmelden
+              </MenuLogoutItem>
             </DropMenu>
           )}
         </MenuAnchor>
 
         <MobileAvatar>{initials}</MobileAvatar>
 
-        <LogoutBtn onClick={handleLogout} title="Abmelden">
+        <LogoutBtn onClick={handleLogout} title="Abmelden" aria-label="Abmelden">
           <FiPower size={16} />
         </LogoutBtn>
       </NavRight>

@@ -1,46 +1,59 @@
 import styled, { css, keyframes } from 'styled-components';
 
+const statusColors: Record<string, string> = {
+  new: '#3498db',
+  in_progress: '#cc2222',
+  paused: '#6c757d',
+  done: '#27ae60',
+};
+
 const fadeSlideOut = keyframes`
   0%   { opacity: 1; transform: scale(1);    max-height: 400px; margin-bottom: 0; }
   60%  { opacity: 0; transform: scale(0.96); max-height: 400px; }
   100% { opacity: 0; transform: scale(0.96); max-height: 0;     margin-bottom: -14px; padding: 0; }
 `;
 
-export const Card = styled.div<{ $archiving: boolean }>`
-  background: rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 4px 20px rgba(0, 0, 0, 0.45);
+export const Card = styled.div<{ $archiving: boolean; $status: string }>`
+  background: ${({ theme }) => theme.colors.bgCard};
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-top: 3px solid ${({ $status }) => statusColors[$status] || '#252525'};
   border-radius: ${({ theme }) => theme.borderRadius};
   cursor: pointer;
-  transition: all ${({ theme }) => theme.transitions.spring};
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
   position: relative;
   display: flex;
   flex-direction: column;
 
   &:hover {
-    border-color: rgba(255, 255, 255, 0.14);
-    background: rgba(255, 255, 255, 0.07);
-    transform: translateY(-3px);
+    background: #1b1b1b;
+    border-color: rgba(255, 255, 255, 0.12);
+    border-top-color: ${({ $status }) => statusColors[$status] || '#252525'};
     box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.08),
-      0 16px 48px rgba(0, 0, 0, 0.6),
-      0 0 0 1px rgba(255, 255, 255, 0.07);
+      0 0 0 1px ${({ $status }) => statusColors[$status] || '#252525'}28,
+      0 10px 30px rgba(0, 0, 0, 0.5);
   }
 
-  &:active { transform: translateY(-1px); }
+  &:active {
+    opacity: 0.88;
+    transition: opacity 0.08s;
+  }
 
-  ${({ $archiving }) => $archiving && css`
-    animation: ${fadeSlideOut} 0.5s ease forwards;
-    pointer-events: none;
-    cursor: default;
-    &:hover { transform: none; box-shadow: none; border-color: rgba(255,255,255,0.08); background: rgba(255,255,255,0.04); }
-  `}
+  ${({ $archiving }) =>
+    $archiving &&
+    css`
+      animation: ${fadeSlideOut} 0.5s ease forwards;
+      pointer-events: none;
+      cursor: default;
+      &:hover {
+        background: #161616;
+        box-shadow: none;
+        border-color: rgba(255, 255, 255, 0.07);
+      }
+    `}
 `;
 
 export const CardHeader = styled.div`
-  padding: 18px 18px 0;
+  padding: 16px 16px 0;
 `;
 
 export const CardTop = styled.div`
@@ -65,8 +78,8 @@ export const MenuWrapper = styled.div`
 `;
 
 export const MenuBtn = styled.button`
-  width: 28px;
-  height: 28px;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -78,7 +91,7 @@ export const MenuBtn = styled.button`
 
   &:hover {
     color: ${({ theme }) => theme.colors.textPrimary};
-    background: rgba(255,255,255,0.08);
+    background: rgba(255, 255, 255, 0.08);
   }
 `;
 
@@ -86,12 +99,10 @@ export const Dropdown = styled.div`
   position: absolute;
   top: calc(100% + 4px);
   right: 0;
-  background: rgba(16, 16, 16, 0.9);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: rgba(16, 16, 16, 0.97);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: ${({ theme }) => theme.borderRadius};
-  box-shadow: 0 8px 32px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.06);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
   min-width: 200px;
   z-index: 500;
   overflow: hidden;
@@ -112,7 +123,11 @@ export const DropdownItem = styled.button<{ $danger?: boolean; $success?: boolea
 
   &:hover {
     background: ${({ $success, $danger, theme }) =>
-      $success ? `${theme.colors.success}14` : $danger ? theme.colors.accentDim : theme.colors.bgElevated};
+      $success
+        ? `${theme.colors.success}14`
+        : $danger
+        ? theme.colors.accentDim
+        : theme.colors.bgElevated};
     color: ${({ $success, $danger, theme }) =>
       $success ? theme.colors.success : $danger ? theme.colors.accent : theme.colors.textPrimary};
   }
@@ -122,6 +137,14 @@ export const DropdownItem = styled.button<{ $danger?: boolean; $success?: boolea
   }
 `;
 
+export const CardMeta = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 14px;
+`;
+
 export const Location = styled.p`
   font-size: 12px;
   font-weight: 500;
@@ -129,20 +152,20 @@ export const Location = styled.p`
   display: flex;
   align-items: center;
   gap: 5px;
-  margin-bottom: 14px;
   line-height: 1.4;
+  flex: 1;
+  min-width: 0;
 
   svg { flex-shrink: 0; }
 `;
 
 export const Divider = styled.div`
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
-  margin: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
 `;
 
 export const CardBody = styled.div`
-  padding: 12px 18px;
+  padding: 12px 16px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -163,7 +186,7 @@ export const MetaItem = styled.div<{ $warn?: boolean; $ok?: boolean }>`
   font-size: 11px;
   font-weight: 600;
   ${({ $warn, theme }) => $warn && css`color: ${theme.colors.accent};`}
-  ${({ $ok }) => $ok && css`color: #22a35a;`}
+  ${({ $ok, theme }) => $ok && css`color: ${theme.colors.success};`}
   ${({ $warn, $ok, theme }) => !$warn && !$ok && css`color: ${theme.colors.textMuted};`}
 `;
 
@@ -175,12 +198,10 @@ export const NoteCount = styled.div`
   font-weight: 600;
   color: ${({ theme }) => theme.colors.textMuted};
   background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 9999px;
   padding: 3px 10px;
-  transition: all ${({ theme }) => theme.transitions.fast};
+  transition: border-color ${({ theme }) => theme.transitions.fast};
 
   ${Card}:hover & { border-color: ${({ theme }) => theme.colors.borderHover}; }
 `;
@@ -208,19 +229,17 @@ export const ProgressTrack = styled.div`
 export const ProgressFill = styled.div<{ $pct: number; $done: boolean }>`
   height: 100%;
   width: ${({ $pct }) => $pct}%;
-  background: ${({ $done }) => $done ? '#22a35a' : '#cc2222'};
+  background: ${({ $done, theme }) => ($done ? theme.colors.success : theme.colors.accent)};
   border-radius: 9999px;
   transition: width 0.4s ease;
 `;
 
 export const LastNote = styled.div`
   margin-top: 2px;
-  padding: 9px 12px;
+  padding: 8px 11px;
   background: rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border-left: 2px solid rgba(255, 255, 255, 0.1);
-  border-radius: 0 ${({ theme }) => theme.borderRadiusSm} ${({ theme }) => theme.borderRadiusSm} 0;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: ${({ theme }) => theme.borderRadiusSm};
   font-size: 11px;
   color: ${({ theme }) => theme.colors.textMuted};
   font-style: italic;

@@ -13,3 +13,12 @@ export const Label = styled.label`
   text-transform: uppercase;
   letter-spacing: 0.09em;
 `;
+
+export const ErrorText = styled.span`
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: ${({ theme }) => theme.colors.danger};
+  line-height: 1.3;
+`;

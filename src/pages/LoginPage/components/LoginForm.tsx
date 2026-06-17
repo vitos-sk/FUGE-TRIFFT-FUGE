@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useId } from 'react';
 import { loginUser } from '@shared/services/authService';
 import { Input, FormGroup, Label } from '@shared/ui/Input';
 import { FormTitle, FormSubtitle, Form, ErrorMsg, ForgotLink, SubmitBtn } from './LoginForm.styles';
@@ -9,6 +9,8 @@ interface LoginFormProps {
 }
 
 export const LoginForm: React.FC<LoginFormProps> = ({ onForgotPassword, onSuccess }) => {
+  const emailId = useId();
+  const passwordId = useId();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -44,8 +46,9 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onForgotPassword, onSucces
         {error && <ErrorMsg>{error}</ErrorMsg>}
 
         <FormGroup>
-          <Label>E-Mail</Label>
+          <Label htmlFor={emailId}>E-Mail</Label>
           <Input
+            id={emailId}
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -56,8 +59,9 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onForgotPassword, onSucces
         </FormGroup>
 
         <FormGroup>
-          <Label>Passwort</Label>
+          <Label htmlFor={passwordId}>Passwort</Label>
           <Input
+            id={passwordId}
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}

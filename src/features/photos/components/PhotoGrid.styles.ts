@@ -269,3 +269,42 @@ export const Empty = styled.p`
   text-align: center;
   padding: 40px 0;
 `;
+
+export const FilterRow = styled.div`
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+`;
+
+export const FilterChip = styled.button<{ $active: boolean; $color: string }>`
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 28px;
+  padding: 0 11px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
+
+  color: ${({ $active, $color }) => ($active ? $color : 'rgba(255,255,255,0.38)')};
+  background: ${({ $active, $color }) => ($active ? `${$color}18` : 'transparent')};
+  border: 1px solid ${({ $active, $color }) =>
+    $active ? `${$color}50` : 'rgba(255,255,255,0.1)'};
+
+  &:hover {
+    color: ${({ $color }) => $color};
+    border-color: ${({ $color }) => `${$color}40`};
+    background: ${({ $color }) => `${$color}10`};
+  }
+
+  @media (max-width: 640px) {
+    height: 30px;
+    padding: 0 12px;
+    font-size: 11px;
+  }
+`;

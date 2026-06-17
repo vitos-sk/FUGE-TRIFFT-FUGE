@@ -1,5 +1,6 @@
-import React from 'react';
-import { Select, FormGroup, Label } from '../Input';
+import React, { useId } from 'react';
+import { Select, FormGroup, Label, ErrorText } from '../Input';
+import { FiAlertCircle } from 'react-icons/fi';
 
 export interface SelectOption {
   value: string;
@@ -15,6 +16,7 @@ interface Props {
   children?: React.ReactNode;
   required?: boolean;
   disabled?: boolean;
+  error?: string;
   className?: string;
 }
 
@@ -26,23 +28,39 @@ export const SelectInput: React.FC<Props> = ({
   children,
   required,
   disabled,
+  error,
   className,
-}) => (
-  <FormGroup className={className}>
-    {label && <Label>{label}</Label>}
-    <Select
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      required={required}
-      disabled={disabled}
-    >
-      {options
-        ? options.map((o) => (
-            <option key={o.value} value={o.value}>
-              {o.label}
-            </option>
-          ))
-        : children}
-    </Select>
-  </FormGroup>
-);
+}) => {
+  const id = useId();
+  const errorId = `${id}-error`;
+
+  return (
+    <FormGroup className={className}>
+      {label && <Label htmlFor={id}>{label}</Label>}
+      <Select
+        id={id}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        required={required}
+        disabled={disabled}
+        $invalid={!!error}
+        aria-invalid={!!error || undefined}
+        aria-describedby={error ? errorId : undefined}
+      >
+        {options
+          ? options.map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
+            ))
+          : children}
+      </Select>
+      {error && (
+        <ErrorText id={errorId}>
+          <FiAlertCircle size={12} />
+          {error}
+        </ErrorText>
+      )}
+    </FormGroup>
+  );
+};

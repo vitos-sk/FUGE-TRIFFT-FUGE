@@ -1,25 +1,27 @@
-import styled from 'styled-components';
+import styled from "styled-components";
 
 export const Outer = styled.div`
   border-radius: ${({ theme }) => theme.borderRadius};
   overflow: hidden;
-  border: 1px solid rgba(255,255,255,0.06);
-  box-shadow: 0 4px 20px rgba(0,0,0,0.35);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
 `;
 
 export const TableWrapper = styled.div`
   overflow-x: scroll;
   -webkit-overflow-scrolling: touch;
-  background: rgba(18,18,18,0.85);
+  background: rgba(18, 18, 18, 0.85);
   /* Скрываем нативный — заменяем кастомным */
-  &::-webkit-scrollbar { display: none; }
+  &::-webkit-scrollbar {
+    display: none;
+  }
   scrollbar-width: none;
   -ms-overflow-style: none;
 `;
 
 export const ScrollTrack = styled.div`
   height: 6px;
-  background: rgba(255,255,255,0.05);
+  background: rgba(255, 255, 255, 0.05);
   position: relative;
   cursor: pointer;
   flex-shrink: 0;
@@ -29,15 +31,20 @@ export const ScrollThumb = styled.div`
   position: absolute;
   top: 0;
   height: 100%;
-  background: rgba(255,255,255,0.22);
+  background: rgba(255, 255, 255, 0.22);
   border-radius: 3px;
   cursor: grab;
   touch-action: none;
   user-select: none;
   transition: background 0.15s;
 
-  &:hover { background: rgba(255,255,255,0.38); }
-  &:active { cursor: grabbing; background: rgba(255,255,255,0.5); }
+  &:hover {
+    background: rgba(255, 255, 255, 0.38);
+  }
+  &:active {
+    cursor: grabbing;
+    background: rgba(255, 255, 255, 0.5);
+  }
 `;
 
 export const Table = styled.table`
@@ -55,8 +62,8 @@ export const Th = styled.th`
   color: ${({ theme }) => theme.colors.textMuted};
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  background: rgba(255,255,255,0.025);
-  border-bottom: 1px solid rgba(255,255,255,0.06);
+  background: rgba(255, 255, 255, 0.025);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   white-space: nowrap;
 
   @media (max-width: 639px) {
@@ -68,10 +75,12 @@ export const Th = styled.th`
 export const Td = styled.td`
   padding: 9px 14px;
   color: ${({ theme }) => theme.colors.textPrimary};
-  border-bottom: 1px solid rgba(255,255,255,0.04);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
   white-space: nowrap;
   line-height: 1.4;
-  &:last-child { text-align: right; }
+  &:last-child {
+    text-align: right;
+  }
 
   @media (max-width: 639px) {
     padding: 8px 10px;
@@ -81,17 +90,23 @@ export const Td = styled.td`
 
 export const Tr = styled.tr`
   transition: background ${({ theme }) => theme.transitions.fast};
-  &:last-child td { border-bottom: none; }
-  &:hover td { background: rgba(255,255,255,0.025); }
+  &:last-child td {
+    border-bottom: none;
+  }
+  &:hover td {
+    background: rgba(255, 255, 255, 0.025);
+  }
 `;
 
 export const ActionCell = styled.td`
   padding: 5px 10px;
-  border-bottom: 1px solid rgba(255,255,255,0.04);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
   text-align: right;
   white-space: nowrap;
 
-  @media (max-width: 639px) { padding: 5px 8px; }
+  @media (max-width: 639px) {
+    padding: 5px 8px;
+  }
 `;
 
 export const Empty = styled.div`
@@ -99,19 +114,25 @@ export const Empty = styled.div`
   text-align: center;
   color: ${({ theme }) => theme.colors.textMuted};
   font-size: 14px;
-  background: rgba(18,18,18,0.85);
+  background: rgba(18, 18, 18, 0.85);
 `;
 
 export const HideMobile = styled(Th)`
-  @media (max-width: 639px) { display: none; }
+  @media (max-width: 639px) {
+    display: none;
+  }
 `;
 export const HideMobileTd = styled(Td)`
-  @media (max-width: 639px) { display: none; }
+  @media (max-width: 639px) {
+    display: none;
+  }
 `;
 
 // Table hidden on very narrow screens (cards take over)
 export const DesktopTable = styled.div`
-  @media (max-width: 479px) { display: none; }
+  @media (max-width: 479px) {
+    display: none;
+  }
 `;
 
 // Mobile card list — shows only below 480px
@@ -120,7 +141,9 @@ export const MobileCardList = styled.div`
   flex-direction: column;
   gap: 8px;
 
-  @media (max-width: 479px) { display: flex; }
+  @media (max-width: 479px) {
+    display: flex;
+  }
 `;
 
 export const EntryCard = styled.div`
@@ -200,8 +223,8 @@ export const ModalFooter = styled.div`
 
 export const FooterTotal = styled.div`
   padding: 9px 16px;
-  background: rgba(204,34,34,0.08);
-  border: 1px solid rgba(204,34,34,0.2);
+  background: rgba(204, 34, 34, 0.08);
+  border: 1px solid rgba(204, 34, 34, 0.2);
   border-radius: ${({ theme }) => theme.borderRadiusSm};
   font-size: 17px;
   font-weight: 800;
@@ -216,5 +239,9 @@ export const FooterBtns = styled.div`
   flex: 1;
   justify-content: flex-end;
 
-  @media (max-width: 480px) { button { flex: 1; } }
+  @media (max-width: 480px) {
+    button {
+      flex: 1;
+    }
+  }
 `;

@@ -6,6 +6,7 @@ import { FiMapPin, FiAlertTriangle, FiMessageSquare, FiCheckSquare, FiCalendar, 
 import { useAuth } from '@shared/hooks/useAuth';
 import { useObjectCard } from '../hooks/useObjectCard';
 import { MapPreview } from '@shared/ui/MapPreview';
+import { Badge } from '@shared/ui/Badge';
 import type { CRMObject } from '@shared/types';
 import { OBJECT_STATUS } from '../../../constants';
 import {
@@ -17,6 +18,7 @@ import {
   MenuBtn,
   Dropdown,
   DropdownItem,
+  CardMeta,
   Location,
   Divider,
   CardBody,
@@ -32,6 +34,13 @@ import {
   DeadlineGroup,
   ChecklistLabelLeft,
 } from './ObjectCard.styles';
+
+const STATUS_LABELS: Record<string, string> = {
+  new: 'Neu',
+  in_progress: 'In Arbeit',
+  paused: 'Pausiert',
+  done: 'Fertig',
+};
 
 interface Props {
   object: CRMObject;
@@ -57,9 +66,10 @@ export const ObjectCard: React.FC<Props> = ({ object }) => {
   return (
     <Card
       $archiving={archiving}
+      $status={object.status}
       onClick={() => !archiving && navigate(`/objects/${object.id}`)}
     >
-      <MapPreview address={object.address} city={object.city} height={140} borderRadiusTop="8px" />
+      <MapPreview address={object.address} city={object.city} height={148} borderRadiusTop="7px" />
       <CardHeader>
         <CardTop>
           <Title>{object.title}</Title>
@@ -69,6 +79,9 @@ export const ObjectCard: React.FC<Props> = ({ object }) => {
               <MenuBtn
                 onClick={(e) => { e.stopPropagation(); setMenuOpen((v) => !v); }}
                 title="Optionen"
+                aria-label="Optionen"
+                aria-haspopup="true"
+                aria-expanded={menuOpen}
               >
                 <FiMoreVertical size={15} />
               </MenuBtn>
@@ -88,10 +101,13 @@ export const ObjectCard: React.FC<Props> = ({ object }) => {
           )}
         </CardTop>
 
-        <Location>
-          <FiMapPin size={12} />
-          {object.address}, {object.city}
-        </Location>
+        <CardMeta>
+          <Location>
+            <FiMapPin size={12} />
+            {object.address}, {object.city}
+          </Location>
+          <Badge $status={object.status}>{STATUS_LABELS[object.status]}</Badge>
+        </CardMeta>
       </CardHeader>
 
       <Divider />

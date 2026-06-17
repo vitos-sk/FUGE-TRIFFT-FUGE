@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useId } from 'react';
 import { sendPasswordReset } from '@shared/services/authService';
 import { Input, FormGroup, Label } from '@shared/ui/Input';
 import { FormTitle, FormSubtitle, Form, ErrorMsg, SuccessMsg, BackLink, SubmitBtn } from './ResetForm.styles';
@@ -9,6 +9,7 @@ interface ResetFormProps {
 }
 
 export const ResetForm: React.FC<ResetFormProps> = ({ initialEmail, onBack }) => {
+  const emailId = useId();
   const [resetEmail, setResetEmail] = useState(initialEmail);
   const [resetSent, setResetSent] = useState(false);
   const [resetError, setResetError] = useState('');
@@ -49,8 +50,9 @@ export const ResetForm: React.FC<ResetFormProps> = ({ initialEmail, onBack }) =>
           {resetError && <ErrorMsg>{resetError}</ErrorMsg>}
 
           <FormGroup>
-            <Label>E-Mail</Label>
+            <Label htmlFor={emailId}>E-Mail</Label>
             <Input
+              id={emailId}
               type="email"
               value={resetEmail}
               onChange={(e) => setResetEmail(e.target.value)}

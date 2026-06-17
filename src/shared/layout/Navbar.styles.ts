@@ -145,6 +145,31 @@ export const LogoutBtn = styled.button`
     border-color: ${({ theme }) => theme.colors.accent}33;
     background: ${({ theme }) => theme.colors.accentDim};
   }
+
+  @media (max-width: 480px) { display: none; }
+`;
+
+export const MenuLogoutItem = styled.button`
+  display: none;
+
+  @media (max-width: 480px) {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 13px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    color: ${({ theme }) => theme.colors.accent};
+    background: transparent;
+    border: none;
+    border-top: 1px solid ${({ theme }) => theme.colors.border};
+    cursor: pointer;
+    transition: background ${({ theme }) => theme.transitions.fast};
+    text-align: left;
+
+    &:hover { background: rgba(255,255,255,0.05); }
+  }
 `;
 
 export const MenuAnchor = styled.div`
