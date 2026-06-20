@@ -22,13 +22,6 @@ const TABS = [
   { id: "info", label: "Info", icon: <FiInfo size={13} /> },
 ];
 
-const statusLabels: Record<string, string> = {
-  new: "Neu",
-  in_progress: "In Arbeit",
-  paused: "Pausiert",
-  done: "Fertig",
-};
-
 const ObjectDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -68,7 +61,7 @@ const ObjectDetailPage: React.FC = () => {
 
   return (
     <>
-      {object && <ObjectHeader object={object} statusLabels={statusLabels} />}
+      {object && <ObjectHeader object={object} />}
 
       <Tabs tabs={TABS} activeTab={tab} onChange={(t) => setTab(t as TabId)} />
 
@@ -111,7 +104,6 @@ const ObjectDetailPage: React.FC = () => {
                 isAdmin={isAdmin}
                 onEdit={() => setShowEditModal(true)}
                 onDelete={handleDelete}
-                statusLabels={statusLabels}
               />
             )}
           </>

@@ -1,18 +1,11 @@
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
 
-const statusAccents: Record<string, string> = {
-  new: '#3498db',
-  in_progress: '#cc2222',
-  paused: '#6c757d',
-  done: '#27ae60',
-};
-
-export const HeroSection = styled.div<{ $status: string }>`
+export const HeroSection = styled.div`
   position: relative;
   height: 220px;
   margin: -28px -24px 0 -24px;
-  background: ${({ $status }) => `${statusAccents[$status] || '#252525'}18`};
+  background: rgba(255, 255, 255, 0.03);
   overflow: hidden;
 
   @media (max-width: 768px) {
@@ -51,13 +44,6 @@ export const HeroBack = styled(Link)`
   letter-spacing: 0.01em;
 
   &:hover { color: #fff; }
-`;
-
-export const HeroStatusBadge = styled.div`
-  position: absolute;
-  top: 14px;
-  right: 16px;
-  z-index: 2;
 `;
 
 export const HeroContent = styled.div`

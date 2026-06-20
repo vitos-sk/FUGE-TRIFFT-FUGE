@@ -3,7 +3,6 @@ import { FiCopy, FiCheck } from 'react-icons/fi';
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { Button } from '@shared/ui/Button';
-import { Badge } from '@shared/ui/Badge';
 import type { CRMObject } from '@shared/types';
 import {
   InfoGrid,
@@ -21,7 +20,6 @@ interface InfoTabProps {
   isAdmin: boolean;
   onEdit: () => void;
   onDelete: () => void;
-  statusLabels: Record<string, string>;
 }
 
 export const InfoTab: React.FC<InfoTabProps> = ({
@@ -29,7 +27,6 @@ export const InfoTab: React.FC<InfoTabProps> = ({
   isAdmin,
   onEdit,
   onDelete,
-  statusLabels,
 }) => {
   const [copied, setCopied] = useState(false);
 
@@ -42,16 +39,10 @@ export const InfoTab: React.FC<InfoTabProps> = ({
   return (
     <div>
       <InfoGrid>
-        <InfoItem>
+        <InfoItemWide>
           <InfoLabel>Objektname</InfoLabel>
           <InfoValue>{object.title}</InfoValue>
-        </InfoItem>
-        <InfoItem>
-          <InfoLabel>Status</InfoLabel>
-          <InfoValue>
-            <Badge $status={object.status}>{statusLabels[object.status]}</Badge>
-          </InfoValue>
-        </InfoItem>
+        </InfoItemWide>
         <InfoItemWide>
           <InfoLabel>Adresse</InfoLabel>
           <InfoValue>

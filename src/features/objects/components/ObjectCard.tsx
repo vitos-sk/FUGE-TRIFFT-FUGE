@@ -2,13 +2,11 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format, isPast, differenceInDays } from 'date-fns';
 import { de } from 'date-fns/locale';
-import { FiMapPin, FiAlertTriangle, FiMessageSquare, FiCheckSquare, FiCalendar, FiMoreVertical, FiArchive, FiTrash2 } from 'react-icons/fi';
+import { FiMapPin, FiAlertTriangle, FiCheckSquare, FiCalendar, FiMoreVertical, FiArchive, FiTrash2 } from 'react-icons/fi';
 import { useAuth } from '@shared/hooks/useAuth';
 import { useObjectCard } from '../hooks/useObjectCard';
 import { MapPreview } from '@shared/ui/MapPreview';
-import { Badge } from '@shared/ui/Badge';
 import type { CRMObject } from '@shared/types';
-import { OBJECT_STATUS } from '../../../constants';
 import {
   Card,
   CardHeader,
@@ -20,27 +18,16 @@ import {
   DropdownItem,
   CardMeta,
   Location,
-  Divider,
   CardBody,
   MetaRow,
   MetaItem,
-  NoteCount,
   ChecklistBar,
   ChecklistLabel,
   ProgressTrack,
   ProgressFill,
-  LastNote,
-  LastNoteAuthor,
   DeadlineGroup,
   ChecklistLabelLeft,
 } from './ObjectCard.styles';
-
-const STATUS_LABELS: Record<string, string> = {
-  new: 'Neu',
-  in_progress: 'In Arbeit',
-  paused: 'Pausiert',
-  done: 'Fertig',
-};
 
 interface Props {
   object: CRMObject;
@@ -66,10 +53,9 @@ export const ObjectCard: React.FC<Props> = ({ object }) => {
   return (
     <Card
       $archiving={archiving}
-      $status={object.status}
       onClick={() => !archiving && navigate(`/objects/${object.id}`)}
     >
-      <MapPreview address={object.address} city={object.city} height={148} borderRadiusTop="7px" />
+      <MapPreview address={object.address} city={object.city} height={120} borderRadiusTop="8px" />
       <CardHeader>
         <CardTop>
           <Title>{object.title}</Title>
@@ -103,57 +89,41 @@ export const ObjectCard: React.FC<Props> = ({ object }) => {
 
         <CardMeta>
           <Location>
-            <FiMapPin size={12} />
+            <FiMapPin size={11} />
             {object.address}, {object.city}
           </Location>
-          <Badge $status={object.status}>{STATUS_LABELS[object.status]}</Badge>
         </CardMeta>
       </CardHeader>
 
-      <Divider />
-
-      <CardBody>
-        <MetaRow>
-          <DeadlineGroup>
-            {deadline && (
-              <MetaItem $warn={isOverdue} $ok={!isOverdue && !isSoon && object.status === OBJECT_STATUS.DONE}>
-                {isOverdue ? <FiAlertTriangle size={12} /> : <FiCalendar size={12} />}
-                {format(deadline, 'dd. MMM yy', { locale: de })}
-              </MetaItem>
-            )}
-          </DeadlineGroup>
-          {(object.noteCount ?? 0) > 0 && (
-            <NoteCount>
-              <FiMessageSquare size={11} />
-              {object.noteCount}
-            </NoteCount>
+      {(deadline || checkTotal > 0) && (
+        <CardBody>
+          {deadline && (
+            <MetaRow>
+              <DeadlineGroup>
+                <MetaItem $warn={isOverdue} $soon={isSoon}>
+                  {isOverdue ? <FiAlertTriangle size={11} /> : <FiCalendar size={11} />}
+                  {format(deadline, 'dd. MMM yy', { locale: de })}
+                </MetaItem>
+              </DeadlineGroup>
+            </MetaRow>
           )}
-        </MetaRow>
 
-        {checkTotal > 0 && (
-          <ChecklistBar>
-            <ChecklistLabel>
-              <ChecklistLabelLeft>
-                <FiCheckSquare size={10} />
-                Checkliste
-              </ChecklistLabelLeft>
-              <span>{checkDone}/{checkTotal}</span>
-            </ChecklistLabel>
-            <ProgressTrack>
-              <ProgressFill $pct={checkPct} $done={allDone} />
-            </ProgressTrack>
-          </ChecklistBar>
-        )}
-
-        {object.lastNoteText && (
-          <LastNote>
-            {object.lastNoteAuthor && (
-              <LastNoteAuthor>{object.lastNoteAuthor.split(' ')[0]}:</LastNoteAuthor>
-            )}
-            {object.lastNoteText}
-          </LastNote>
-        )}
-      </CardBody>
+          {checkTotal > 0 && (
+            <ChecklistBar>
+              <ChecklistLabel>
+                <ChecklistLabelLeft>
+                  <FiCheckSquare size={10} />
+                  Checkliste
+                </ChecklistLabelLeft>
+                <span>{checkDone}/{checkTotal}</span>
+              </ChecklistLabel>
+              <ProgressTrack>
+                <ProgressFill $pct={checkPct} $done={allDone} />
+              </ProgressTrack>
+            </ChecklistBar>
+          )}
+        </CardBody>
+      )}
     </Card>
   );
 };

@@ -1,14 +1,12 @@
 import React from 'react';
 import { FiMapPin } from 'react-icons/fi';
 import { SiGooglemaps } from 'react-icons/si';
-import { Badge } from '@shared/ui/Badge';
 import { MapPreview } from '@shared/ui/MapPreview';
 import type { CRMObject } from '@shared/types';
 import {
   HeroSection,
   HeroGradient,
   HeroBack,
-  HeroStatusBadge,
   HeroContent,
   HeroTitle,
   HeroMeta,
@@ -18,12 +16,11 @@ import {
 
 interface ObjectHeaderProps {
   object: CRMObject;
-  statusLabels: Record<string, string>;
 }
 
-export const ObjectHeader: React.FC<ObjectHeaderProps> = ({ object, statusLabels }) => (
+export const ObjectHeader: React.FC<ObjectHeaderProps> = ({ object }) => (
   <>
-    <HeroSection $status={object.status}>
+    <HeroSection>
       <MapPreview
         address={object.address}
         city={object.city}
@@ -33,9 +30,6 @@ export const ObjectHeader: React.FC<ObjectHeaderProps> = ({ object, statusLabels
       />
       <HeroGradient />
       <HeroBack to="/objects">← Zurück</HeroBack>
-      <HeroStatusBadge>
-        <Badge $status={object.status}>{statusLabels[object.status]}</Badge>
-      </HeroStatusBadge>
       <HeroContent>
         <HeroTitle>{object.title}</HeroTitle>
         <HeroMeta>

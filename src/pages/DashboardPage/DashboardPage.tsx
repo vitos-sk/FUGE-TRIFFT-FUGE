@@ -15,7 +15,7 @@ import { useAuth } from '@shared/hooks/useAuth';
 import { useDashboardData } from '@shared/hooks/useDashboardData';
 import { OfflineBanner } from '@shared/ui/OfflineBanner';
 import { useOnlineStatus } from '@shared/hooks/useOnlineStatus';
-import { ROLE, OBJECT_STATUS } from '../../constants';
+import { ROLE } from '../../constants';
 import { StatsCards } from './components/StatsCards';
 import { WeekChart } from './components/WeekChart';
 import { WorkerChart } from './components/WorkerChart';
@@ -49,9 +49,7 @@ const DashboardPage: React.FC = () => {
   const weekMins = hours
     .filter((e) => e.date >= weekStart && e.date <= weekEnd)
     .reduce((acc, e) => acc + (e.totalMinutes || 0), 0);
-  const activeObjects = objects.filter(
-    (o) => o.status === OBJECT_STATUS.NEW || o.status === OBJECT_STATUS.IN_PROGRESS,
-  ).length;
+  const activeObjects = objects.length;
   const totalWorkers = users.filter((u) => u.role === ROLE.WORKER).length;
 
   const weeklyData = eachDayOfInterval({

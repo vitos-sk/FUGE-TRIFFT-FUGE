@@ -12,8 +12,6 @@ export interface AppUser {
   disabled?: boolean;
 }
 
-export type ObjectStatus = 'new' | 'in_progress' | 'paused' | 'done';
-
 export interface Material {
   id: string;
   name: string;
@@ -31,7 +29,6 @@ export interface CRMObject {
   title: string;
   address: string;
   city: string;
-  status: ObjectStatus;
   deadline: Timestamp | null;
   createdBy: string;
   createdAt: Timestamp;

@@ -4,22 +4,12 @@ import { MonthInput } from "@shared/ui/MonthInput";
 import { CustomSelect } from "@shared/ui/CustomSelect";
 
 export const Card = styled.div`
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.05),
-    0 4px 16px rgba(0, 0, 0, 0.3);
-  border-radius: ${({ theme }) => theme.borderRadius};
-  padding: 12px 14px;
   display: flex;
   flex-direction: column;
   gap: 10px;
   margin-bottom: 16px;
 
   @media (max-width: 360px) {
-    padding: 10px 10px;
     gap: 8px;
   }
 `;
@@ -31,7 +21,7 @@ export const FilterRow = styled.div`
   gap: 10px;
 
   @media (max-width: 360px) {
-    gap: 6px;
+    gap: 4px;
   }
 `;
 
@@ -143,7 +133,7 @@ export const ExportBtn = styled.button`
   background: linear-gradient(135deg, rgba(204, 34, 34, 0.85), rgba(155, 18, 18, 0.85));
   cursor: pointer;
   color: #fff;
-  font-size: 10px;
+  font-size: 8px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;

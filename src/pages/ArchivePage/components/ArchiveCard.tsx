@@ -1,15 +1,15 @@
 import React from 'react';
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
-import { FiMapPin, FiRotateCcw, FiTrash2 } from 'react-icons/fi';
+import { FiMapPin, FiRotateCcw, FiTrash2, FiCalendar } from 'react-icons/fi';
 import { Button } from '@shared/ui/Button';
+import { MapPreview } from '@shared/ui/MapPreview';
 import type { CRMObject } from '@shared/types';
 import {
   ArchivedCard,
   CardHeader,
   CardTop,
   CardTitle,
-  ArchivedBadge,
   Location,
   Divider,
   CardFooter,
@@ -30,10 +30,10 @@ export const ArchiveCard: React.FC<ArchiveCardProps> = ({ object, onRestore, onD
 
   return (
     <ArchivedCard>
+      <MapPreview address={object.address} city={object.city} height={112} borderRadiusTop="8px" />
       <CardHeader>
         <CardTop>
           <CardTitle>{object.title}</CardTitle>
-          <ArchivedBadge>Archiviert</ArchivedBadge>
         </CardTop>
         <Location>
           <FiMapPin size={12} />
@@ -43,6 +43,7 @@ export const ArchiveCard: React.FC<ArchiveCardProps> = ({ object, onRestore, onD
       <Divider />
       <CardFooter>
         <ArchivedDate>
+          <FiCalendar size={11} />
           {archivedDate ? format(archivedDate, 'dd. MMM yyyy', { locale: de }) : '—'}
         </ArchivedDate>
         {isAdmin && (
@@ -53,7 +54,6 @@ export const ArchiveCard: React.FC<ArchiveCardProps> = ({ object, onRestore, onD
             </Button>
             <DangerBtn $variant="ghost" $size="sm" onClick={() => onDelete(object)}>
               <FiTrash2 size={13} />
-              Löschen
             </DangerBtn>
           </CardActions>
         )}

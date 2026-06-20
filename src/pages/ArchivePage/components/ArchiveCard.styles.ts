@@ -2,35 +2,27 @@ import styled from 'styled-components';
 import { Button } from '@shared/ui/Button';
 
 export const ArchivedCard = styled.div`
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 4px 16px rgba(0, 0, 0, 0.4);
+  background: ${({ theme }) => theme.colors.bgCard};
+  border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: ${({ theme }) => theme.borderRadius};
   display: flex;
   flex-direction: column;
-  opacity: 0.65;
-  transition: opacity ${({ theme }) => theme.transitions.fast}, border-color ${({ theme }) => theme.transitions.fast};
-  position: relative;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 3px;
-    background: ${({ theme }) => theme.colors.textMuted};
-    border-radius: ${({ theme }) => theme.borderRadius} ${({ theme }) => theme.borderRadius} 0 0;
-  }
+  opacity: 0.7;
+  overflow: hidden;
+  transition:
+    opacity ${({ theme }) => theme.transitions.fast},
+    border-color ${({ theme }) => theme.transitions.fast},
+    box-shadow ${({ theme }) => theme.transitions.fast};
 
   &:hover {
-    opacity: 0.9;
-    border-color: ${({ theme }) => theme.colors.borderHover};
+    opacity: 0.92;
+    border-color: rgba(255, 255, 255, 0.11);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.4);
   }
 `;
 
 export const CardHeader = styled.div`
-  padding: 18px 18px 0;
+  padding: 14px 16px 0;
 `;
 
 export const CardTop = styled.div`
@@ -42,30 +34,15 @@ export const CardTop = styled.div`
 `;
 
 export const CardTitle = styled.h3`
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
   color: ${({ theme }) => theme.colors.textSecondary};
   line-height: 1.3;
   flex: 1;
 `;
 
-export const ArchivedBadge = styled.span`
-  font-size: 9px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: ${({ theme }) => theme.colors.textMuted};
-  background: ${({ theme }) => theme.colors.bgElevated};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 9999px;
-  padding: 4px 10px;
-  white-space: nowrap;
-  flex-shrink: 0;
-  margin-top: 2px;
-`;
-
 export const Location = styled.p`
-  font-size: 12px;
+  font-size: 11px;
   color: ${({ theme }) => theme.colors.textMuted};
   display: flex;
   align-items: center;
@@ -76,12 +53,11 @@ export const Location = styled.p`
 
 export const Divider = styled.div`
   height: 1px;
-  background: ${({ theme }) => theme.colors.border};
-  margin: 0 18px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
 `;
 
 export const CardFooter = styled.div`
-  padding: 12px 18px;
+  padding: 10px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -90,14 +66,25 @@ export const CardFooter = styled.div`
 
 export const ArchivedDate = styled.span`
   font-size: 11px;
+  font-weight: 500;
   color: ${({ theme }) => theme.colors.textMuted};
+  display: flex;
+  align-items: center;
+  gap: 5px;
 `;
 
 export const CardActions = styled.div`
   display: flex;
   gap: 6px;
+  align-items: center;
 `;
 
 export const DangerBtn = styled(Button)`
   color: ${({ theme }) => theme.colors.accent};
+  padding: 5px 8px;
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.accentDim};
+    color: ${({ theme }) => theme.colors.accent};
+  }
 `;

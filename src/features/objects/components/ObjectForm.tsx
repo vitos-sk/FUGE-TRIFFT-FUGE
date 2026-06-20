@@ -131,7 +131,6 @@ export const ObjectForm: React.FC<Props> = ({
         title,
         address,
         city,
-        status: 'new',
         deadline: deadline ? Timestamp.fromDate(new Date(deadline)) : null,
       });
     } finally {

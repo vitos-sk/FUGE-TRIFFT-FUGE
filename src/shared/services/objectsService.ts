@@ -14,7 +14,7 @@ import {
 } from 'firebase/firestore';
 import { ref, deleteObject as deleteStorageObject } from 'firebase/storage';
 import { db, storage } from './firebase';
-import type { CRMObject, ObjectStatus, Material, ChecklistItem } from '../types';
+import type { CRMObject, Material, ChecklistItem } from '../types';
 
 export const subscribeToObjects = (
   onData: (objects: CRMObject[]) => void,
@@ -87,9 +87,6 @@ const extractStoragePath = (url: string): string | null => {
     return null;
   }
 };
-
-export const updateObjectStatus = async (id: string, status: ObjectStatus) =>
-  updateDoc(doc(db, 'objects', id), { status });
 
 export const updateMaterials = async (id: string, materials: Material[]) =>
   updateDoc(doc(db, 'objects', id), { materials });

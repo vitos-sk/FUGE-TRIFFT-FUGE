@@ -1,10 +1,48 @@
 import styled from 'styled-components';
 
-export const TableWrapper = styled.div`
-  overflow-x: auto;
-  border: 1px solid ${({ theme }) => theme.colors.border};
+export const Outer = styled.div`
   border-radius: ${({ theme }) => theme.borderRadius};
+  overflow: hidden;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+`;
+
+export const TableWrapper = styled.div`
+  overflow-x: scroll;
   -webkit-overflow-scrolling: touch;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+`;
+
+export const ScrollTrack = styled.div`
+  height: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  position: relative;
+  cursor: pointer;
+  flex-shrink: 0;
+`;
+
+export const ScrollThumb = styled.div`
+  position: absolute;
+  top: 0;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.22);
+  border-radius: 3px;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  transition: background 0.15s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.38);
+  }
+  &:active {
+    cursor: grabbing;
+    background: rgba(255, 255, 255, 0.5);
+  }
 `;
 
 export const Table = styled.table`

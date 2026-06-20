@@ -1,18 +1,10 @@
 import styled, { css } from 'styled-components';
-import type { ObjectStatus, NoteTag, PhotoType } from '../../types';
+import type { NoteTag, PhotoType } from '../../types';
 
 interface BadgeProps {
-  $status?: ObjectStatus;
   $tag?: NoteTag;
   $photoType?: PhotoType;
 }
-
-const statusColors: Record<ObjectStatus, string> = {
-  new: '#3498db',
-  in_progress: '#cc2222',
-  paused: '#6c757d',
-  done: '#27ae60',
-};
 
 const tagColors: Record<NoteTag, string> = {
   material: '#9b59b6',
@@ -40,14 +32,6 @@ export const Badge = styled.span<BadgeProps>`
   text-transform: uppercase;
   letter-spacing: 0.06em;
   white-space: nowrap;
-
-  ${({ $status }) =>
-    $status &&
-    css`
-      background: ${statusColors[$status]}20;
-      color: ${statusColors[$status]};
-      border: 1px solid ${statusColors[$status]}40;
-    `}
 
   ${({ $tag }) =>
     $tag &&
