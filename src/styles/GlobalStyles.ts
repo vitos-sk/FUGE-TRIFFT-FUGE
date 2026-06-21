@@ -40,7 +40,7 @@ export const GlobalStyles = createGlobalStyle`
       radial-gradient(ellipse 40% 50% at 55% 18%, rgba(62,3,3,0.04) 0%, transparent 48%);
     color: ${({ theme }) => theme.colors.textPrimary};
     line-height: 1.5;
-    min-height: 100vh;
+    min-height: 100dvh;
     touch-action: pan-x pan-y;
     overscroll-behavior: none;
   }
@@ -73,7 +73,7 @@ export const GlobalStyles = createGlobalStyle`
   }
 
   #root {
-    min-height: 100vh;
+    min-height: 100dvh;
   }
 
   a { color: inherit; text-decoration: none; }

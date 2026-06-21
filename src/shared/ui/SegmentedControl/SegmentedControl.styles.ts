@@ -1,7 +1,9 @@
 import styled, { css } from 'styled-components';
 
-export const SegGroup = styled.div`
-  display: flex;
+export const SegGroup = styled.div<{ $cols?: number }>`
+  display: grid;
+  grid-template-columns: ${({ $cols }) =>
+    $cols !== undefined ? `repeat(${$cols}, 1fr)` : 'repeat(auto-fit, minmax(3rem, 1fr))'};
   gap: 4px;
   background: rgba(255, 255, 255, 0.04);
   backdrop-filter: blur(12px);

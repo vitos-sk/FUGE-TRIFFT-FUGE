@@ -63,6 +63,9 @@ const HoursPage: React.FC = () => {
     setRange,
     pickedMonth,
     setPickedMonth,
+    customFrom,
+    customTo,
+    setCustomRange,
     loading,
     refreshing,
     exportMonth,
@@ -208,6 +211,9 @@ const HoursPage: React.FC = () => {
               setRange={setRange}
               pickedMonth={pickedMonth}
               setPickedMonth={setPickedMonth}
+              customFrom={customFrom}
+              customTo={customTo}
+              setCustomRange={setCustomRange}
               selectedUser={selectedUser}
               setSelectedUser={setSelectedUser}
               users={users}

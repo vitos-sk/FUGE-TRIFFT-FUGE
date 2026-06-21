@@ -15,7 +15,7 @@ export const Spinner = styled.div<{ size?: number }>`
 `;
 
 export const FullPageSpinner = styled.div`
-  min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;

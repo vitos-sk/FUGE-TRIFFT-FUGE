@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
-import { FiX, FiEdit2 } from 'react-icons/fi';
+import { FiX, FiEdit2, FiCalendar, FiClock, FiMapPin } from 'react-icons/fi';
 import { Button } from '@shared/ui/Button';
-import { Input, Select, FormGroup, Label } from '@shared/ui/Input';
-import { DateInput } from '@shared/ui/DateInput';
-import { TimeInput } from '@shared/ui/TimeInput';
+import { Input, FormGroup, Label } from '@shared/ui/Input';
 import { SegmentedControl } from '@shared/ui/SegmentedControl';
+import { FieldBtn } from './FieldBtn';
+import { DatePickerSheet } from './DatePickerSheet';
+import { TimePickerSheet } from './TimePickerSheet';
+import { ObjectPickerSheet } from './ObjectPickerSheet';
 import { SubmitButton } from '@shared/ui/SubmitButton';
 import { Modal } from '@shared/ui/Modal';
 import { useToast } from '@shared/ui/Toast';
@@ -33,6 +35,14 @@ import {
   FooterBtns,
   ScrollTrack,
   ScrollThumb,
+  DimTd,
+  DimHideMobileTd,
+  BoldTd,
+  ActionBtnsDiv,
+  LabelWithIndicator,
+  RequiredDot,
+  CharCountRow,
+  CharCount,
 } from './HoursTable.styles';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────────
@@ -54,6 +64,12 @@ const formatMinutes = (mins: number): string => {
   const h = Math.floor(mins / 60);
   const m = mins % 60;
   return `${h}:${String(m).padStart(2, '0')} h`;
+};
+
+const formatDateDisplay = (iso: string): string => {
+  if (!iso) return '';
+  const [y, m, d] = iso.split('-');
+  return `${d}.${m}.${y}`;
 };
 
 // ─── Component ─────────────────────────────────────────────────────────────────
@@ -140,6 +156,10 @@ export const HoursTable: React.FC<Props> = ({ entries, showWorker = false, onDel
   const [editLocationText, setEditLocationText] = useState('');
   const [objects, setObjects] = useState<CRMObject[]>([]);
   const [saving, setSaving] = useState(false);
+  const [editDatePickerOpen, setEditDatePickerOpen] = useState(false);
+  const [editStartPickerOpen, setEditStartPickerOpen] = useState(false);
+  const [editEndPickerOpen, setEditEndPickerOpen] = useState(false);
+  const [editObjectPickerOpen, setEditObjectPickerOpen] = useState(false);
 
   useEffect(() => {
     const unsub = subscribeToObjects((data) => {
@@ -210,6 +230,9 @@ export const HoursTable: React.FC<Props> = ({ entries, showWorker = false, onDel
   };
 
   const editTotal = calcMins(editStart, editEnd, editBreak);
+  const editObjTitle = editObjectId
+    ? (objects.find((o) => o.id === editObjectId)?.title ?? editObjectId)
+    : '⚠ kein Objekt';
 
   if (entries.length === 0) {
     return (
@@ -244,27 +267,25 @@ export const HoursTable: React.FC<Props> = ({ entries, showWorker = false, onDel
                 return (
                   <Tr key={e.id}>
                     <Td>{dateFormatted}</Td>
-                    {showWorker && <Td style={{ color: '#666' }}>{e.userName}</Td>}
-                    <Td style={{ color: '#666' }}>{e.objectTitle || '—'}</Td>
+                    {showWorker && <DimTd>{e.userName}</DimTd>}
+                    <DimTd>{e.objectTitle || '—'}</DimTd>
                     <Td>{e.startTime}</Td>
                     <Td>{e.endTime}</Td>
-                    <HideMobileTd style={{ color: '#666' }}>
+                    <DimHideMobileTd>
                       {e.breakMinutes > 0 ? `${e.breakMinutes} min` : '—'}
-                    </HideMobileTd>
-                    <Td style={{ fontWeight: 700 }}>{formatMinutes(e.totalMinutes)}</Td>
+                    </DimHideMobileTd>
+                    <BoldTd>{formatMinutes(e.totalMinutes)}</BoldTd>
                     <ActionCell>
                       {isOwn && (
-                        <div style={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
-                          <Button $variant="ghost" $size="sm" onClick={() => openEdit(e)}
-                            style={{ color: '#555' }} title="Bearbeiten">
+                        <ActionBtnsDiv>
+                          <Button $variant="ghost" $size="sm" onClick={() => openEdit(e)} title="Bearbeiten">
                             <FiEdit2 size={13} />
                           </Button>
                           <Button $variant="ghost" $size="sm"
-                            onClick={() => handleDelete(e.id, dateFormatted)}
-                            style={{ color: '#555' }} title="Löschen">
+                            onClick={() => handleDelete(e.id, dateFormatted)} title="Löschen">
                             <FiX size={14} />
                           </Button>
-                        </div>
+                        </ActionBtnsDiv>
                       )}
                     </ActionCell>
                   </Tr>
@@ -286,11 +307,26 @@ export const HoursTable: React.FC<Props> = ({ entries, showWorker = false, onDel
 
       <Modal isOpen={!!editEntry} onClose={() => setEditEntry(null)} title="Stunden bearbeiten" width="460px">
         <EditStack>
-          <DateInput label="Datum" value={editDate} onChange={setEditDate} required />
+          <FieldBtn
+            label="Datum"
+            value={formatDateDisplay(editDate)}
+            icon={<FiCalendar size={14} />}
+            onClick={() => setEditDatePickerOpen(true)}
+          />
 
           <TwoCol>
-            <TimeInput label="Beginn" value={editStart} onChange={setEditStart} required />
-            <TimeInput label="Ende" value={editEnd} onChange={setEditEnd} required />
+            <FieldBtn
+              label="Beginn"
+              value={editStart}
+              icon={<FiClock size={14} />}
+              onClick={() => setEditStartPickerOpen(true)}
+            />
+            <FieldBtn
+              label="Ende"
+              value={editEnd}
+              icon={<FiClock size={14} />}
+              onClick={() => setEditEndPickerOpen(true)}
+            />
           </TwoCol>
 
           <FormGroup>
@@ -302,27 +338,21 @@ export const HoursTable: React.FC<Props> = ({ entries, showWorker = false, onDel
             />
           </FormGroup>
 
-          <FormGroup>
-            <Label style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-              Objekt
-              {!editObjectId && <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#cc2222', boxShadow: '0 0 6px #cc222299', display: 'inline-block', flexShrink: 0 }} />}
-            </Label>
-            <Select value={editObjectId} onChange={(e) => setEditObjectId(e.target.value)}>
-              <option value="">⚠ kein Objekt</option>
-              {objects.map((o) => (
-                <option key={o.id} value={o.id}>{o.title}</option>
-              ))}
-            </Select>
-          </FormGroup>
+          <FieldBtn
+            label={<LabelWithIndicator>Objekt{!editObjectId && <RequiredDot />}</LabelWithIndicator>}
+            value={editObjTitle}
+            icon={<FiMapPin size={14} />}
+            onClick={() => setEditObjectPickerOpen(true)}
+          />
 
           {!editObjectId && (
             <FormGroup>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 7 }}>
-                <Label style={{ margin: 0 }}>Wo gearbeitet?</Label>
-                <span style={{ fontSize: 11, color: editLocationText.length >= 13 ? '#cc2222' : '#555', fontVariantNumeric: 'tabular-nums' }}>
+              <CharCountRow>
+                <Label>Wo gearbeitet?</Label>
+                <CharCount $warn={editLocationText.length >= 13}>
                   {editLocationText.length} / 15
-                </span>
-              </div>
+                </CharCount>
+              </CharCountRow>
               <Input
                 type="text"
                 value={editLocationText}
@@ -344,6 +374,34 @@ export const HoursTable: React.FC<Props> = ({ entries, showWorker = false, onDel
           </ModalFooter>
         </EditStack>
       </Modal>
+
+      <DatePickerSheet
+        isOpen={editDatePickerOpen}
+        onClose={() => setEditDatePickerOpen(false)}
+        value={editDate}
+        onChange={setEditDate}
+      />
+      <TimePickerSheet
+        isOpen={editStartPickerOpen}
+        onClose={() => setEditStartPickerOpen(false)}
+        title="Beginn"
+        value={editStart}
+        onChange={setEditStart}
+      />
+      <TimePickerSheet
+        isOpen={editEndPickerOpen}
+        onClose={() => setEditEndPickerOpen(false)}
+        title="Ende"
+        value={editEnd}
+        onChange={setEditEnd}
+      />
+      <ObjectPickerSheet
+        isOpen={editObjectPickerOpen}
+        onClose={() => setEditObjectPickerOpen(false)}
+        value={editObjectId}
+        onChange={setEditObjectId}
+        objects={objects}
+      />
     </>
   );
 };

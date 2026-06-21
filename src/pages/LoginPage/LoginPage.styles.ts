@@ -6,7 +6,7 @@ export const fadeIn = keyframes`
 `;
 
 export const Page = styled.div`
-  min-height: 100vh;
+  min-height: 100dvh;
   background: ${({ theme }) => theme.colors.bgPrimary};
   display: grid;
   grid-template-columns: 1fr 1fr;

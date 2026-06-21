@@ -31,6 +31,11 @@ export const Button = styled.button<ButtonProps>`
     transform: scale(0.97);
   }
 
+  &:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+
   ${({ $size = 'md' }) => {
     if ($size === 'sm') return css`padding: 5px 12px; font-size: 11px; letter-spacing: 0.03em;`;
     if ($size === 'lg') return css`padding: 13px 28px; font-size: 12px;`;
@@ -55,6 +60,12 @@ export const Button = styled.button<ButtonProps>`
           &:active:not(:disabled) {
             transform: translateY(0);
             box-shadow: 0 1px 4px rgba(204,34,34,0.2);
+          }
+          &:disabled {
+            opacity: 1;
+            background: rgba(255, 255, 255, 0.07);
+            color: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.07);
           }
         `;
       case 'secondary':
@@ -114,5 +125,5 @@ export const Button = styled.button<ButtonProps>`
     }
   }}
 
-  &:disabled { opacity: 0.3; cursor: not-allowed; }
 `;
+

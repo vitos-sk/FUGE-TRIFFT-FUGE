@@ -73,17 +73,6 @@ export const ObjektRowActions = styled.div`
   flex-shrink: 0;
 `;
 
-export const BottomRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  justify-content: flex-end;
-
-  @media (max-width: 640px) {
-    justify-content: flex-start;
-  }
-`;
-
 export const TotalDisplay = styled.div`
   display: flex;
   align-items: center;
@@ -170,10 +159,6 @@ export const CharCount = styled.span<{ $warn: boolean }>`
   font-variant-numeric: tabular-nums;
 `;
 
-export const ModalFormGroup = styled(FormGroup)`
-  margin-bottom: 16px;
-`;
-
 export const ModalFormGroupLast = styled(FormGroup)`
-  margin-bottom: 20px;
+  margin-top: 16px;
 `;

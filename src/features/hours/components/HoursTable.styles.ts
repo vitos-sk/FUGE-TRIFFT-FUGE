@@ -245,3 +245,50 @@ export const FooterBtns = styled.div`
     }
   }
 `;
+
+export const DimTd = styled(Td)`
+  color: ${({ theme }) => theme.colors.textSecondary};
+`;
+
+export const DimHideMobileTd = styled(HideMobileTd)`
+  color: ${({ theme }) => theme.colors.textSecondary};
+`;
+
+export const BoldTd = styled(Td)`
+  font-weight: 700;
+`;
+
+export const ActionBtnsDiv = styled.div`
+  display: flex;
+  gap: 2px;
+  justify-content: flex-end;
+`;
+
+export const LabelWithIndicator = styled.span`
+  display: flex;
+  align-items: center;
+  gap: 7px;
+`;
+
+export const RequiredDot = styled.span`
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #cc2222;
+  box-shadow: 0 0 6px #cc222299;
+  display: inline-block;
+  flex-shrink: 0;
+`;
+
+export const CharCountRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 7px;
+`;
+
+export const CharCount = styled.span<{ $warn: boolean }>`
+  font-size: 11px;
+  color: ${({ $warn }) => ($warn ? '#cc2222' : '#555')};
+  font-variant-numeric: tabular-nums;
+`;

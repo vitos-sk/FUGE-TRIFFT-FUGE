@@ -28,7 +28,7 @@ export const Overlay = styled.div<{ $alignTop?: boolean }>`
   }
 `;
 
-export const ModalBox = styled.div<{ width?: string; $height?: string; $minHeight?: string }>`
+export const ModalBox = styled.div<{ width?: string; $height?: string }>`
   background: rgba(10, 7, 7, 0.5);
   backdrop-filter: blur(40px);
   -webkit-backdrop-filter: blur(40px);
@@ -45,7 +45,6 @@ export const ModalBox = styled.div<{ width?: string; $height?: string; $minHeigh
     max-width: min(${({ width }) => width || '480px'}, calc(100vw - 64px));
   }
   ${({ $height }) => $height && `height: ${$height};`}
-  ${({ $minHeight }) => $minHeight && `min-height: ${$minHeight};`}
   display: flex;
   flex-direction: column;
   overflow: hidden;

@@ -12,6 +12,7 @@ interface Props<T extends string | number> {
   value: T;
   onChange: (v: T) => void;
   className?: string;
+  columns?: number;
 }
 
 export function SegmentedControl<T extends string | number>({
@@ -19,9 +20,10 @@ export function SegmentedControl<T extends string | number>({
   value,
   onChange,
   className,
+  columns,
 }: Props<T>) {
   return (
-    <SegGroup className={className}>
+    <SegGroup className={className} $cols={columns ?? options.length}>
       {options.map((opt) => (
         <SegBtn
           key={String(opt.value)}

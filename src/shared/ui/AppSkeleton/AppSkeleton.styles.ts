@@ -6,7 +6,7 @@ const shimmer = keyframes`
 `;
 
 export const Shell = styled.div`
-  min-height: 100vh;
+  min-height: 100dvh;
   background: ${({ theme }) => theme.colors.bgPrimary};
   display: flex;
   flex-direction: column;

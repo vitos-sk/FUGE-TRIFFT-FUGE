@@ -7,7 +7,7 @@ import { getAllUsers } from '@shared/services/authService';
 import { useAuth } from '@shared/hooks/useAuth';
 import type { WorkHourEntry, AppUser } from '@shared/types';
 
-export type RangePreset = 'week' | 'month' | 'all' | 'pick';
+export type RangePreset = 'week' | 'month' | 'pick' | 'custom';
 
 const exportExcel = (entries: WorkHourEntry[], monthLabel: string) => {
   const totalMins = entries.reduce((acc, e) => acc + (e.totalMinutes || 0), 0);
@@ -49,6 +49,8 @@ export const useHoursPage = () => {
   const [selectedUser, setSelectedUser] = useState<string>('');
   const [range, setRange] = useState<RangePreset>('month');
   const [pickedMonth, setPickedMonth] = useState(() => format(new Date(), 'yyyy-MM'));
+  const [customFrom, setCustomFrom] = useState(() => format(startOfMonth(new Date()), 'yyyy-MM-dd'));
+  const [customTo, setCustomTo] = useState(() => format(new Date(), 'yyyy-MM-dd'));
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [exportMonth, setExportMonth] = useState(() => format(new Date(), 'yyyy-MM'));
@@ -65,18 +67,28 @@ export const useHoursPage = () => {
     const now = new Date();
     if (range === 'week')  return [startOfWeek(now, { locale: de }), endOfWeek(now, { locale: de })];
     if (range === 'month') return [startOfMonth(now), endOfMonth(now)];
-    if (range === 'all')   return [undefined, undefined];
     if (range === 'pick') {
       const [y, m] = pickedMonth.split('-').map(Number);
       const d = new Date(y, m - 1);
       return [startOfMonth(d), endOfMonth(d)];
     }
+    if (range === 'custom') {
+      return [
+        customFrom ? new Date(customFrom + 'T00:00:00') : startOfMonth(now),
+        customTo ? new Date(customTo + 'T23:59:59') : now,
+      ];
+    }
     return [startOfMonth(now), endOfMonth(now)];
+  };
+
+  const setCustomRange = (from: string, to: string) => {
+    setCustomFrom(from);
+    setCustomTo(to);
+    setRange('custom');
   };
 
   const load = useCallback(async () => {
     const [from, to] = getDateRange();
-
     // Phase 1: serve from local Firestore cache immediately
     try {
       let cached: typeof entries = [];
@@ -109,7 +121,7 @@ export const useHoursPage = () => {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [isAdmin, uid, range, selectedUser, pickedMonth]);
+  }, [isAdmin, uid, range, selectedUser, pickedMonth, customFrom, customTo]);
 
   useEffect(() => {
     load();
@@ -137,6 +149,9 @@ export const useHoursPage = () => {
     setRange,
     pickedMonth,
     setPickedMonth,
+    customFrom,
+    customTo,
+    setCustomRange,
     loading,
     refreshing,
     exportMonth,

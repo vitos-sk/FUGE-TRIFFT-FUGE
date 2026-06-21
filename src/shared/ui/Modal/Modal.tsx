@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useId } from 'react';
+import ReactDOM from 'react-dom';
 import { FiX } from 'react-icons/fi';
+import { lockScroll, unlockScroll } from '@shared/utils/scrollLock';
 import {
   Overlay, ModalBox, ModalHeader, ModalTitle, CloseBtn,
   ModalSubheader, ModalBody, ModalFooterRow,
@@ -12,14 +14,13 @@ interface ModalProps {
   children: React.ReactNode;
   width?: string;
   height?: string;
-  minHeight?: string;
   subheader?: React.ReactNode;
   footer?: React.ReactNode;
   alignTop?: boolean;
 }
 
 export const Modal: React.FC<ModalProps> = ({
-  isOpen, onClose, title, children, width, height, minHeight, subheader, footer, alignTop,
+  isOpen, onClose, title, children, width, height, subheader, footer, alignTop,
 }) => {
   const dialogRef = useRef<HTMLDivElement>(null);
   const titleId = useId();
@@ -30,8 +31,7 @@ export const Modal: React.FC<ModalProps> = ({
     if (!isOpen) return;
 
     const prevFocus = document.activeElement as HTMLElement | null;
-    document.body.style.overflow = 'hidden';
-    document.documentElement.style.overflowY = 'hidden';
+    lockScroll();
 
     const getFocusable = () =>
       Array.from(
@@ -64,15 +64,14 @@ export const Modal: React.FC<ModalProps> = ({
     return () => {
       cancelAnimationFrame(frameId);
       document.removeEventListener('keydown', onKeyDown);
-      document.body.style.overflow = '';
-      document.documentElement.style.overflowY = '';
+      unlockScroll();
       prevFocus?.focus();
     };
   }, [isOpen]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!isOpen) return null;
 
-  return (
+  return ReactDOM.createPortal(
     <Overlay $alignTop={alignTop} onClick={(e) => e.target === e.currentTarget && onClose()}>
       <ModalBox
         role="dialog"
@@ -81,7 +80,7 @@ export const Modal: React.FC<ModalProps> = ({
         ref={dialogRef}
         width={width}
         $height={height}
-        $minHeight={minHeight}
+
       >
         <ModalHeader>
           <ModalTitle id={titleId}>{title}</ModalTitle>
@@ -91,6 +90,7 @@ export const Modal: React.FC<ModalProps> = ({
         <ModalBody>{children}</ModalBody>
         {footer && <ModalFooterRow>{footer}</ModalFooterRow>}
       </ModalBox>
-    </Overlay>
+    </Overlay>,
+    document.body
   );
 };
