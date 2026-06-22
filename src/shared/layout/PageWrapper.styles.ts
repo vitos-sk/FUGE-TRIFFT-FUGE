@@ -7,6 +7,6 @@ export const PageWrapper = styled.main`
 
   @media (max-width: 768px) {
     padding: 18px 16px;
-    padding-bottom: 84px;
+    padding-bottom: calc(62px + env(safe-area-inset-bottom, 0px) + 16px);
   }
 `;

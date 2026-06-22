@@ -11,6 +11,7 @@ import {
   InfoLabel,
   InfoValue,
   CopyBtn,
+  EditBtnWrap,
   DangerZone,
   DangerTitle,
 } from './InfoTab.styles';
@@ -68,7 +69,9 @@ export const InfoTab: React.FC<InfoTabProps> = ({
 
       {isAdmin && (
         <>
-          <Button onClick={onEdit}>Bearbeiten</Button>
+          <EditBtnWrap>
+            <Button onClick={onEdit}>Bearbeiten</Button>
+          </EditBtnWrap>
           <DangerZone>
             <DangerTitle>Gefahrenzone</DangerTitle>
             <Button $variant="danger" onClick={onDelete}>

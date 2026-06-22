@@ -113,8 +113,8 @@ export const DeleteBtn = styled.button`
 
   @media (max-width: 640px) {
     opacity: 1;
-    width: 26px;
-    height: 26px;
+    width: 36px;
+    height: 36px;
     top: 4px;
     right: 4px;
   }

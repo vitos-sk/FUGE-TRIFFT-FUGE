@@ -48,6 +48,13 @@ export const CopyBtn = styled.button`
   &:hover { color: ${({ theme }) => theme.colors.textPrimary}; }
 `;
 
+export const EditBtnWrap = styled.div`
+  @media (max-width: 640px) {
+    width: 100%;
+    > button { width: 100%; }
+  }
+`;
+
 export const DangerZone = styled.div`
   margin-top: 32px;
   padding-top: 22px;
@@ -56,6 +63,10 @@ export const DangerZone = styled.div`
   flex-direction: column;
   align-items: flex-start;
   gap: 8px;
+
+  @media (max-width: 640px) {
+    align-items: stretch;
+  }
 `;
 
 export const DangerTitle = styled.p`
