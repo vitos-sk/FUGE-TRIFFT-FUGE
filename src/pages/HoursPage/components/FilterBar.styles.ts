@@ -1,6 +1,7 @@
 import styled, { css } from "styled-components";
 import { SegGroup, SegBtn } from "@shared/ui/SegmentedControl";
 import { CustomSelect } from "@shared/ui/CustomSelect";
+import { Trigger as CustomSelectTrigger } from "@shared/ui/CustomSelect/CustomSelect.styles";
 import { Btn as FieldBtnEl } from "@features/hours/components/FieldBtn.styles";
 
 export const Card = styled.div`
@@ -40,6 +41,7 @@ export const ExportFieldWrap = styled.div`
 
   ${FieldBtnEl} {
     padding: 7px 11px;
+    min-height: 44px;
     font-size: 11px;
     border-radius: 7px;
     border-color: rgba(255, 255, 255, 0.12);
@@ -49,6 +51,14 @@ export const ExportFieldWrap = styled.div`
 export const FilterUserSelect = styled(CustomSelect)`
   flex: 1;
   min-width: 90px;
+
+  ${CustomSelectTrigger} {
+    padding: 8px 11px;
+    font-size: 12px;
+    border-radius: 7px;
+    border-color: rgba(255, 255, 255, 0.1);
+    min-height: 42px;
+  }
 
   @media (min-width: 769px) {
     flex: none;
@@ -67,6 +77,7 @@ export const RangeGroup = styled(SegGroup)`
 export const RangeBtn = styled(SegBtn)`
   padding: 5px clamp(5px, 2.5vw, 13px);
   font-size: clamp(9px, 2.6vw, 11px);
+  min-height: 36px;
 
   @media (max-width: 360px) {
     padding: 5px 4px;
@@ -83,7 +94,7 @@ export const RowLabel = styled.div`
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.28);
+  color: rgba(255, 255, 255, 0.4);
   margin-bottom: 2px;
 `;
 
@@ -108,6 +119,7 @@ export const ExportBtn = styled.button`
   gap: 5px;
   flex-shrink: 0;
   padding: 7px 11px;
+  min-height: 44px;
   border-radius: 7px;
   border: 1px solid rgba(204, 34, 34, 0.4);
   background: rgba(204, 34, 34, 0.12);
@@ -119,7 +131,9 @@ export const ExportBtn = styled.button`
   letter-spacing: 0.06em;
   text-transform: uppercase;
   white-space: nowrap;
-  transition: background 0.15s, border-color 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
 
   &:hover {
     background: rgba(204, 34, 34, 0.2);

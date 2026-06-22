@@ -36,7 +36,7 @@ export const ObjectHeader: React.FC<ObjectHeaderProps> = ({ object }) => {
         <MapPreview
           address={object.address}
           city={object.city}
-          height={220}
+          height={320}
           borderRadiusTop="0"
           linkToMaps={false}
         />

@@ -1,8 +1,8 @@
-import styled, { css } from 'styled-components';
+import styled, { css } from "styled-components";
 
 interface ButtonProps {
-  $variant?: 'primary' | 'secondary' | 'danger' | 'ghost' | 'success';
-  $size?: 'sm' | 'md' | 'lg';
+  $variant?: "primary" | "secondary" | "danger" | "ghost" | "success";
+  $size?: "sm" | "md" | "lg";
   $fullWidth?: boolean;
 }
 
@@ -36,17 +36,33 @@ export const Button = styled.button<ButtonProps>`
     cursor: not-allowed;
   }
 
-  ${({ $size = 'md' }) => {
-    if ($size === 'sm') return css`padding: 5px 12px; font-size: 11px; letter-spacing: 0.03em;`;
-    if ($size === 'lg') return css`padding: 13px 28px; font-size: 12px;`;
-    return css`padding: 8px 16px; font-size: 12px;`;
+  ${({ $size = "md" }) => {
+    if ($size === "sm")
+      return css`
+        padding: 5px 12px;
+        font-size: 11px;
+        letter-spacing: 0.03em;
+      `;
+    if ($size === "lg")
+      return css`
+        padding: 13px 28px;
+        font-size: 12px;
+      `;
+    return css`
+      padding: 8px 16px;
+      font-size: 12px;
+    `;
   }}
 
-  ${({ $fullWidth }) => $fullWidth && css`width: 100%;`}
+  ${({ $fullWidth }) =>
+    $fullWidth &&
+    css`
+      width: 100%;
+    `}
 
-  ${({ $variant = 'primary', theme }) => {
+  ${({ $variant = "primary", theme }) => {
     switch ($variant) {
-      case 'primary':
+      case "primary":
         return css`
           background: ${theme.colors.accent};
           color: #fff;
@@ -54,12 +70,14 @@ export const Button = styled.button<ButtonProps>`
           &:hover:not(:disabled) {
             background: ${theme.colors.accentHover};
             border-color: ${theme.colors.accentHover};
-            box-shadow: 0 4px 20px rgba(204,34,34,0.35), 0 1px 4px rgba(0,0,0,0.3);
+            box-shadow:
+              0 4px 20px rgba(204, 34, 34, 0.35),
+              0 1px 4px rgba(0, 0, 0, 0.3);
             transform: translateY(-1px);
           }
           &:active:not(:disabled) {
             transform: translateY(0);
-            box-shadow: 0 1px 4px rgba(204,34,34,0.2);
+            box-shadow: 0 1px 4px rgba(204, 34, 34, 0.2);
           }
           &:disabled {
             opacity: 1;
@@ -68,22 +86,22 @@ export const Button = styled.button<ButtonProps>`
             border-color: rgba(255, 255, 255, 0.07);
           }
         `;
-      case 'secondary':
+      case "secondary":
         return css`
-          background: rgba(255,255,255,0.07);
-          color: rgba(255,255,255,0.65);
-          border-color: rgba(255,255,255,0.14);
-          box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+          background: rgba(255, 255, 255, 0.07);
+          color: rgba(255, 255, 255, 0.65);
+          border-color: rgba(255, 255, 255, 0.14);
+          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
           &:hover:not(:disabled) {
-            background: rgba(255,255,255,0.11);
-            color: rgba(255,255,255,0.9);
-            border-color: rgba(255,255,255,0.2);
+            background: rgba(255, 255, 255, 0.11);
+            color: rgba(255, 255, 255, 0.9);
+            border-color: rgba(255, 255, 255, 0.2);
           }
           &:active:not(:disabled) {
-            background: rgba(255,255,255,0.05);
+            background: rgba(255, 255, 255, 0.05);
           }
         `;
-      case 'danger':
+      case "danger":
         return css`
           background: transparent;
           color: ${theme.colors.accent};
@@ -91,23 +109,23 @@ export const Button = styled.button<ButtonProps>`
           &:hover:not(:disabled) {
             background: ${theme.colors.accentDim};
             border-color: ${theme.colors.accent};
-            box-shadow: 0 0 16px rgba(204,34,34,0.15);
+            box-shadow: 0 0 16px rgba(204, 34, 34, 0.15);
           }
         `;
-      case 'ghost':
+      case "ghost":
         return css`
           background: transparent;
           color: ${theme.colors.textMuted};
           border-color: transparent;
           &:hover:not(:disabled) {
             color: ${theme.colors.textPrimary};
-            background: rgba(255,255,255,0.06);
+            background: rgba(255, 255, 255, 0.06);
           }
           &:active:not(:disabled) {
-            background: rgba(255,255,255,0.03);
+            background: rgba(255, 255, 255, 0.03);
           }
         `;
-      case 'success':
+      case "success":
         return css`
           background: ${theme.colors.success};
           color: #fff;
@@ -115,7 +133,9 @@ export const Button = styled.button<ButtonProps>`
           &:hover:not(:disabled) {
             background: ${theme.colors.successHover};
             border-color: ${theme.colors.successHover};
-            box-shadow: 0 4px 20px rgba(34,163,90,0.35), 0 1px 4px rgba(0,0,0,0.3);
+            box-shadow:
+              0 4px 20px rgba(34, 163, 90, 0.35),
+              0 1px 4px rgba(0, 0, 0, 0.3);
             transform: translateY(-1px);
           }
           &:active:not(:disabled) {
@@ -124,6 +144,4 @@ export const Button = styled.button<ButtonProps>`
         `;
     }
   }}
-
 `;
-

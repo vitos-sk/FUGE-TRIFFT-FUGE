@@ -21,7 +21,10 @@ import type { WorkHourEntry } from '../types';
 const calculateMinutes = (start: string, end: string, breakMins: number): number => {
   const [sh, sm] = start.split(':').map(Number);
   const [eh, em] = end.split(':').map(Number);
-  return Math.max(0, (eh * 60 + em) - (sh * 60 + sm) - breakMins);
+  let endMins = eh * 60 + em;
+  const startMins = sh * 60 + sm;
+  if (endMins <= startMins) endMins += 24 * 60;
+  return Math.max(0, endMins - startMins - breakMins);
 };
 
 const toDateStr = (d: Date) => d.toISOString().slice(0, 10);

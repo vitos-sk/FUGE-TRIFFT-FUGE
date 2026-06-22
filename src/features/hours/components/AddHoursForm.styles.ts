@@ -23,78 +23,61 @@ export const Form = styled.form`
   }
 `;
 
-export const Row = styled.div`
+export const TimeBlock = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+`;
+
+export const TimeRow = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 12px;
-`;
-
-export const TopRow = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-
-  @media (min-width: 640px) {
-    flex-direction: row;
-    align-items: flex-end;
-    gap: 12px;
-
-    > *:first-child { flex: 1; }
-    > *:last-child  { flex: 2; }
-  }
-`;
-
-// На десктопе — один ряд [Objekt] [9:30 h] [+], на мобиле — колонка
-export const ObjektRow = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-
-  @media (min-width: 640px) {
-    flex-direction: row;
-    align-items: flex-end;
-    gap: 10px;
-  }
-`;
-
-// Обёртка селектора — на десктопе занимает оставшееся место (~70%)
-export const ObjektSelectWrap = styled.div`
-  @media (min-width: 640px) {
-    flex: 1;
-    min-width: 0;
-  }
-`;
-
-// [TotalDisplay] + [SubmitButton] рядом
-export const ObjektRowActions = styled.div`
-  display: flex;
-  align-items: center;
+  grid-template-columns: 1fr auto 1fr;
   gap: 8px;
-  flex-shrink: 0;
+  align-items: flex-end;
 `;
 
-export const TotalDisplay = styled.div`
+export const TimeArrow = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 6px 18px;
-  min-width: 110px;
-  background: rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 2px 8px rgba(0, 0, 0, 0.3);
-  border-radius: ${({ theme }) => theme.borderRadiusSm};
-  font-size: 15px;
+  padding-bottom: 12px;
+  color: rgba(255, 255, 255, 0.22);
+  flex-shrink: 0;
+`;
+
+export const TimeResult = styled.div`
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 7px;
+`;
+
+export const TimeResultValue = styled.span`
+  font-size: 17px;
   font-weight: 800;
   color: ${({ theme }) => theme.colors.accent};
   letter-spacing: 0.04em;
-  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+`;
 
-  @media (max-width: 640px) {
-    flex: 1;
-    padding: 6px 14px;
-  }
+export const TimeResultLabel = styled.span`
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.28);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 500;
+`;
+
+export const ObjektRow = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  gap: 10px;
+`;
+
+export const ObjektSelectWrap = styled.div`
+  flex: 1;
+  min-width: 0;
 `;
 
 export const ErrorBox = styled.div`
@@ -161,4 +144,20 @@ export const CharCount = styled.span<{ $warn: boolean }>`
 
 export const ModalFormGroupLast = styled(FormGroup)`
   margin-top: 16px;
+`;
+
+export const LongShiftText = styled.p`
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.5;
+  margin: 0;
+
+  strong {
+    color: ${({ theme }) => theme.colors.accent};
+    font-size: 20px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    display: block;
+    margin: 10px 0 4px;
+  }
 `;

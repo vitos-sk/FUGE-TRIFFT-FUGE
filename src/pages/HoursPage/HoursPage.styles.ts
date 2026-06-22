@@ -122,7 +122,7 @@ export const StatsLabel = styled.div`
 `;
 
 export const StatsValue = styled.div`
-  font-size: 22px;
+  font-size: clamp(22px, 6vw, 28px);
   font-weight: 800;
   color: ${({ theme }) => theme.colors.accent};
   letter-spacing: -0.02em;
@@ -173,21 +173,20 @@ export const StatsBtn = styled.button<{ $done?: boolean }>`
   }
 
   @media (max-width: 560px) {
-    padding: 6px 8px;
-    font-size: 10px;
     gap: 4px;
+    padding: 3px 7px;
+    font-size: 11px;
+    border-radius: 6px;
+
+    svg {
+      width: 11px;
+      height: 11px;
+    }
   }
 
   @media (max-width: 480px) {
     flex: 1;
-    padding: 7px 7px;
-    font-size: 10px;
-  }
-
-  @media (max-width: 360px) {
-    font-size: 10px;
-    padding: 6px 5px;
-    gap: 3px;
+    min-height: 28px;
   }
 `;
 

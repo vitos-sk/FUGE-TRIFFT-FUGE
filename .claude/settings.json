@@ -1,7 +1,13 @@
 {
   "permissions": {
+    "defaultMode": "acceptEdits",
     "allow": [
+      "Bash(*)",
+      "Read(**)",
+      "Edit(**)",
+      "Write(**)",
       "Bash(sudo npm install -g firebase-tools)"
-    ]
+    ],
+    "deny": ["Bash(git push *)", "Bash(git merge*)", "Bash(gh pr merge*)"]
   }
 }

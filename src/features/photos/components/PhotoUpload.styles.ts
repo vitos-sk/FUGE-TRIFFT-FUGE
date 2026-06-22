@@ -49,10 +49,13 @@ export const PickerBtn = styled.label`
 
 export const PreviewBox = styled.div`
   position: relative;
-  border: 1px solid ${({ theme }) => theme.colors.border};
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: ${({ theme }) => theme.borderRadius};
   padding: 12px;
-  background: ${({ theme }) => theme.colors.bgCard};
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
   text-align: center;
 `;
 

@@ -16,6 +16,7 @@ import {
   Img,
   Overlay,
   Caption,
+  PhotoTypeBadge,
   DeleteBtn,
   Lightbox,
   LightboxInner,
@@ -208,10 +209,12 @@ export const PhotoGrid: React.FC<Props> = ({ objectId, highlightPhotoId, objectT
                         <FiTrash2 size={13} />
                       </DeleteBtn>
                     )}
-                    <Overlay>
-                      <Badge $photoType={photo.type}>{photoTypeLabels[photo.type]}</Badge>
-                      {photo.caption && <Caption>{photo.caption}</Caption>}
-                    </Overlay>
+                    {photo.caption && (
+                      <Overlay>
+                        <Caption>{photo.caption}</Caption>
+                      </Overlay>
+                    )}
+                    <PhotoTypeBadge className="type-badge">{photoTypeLabels[photo.type]}</PhotoTypeBadge>
                   </PhotoCard>
               ))}
             </Grid>

@@ -43,9 +43,7 @@ const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     <>
       <Navbar />
       <PageWrapper>
-        <Suspense fallback={null}>
-          {children}
-        </Suspense>
+        <Suspense fallback={null}>{children}</Suspense>
       </PageWrapper>
       <MobileTabBar />
     </>

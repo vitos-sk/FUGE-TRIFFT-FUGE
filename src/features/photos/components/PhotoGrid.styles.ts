@@ -14,51 +14,73 @@ const highlight = keyframes`
 export const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 16px;
 `;
 
+/* 2 columns on mobile, 3 on tablet/desktop, 4 on wide screens */
 export const Grid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+
+  @media (min-width: 1400px) {
+    grid-template-columns: repeat(4, 1fr);
+  }
 
   @media (max-width: 640px) {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 2px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
   }
 `;
 
 export const PhotoCard = styled.div<{ $highlighted?: boolean }>`
   position: relative;
-  aspect-ratio: 4/3;
+  aspect-ratio: 1 / 1;
   overflow: hidden;
-  border-radius: ${({ theme }) => theme.borderRadius};
-  border: 1px solid ${({ $highlighted, theme }) => $highlighted ? theme.colors.accent : theme.colors.border};
+  border-radius: 8px;
+  border: 1px solid
+    ${({ $highlighted, theme }) =>
+      $highlighted ? theme.colors.accent : theme.colors.border};
   cursor: pointer;
   background: rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
   transition: all ${({ theme }) => theme.transitions.spring};
-  animation: ${({ $highlighted }) => $highlighted ? highlight : 'none'} 1.6s ease-out;
+  animation: ${({ $highlighted }) => ($highlighted ? highlight : 'none')} 1.6s
+    ease-out;
 
   &:hover {
     border-color: ${({ theme }) => theme.colors.borderHover};
-    box-shadow: 0 8px 28px rgba(0,0,0,0.5);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.5);
     transform: scale(1.02);
   }
-  &:hover img { transform: scale(1.06); }
-  &:hover .delete-btn { opacity: 1; }
+  &:hover img {
+    transform: scale(1.06);
+  }
+  &:hover .delete-btn {
+    opacity: 1;
+  }
+  &:hover .type-badge {
+    opacity: 1;
+  }
+
+  &:active {
+    opacity: 0.9;
+  }
 
   @media (max-width: 640px) {
-    aspect-ratio: 1 / 1;
-    border-radius: 3px;
-    border: 1px solid rgba(255,255,255,0.05);
-    &:hover { transform: none; box-shadow: none; }
-    &:hover img { transform: none; }
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    &:hover {
+      transform: none;
+      box-shadow: none;
+    }
+    &:hover img {
+      transform: none;
+    }
   }
 `;
 
 export const Img = styled.img`
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -66,22 +88,41 @@ export const Img = styled.img`
   animation: ${fadeIn} 0.3s ease;
 `;
 
+/* Bottom-left badge overlay positioned like a tile corner — flat where it meets edges */
+export const PhotoTypeBadge = styled.span`
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(0, 0, 0, 0.72);
+  padding: 3px 7px;
+  border-radius: 0 6px 0 8px;
+  white-space: nowrap;
+  line-height: 1.4;
+  transition: opacity 0.15s;
+
+  @media (min-width: 641px) {
+    opacity: 0;
+  }
+`;
+
 export const Overlay = styled.div`
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
-  background: linear-gradient(transparent, rgba(0,0,0,0.78));
-  padding: 20px 10px 10px;
-
-  @media (max-width: 640px) {
-    padding: 14px 5px 5px;
-  }
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.65));
+  padding: 24px 8px 8px;
+  pointer-events: none;
 `;
 
 export const Caption = styled.p`
   font-size: 11px;
-  color: rgba(255,255,255,0.85);
+  color: rgba(255, 255, 255, 0.85);
   margin-top: 4px;
   line-height: 1.3;
 
@@ -98,7 +139,7 @@ export const DeleteBtn = styled.button`
   height: 32px;
   border-radius: 50%;
   border: none;
-  background: rgba(0,0,0,0.65);
+  background: rgba(0, 0, 0, 0.65);
   color: #ff6b6b;
   display: flex;
   align-items: center;
@@ -109,7 +150,10 @@ export const DeleteBtn = styled.button`
   backdrop-filter: blur(4px);
   z-index: 10;
 
-  &:hover { background: rgba(180,30,30,0.85); color: #fff; }
+  &:hover {
+    background: rgba(180, 30, 30, 0.85);
+    color: #fff;
+  }
 
   @media (max-width: 640px) {
     opacity: 1;
@@ -125,7 +169,7 @@ export const DeleteBtn = styled.button`
 export const Lightbox = styled.div`
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.96);
+  background: rgba(0, 0, 0, 0.96);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -137,7 +181,6 @@ export const Lightbox = styled.div`
   touch-action: pan-y;
 `;
 
-/* Контейнер изображения + футер — клик внутри не закрывает лайтбокс */
 export const LightboxInner = styled.div`
   position: relative;
   display: flex;
@@ -154,7 +197,7 @@ export const LightboxImg = styled.img`
   max-height: 80vh;
   object-fit: contain;
   border-radius: ${({ theme }) => theme.borderRadiusSm};
-  box-shadow: 0 24px 80px rgba(0,0,0,0.9);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.9);
   touch-action: pinch-zoom;
   display: block;
 
@@ -172,9 +215,9 @@ export const LightboxClose = styled.button`
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  border: 1px solid rgba(255,255,255,0.15);
-  background: rgba(0,0,0,0.65);
-  color: rgba(255,255,255,0.8);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(0, 0, 0, 0.65);
+  color: rgba(255, 255, 255, 0.8);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -183,7 +226,7 @@ export const LightboxClose = styled.button`
   backdrop-filter: blur(8px);
 
   &:hover {
-    background: rgba(255,255,255,0.15);
+    background: rgba(255, 255, 255, 0.15);
     color: #fff;
   }
 
@@ -212,7 +255,7 @@ export const LightboxFooter = styled.div`
 
 export const LightboxCaption = styled.p`
   font-size: 13px;
-  color: rgba(255,255,255,0.75);
+  color: rgba(255, 255, 255, 0.75);
   flex: 1;
   min-width: 0;
   white-space: nowrap;
@@ -226,26 +269,25 @@ export const LightboxCaption = styled.p`
 
 export const LightboxCounter = styled.span`
   font-size: 11px;
-  color: rgba(255,255,255,0.35);
+  color: rgba(255, 255, 255, 0.35);
   font-weight: 600;
   letter-spacing: 0.08em;
   white-space: nowrap;
   margin-left: auto;
 `;
 
-/* Стрелки навигации — видны только на десктопе, на мобиле — свайп */
 export const LightboxNav = styled.button<{ $side: 'left' | 'right' }>`
   position: fixed;
   top: 50%;
   transform: translateY(-50%);
-  ${({ $side }) => $side === 'left' ? 'left: 16px;' : 'right: 16px;'}
+  ${({ $side }) => ($side === 'left' ? 'left: 16px;' : 'right: 16px;')}
   z-index: 1001;
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  border: 1px solid rgba(255,255,255,0.15);
-  background: rgba(0,0,0,0.55);
-  color: rgba(255,255,255,0.8);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(0, 0, 0, 0.55);
+  color: rgba(255, 255, 255, 0.8);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -254,7 +296,7 @@ export const LightboxNav = styled.button<{ $side: 'left' | 'right' }>`
   backdrop-filter: blur(8px);
 
   &:hover {
-    background: rgba(255,255,255,0.15);
+    background: rgba(255, 255, 255, 0.15);
     color: #fff;
   }
 
@@ -291,10 +333,13 @@ export const FilterChip = styled.button<{ $active: boolean; $color: string }>`
   cursor: pointer;
   transition: color 0.15s, background 0.15s, border-color 0.15s;
 
-  color: ${({ $active, $color }) => ($active ? $color : 'rgba(255,255,255,0.38)')};
-  background: ${({ $active, $color }) => ($active ? `${$color}18` : 'transparent')};
-  border: 1px solid ${({ $active, $color }) =>
-    $active ? `${$color}50` : 'rgba(255,255,255,0.1)'};
+  color: ${({ $active, $color }) =>
+    $active ? $color : 'rgba(255,255,255,0.38)'};
+  background: ${({ $active, $color }) =>
+    $active ? `${$color}18` : 'transparent'};
+  border: 1px solid
+    ${({ $active, $color }) =>
+      $active ? `${$color}50` : 'rgba(255,255,255,0.1)'};
 
   &:hover {
     color: ${({ $color }) => $color};
@@ -302,9 +347,12 @@ export const FilterChip = styled.button<{ $active: boolean; $color: string }>`
     background: ${({ $color }) => `${$color}10`};
   }
 
+  &:active {
+    opacity: 0.75;
+  }
+
   @media (max-width: 640px) {
-    height: 30px;
+    height: 32px;
     padding: 0 12px;
-    font-size: 11px;
   }
 `;

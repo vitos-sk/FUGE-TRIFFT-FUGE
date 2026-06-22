@@ -7,8 +7,11 @@ const fadeSlideOut = keyframes`
 `;
 
 export const Card = styled.div<{ $archiving: boolean }>`
-  background: ${({ theme }) => theme.colors.bgCard};
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
   border-radius: ${({ theme }) => theme.borderRadius};
   cursor: pointer;
   transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
@@ -18,11 +21,11 @@ export const Card = styled.div<{ $archiving: boolean }>`
   overflow: hidden;
 
   &:hover {
-    background: #1b1b1b;
-    border-color: rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.07);
+    border-color: rgba(255, 255, 255, 0.15);
     box-shadow:
-      0 0 0 1px rgba(255, 255, 255, 0.06),
-      0 10px 30px rgba(0, 0, 0, 0.5);
+      inset 0 1px 0 rgba(255, 255, 255, 0.08),
+      0 10px 30px rgba(0, 0, 0, 0.45);
   }
 
   &:active {
@@ -37,9 +40,9 @@ export const Card = styled.div<{ $archiving: boolean }>`
       pointer-events: none;
       cursor: default;
       &:hover {
-        background: #161616;
-        box-shadow: none;
-        border-color: rgba(255, 255, 255, 0.07);
+        background: rgba(255, 255, 255, 0.04);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+        border-color: rgba(255, 255, 255, 0.08);
       }
     `}
 `;

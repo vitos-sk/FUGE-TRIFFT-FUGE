@@ -72,7 +72,7 @@ export const NoteItem: React.FC<Props> = ({ note, objectId, uid, isAdmin, highli
   };
 
   return (
-    <Item ref={itemRef} $highlighted={highlighted}>
+    <Item ref={itemRef} $highlighted={highlighted} $isOwn={note.authorId === uid}>
       <Header>
         <Avatar>{note.authorName.charAt(0).toUpperCase()}</Avatar>
         <Author>{note.authorName}</Author>

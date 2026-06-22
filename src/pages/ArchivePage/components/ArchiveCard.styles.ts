@@ -2,8 +2,11 @@ import styled from 'styled-components';
 import { Button } from '@shared/ui/Button';
 
 export const ArchivedCard = styled.div`
-  background: ${({ theme }) => theme.colors.bgCard};
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
   border-radius: ${({ theme }) => theme.borderRadius};
   display: flex;
   flex-direction: column;
@@ -16,8 +19,10 @@ export const ArchivedCard = styled.div`
 
   &:hover {
     opacity: 0.92;
-    border-color: rgba(255, 255, 255, 0.11);
-    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.4);
+    border-color: rgba(255, 255, 255, 0.13);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.06),
+      0 8px 28px rgba(0, 0, 0, 0.35);
   }
 `;
 

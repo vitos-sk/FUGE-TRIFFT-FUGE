@@ -6,61 +6,61 @@ export const Form = styled.form`
   gap: 10px;
 `;
 
+/* Relative container — send button is positioned absolutely inside */
 export const ChatBar = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  position: relative;
+`;
+
+export const ChatInput = styled.textarea`
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
   background: rgba(255, 255, 255, 0.04);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  border-radius: ${({ theme }) => theme.borderRadius};
-  padding: 6px 6px 6px 16px;
-  transition: border-color 0.15s;
-
-  &:focus-within {
-    border-color: rgba(255, 255, 255, 0.15);
-  }
-`;
-
-export const ChatInput = styled.textarea`
-  flex: 1;
-  background: transparent;
-  border: none;
-  outline: none;
-  box-shadow: none;
+  border-radius: 12px;
   resize: none;
-  font-size: 14px;
-
-  &:focus,
-  &:focus-visible {
-    box-shadow: none;
-    outline: none;
-  }
+  outline: none;
+  font-size: 15px;
+  font-family: inherit;
   color: ${({ theme }) => theme.colors.textPrimary};
   line-height: 1.5;
-  min-height: 22px;
-  max-height: 120px;
-  padding: 5px 0;
-  overflow-y: auto;
-  font-family: inherit;
+  min-height: 52px;
+  /* Right padding reserves space for the 36px button + margins */
+  padding: 14px 52px 14px 16px;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+  overflow-y: hidden;
 
   &::placeholder {
     color: ${({ theme }) => theme.colors.textMuted};
   }
+
+  &:focus {
+    outline: none;
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.16);
+    box-shadow: 0 0 0 3px rgba(204, 34, 34, 0.15),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
 `;
 
 export const CharCount = styled.span<{ $warn: boolean }>`
+  position: absolute;
+  right: 52px;
+  bottom: 14px;
   font-size: 10px;
   color: ${({ $warn, theme }) => ($warn ? theme.colors.accent : theme.colors.textMuted)};
-  align-self: flex-end;
-  padding-bottom: 10px;
-  flex-shrink: 0;
+  pointer-events: none;
   transition: color 0.15s;
+  line-height: 1;
 `;
 
 export const SendBtn = styled.button<{ $active: boolean }>`
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
   width: 36px;
   height: 36px;
   border-radius: 50%;
@@ -68,18 +68,26 @@ export const SendBtn = styled.button<{ $active: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
-  background: ${({ $active, theme }) =>
-    $active ? theme.colors.accent : "rgba(255,255,255,0.05)"};
-  color: ${({ $active }) => ($active ? "#fff" : "rgba(255,255,255,0.25)")};
-  transition: all 0.15s;
+  background: ${({ $active }) => ($active ? '#cc2222' : '#2a2a2a')};
+  color: #fff;
+  transition: background 0.15s, transform 0.15s, opacity 0.15s;
 
   &:hover:not(:disabled) {
-    background: ${({ theme }) => theme.colors.accent};
-    color: #fff;
-    transform: scale(1.07);
+    background: ${({ $active }) => ($active ? '#e53333' : '#2a2a2a')};
+    transform: ${({ $active }) => ($active ? 'scale(1.07)' : 'none')};
   }
+
+  &:active:not(:disabled) {
+    opacity: 0.75;
+  }
+
   &:disabled {
     cursor: default;
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(204, 34, 34, 0.35);
   }
 `;
 

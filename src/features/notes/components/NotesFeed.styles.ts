@@ -3,12 +3,13 @@ import styled from 'styled-components';
 export const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 16px;
 `;
 
 export const Feed = styled.div`
   display: flex;
   flex-direction: column;
+  gap: 6px;
 `;
 
 export const Empty = styled.p`

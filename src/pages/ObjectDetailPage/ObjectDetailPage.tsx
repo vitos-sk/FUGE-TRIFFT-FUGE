@@ -12,11 +12,13 @@ import { InfoTab } from "./components/InfoTab";
 import {
   PageBody,
   NotFoundText,
+  ContentGrid,
+  LeftCol,
+  RightCol,
   SectionBlock,
   SectionHeader,
   SectionLabel,
   NotesBadge,
-  SectionDivider,
   AdminSection,
 } from "./ObjectDetailPage.styles";
 
@@ -49,44 +51,49 @@ const ObjectDetailPage: React.FC = () => {
         <Loader />
       ) : object ? (
         <PageBody>
-          <SectionBlock>
-            <SectionHeader>
-              <SectionLabel>Notizen</SectionLabel>
-              {!!object.noteCount && <NotesBadge>{object.noteCount}</NotesBadge>}
-            </SectionHeader>
-            <NotesFeed
-              objectId={object.id}
-              objectTitle={object.title}
-              highlightNoteId={noteParam ?? undefined}
-            />
-          </SectionBlock>
-
-          <SectionDivider />
-
-          <SectionBlock>
-            <SectionHeader>
-              <SectionLabel>Fotos</SectionLabel>
-            </SectionHeader>
-            <PhotoGrid
-              objectId={object.id}
-              highlightPhotoId={photoParam ?? undefined}
-              objectTitle={object.title}
-            />
-          </SectionBlock>
-
-          {isAdmin && (
-            <>
-              <SectionDivider />
-              <AdminSection>
-                <InfoTab
-                  object={object}
-                  isAdmin={isAdmin}
-                  onEdit={() => setShowEditModal(true)}
-                  onDelete={handleDelete}
+          <ContentGrid>
+            {/* LEFT: Notizen */}
+            <LeftCol>
+              <SectionBlock>
+                <SectionHeader>
+                  <SectionLabel>Notizen</SectionLabel>
+                  {!!object.noteCount && (
+                    <NotesBadge>{object.noteCount}</NotesBadge>
+                  )}
+                </SectionHeader>
+                <NotesFeed
+                  objectId={object.id}
+                  objectTitle={object.title}
+                  highlightNoteId={noteParam ?? undefined}
                 />
-              </AdminSection>
-            </>
-          )}
+              </SectionBlock>
+            </LeftCol>
+
+            {/* RIGHT: Fotos + Admin (stacked on mobile, side-by-side on desktop) */}
+            <RightCol>
+              <SectionBlock>
+                <SectionHeader>
+                  <SectionLabel>Fotos</SectionLabel>
+                </SectionHeader>
+                <PhotoGrid
+                  objectId={object.id}
+                  highlightPhotoId={photoParam ?? undefined}
+                  objectTitle={object.title}
+                />
+              </SectionBlock>
+
+              {isAdmin && (
+                <AdminSection>
+                  <InfoTab
+                    object={object}
+                    isAdmin={isAdmin}
+                    onEdit={() => setShowEditModal(true)}
+                    onDelete={handleDelete}
+                  />
+                </AdminSection>
+              )}
+            </RightCol>
+          </ContentGrid>
         </PageBody>
       ) : null}
 

@@ -6,7 +6,7 @@ import { SubmitButton } from '@shared/ui/SubmitButton';
 import { Modal } from '@shared/ui/Modal';
 import { addHourEntry } from '@shared/services/hoursService';
 import { subscribeToObjects } from '@shared/services/objectsService';
-import { FiAlertTriangle, FiWifi, FiCalendar, FiClock, FiMapPin } from 'react-icons/fi';
+import { FiAlertTriangle, FiWifi, FiCalendar, FiClock, FiMapPin, FiArrowRight } from 'react-icons/fi';
 import { HiPlus } from 'react-icons/hi';
 import { useAuth } from '@shared/hooks/useAuth';
 import { useToast } from '@shared/ui/Toast';
@@ -17,12 +17,14 @@ import { DatePickerSheet } from './DatePickerSheet';
 import { ObjectPickerSheet } from './ObjectPickerSheet';
 import {
   Form,
-  Row,
-  TopRow,
+  TimeBlock,
+  TimeRow,
+  TimeArrow,
+  TimeResult,
+  TimeResultValue,
+  TimeResultLabel,
   ObjektRow,
   ObjektSelectWrap,
-  ObjektRowActions,
-  TotalDisplay,
   ErrorBox,
   OfflineBannerDiv,
   LabelWithIndicator,
@@ -31,9 +33,11 @@ import {
   CharCountRow,
   CharCount,
   ModalFormGroupLast,
+  LongShiftText,
 } from './AddHoursForm.styles';
 
 const BREAKS = [0, 10, 15, 30, 60];
+const LONG_SHIFT_MINS = 12 * 60;
 const BREAK_OPTIONS = BREAKS.map((b) => ({ value: b, label: b === 0 ? 'Keine' : `${b} min` }));
 
 const QUEUE_KEY = 'pendingHoursQueue';
@@ -87,6 +91,8 @@ export const AddHoursForm: React.FC<Props> = ({ onAdded }) => {
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [pendingEntry, setPendingEntry] = useState<QueuedEntry | null>(null);
   const [modalObjectId, setModalObjectId] = useState('');
+
+  const [showLongShiftConfirm, setShowLongShiftConfirm] = useState(false);
 
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [startPickerOpen, setStartPickerOpen] = useState(false);
@@ -183,6 +189,14 @@ export const AddHoursForm: React.FC<Props> = ({ onAdded }) => {
     } finally { setLoading(false); }
   };
 
+  const proceedWithEntry = async (entry: QueuedEntry) => {
+    if (entry.objectId) { await saveEntry(entry); return; }
+    setPendingEntry(entry);
+    setModalObjectId('');
+    setLocationNote('');
+    setShowLocationModal(true);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -196,12 +210,19 @@ export const AddHoursForm: React.FC<Props> = ({ onAdded }) => {
       date, startTime, endTime, breakMinutes: breakMins,
     };
 
-    if (objectId) { await saveEntry(entry); return; }
+    if (totalMins > LONG_SHIFT_MINS) {
+      setPendingEntry(entry);
+      setShowLongShiftConfirm(true);
+      return;
+    }
 
-    setPendingEntry(entry);
-    setModalObjectId('');
-    setLocationNote('');
-    setShowLocationModal(true);
+    await proceedWithEntry(entry);
+  };
+
+  const handleLongShiftConfirm = async () => {
+    if (!pendingEntry) return;
+    setShowLongShiftConfirm(false);
+    await proceedWithEntry(pendingEntry);
   };
 
   const handleLocationConfirm = async () => {
@@ -237,28 +258,38 @@ export const AddHoursForm: React.FC<Props> = ({ onAdded }) => {
           </OfflineBannerDiv>
         )}
 
-        <TopRow>
-          <FieldBtn
-            label="Datum"
-            value={formatDateDisplay(date)}
-            icon={<FiCalendar size={14} />}
-            onClick={() => setDatePickerOpen(true)}
-          />
-          <Row>
+        <FieldBtn
+          label="Datum"
+          value={formatDateDisplay(date)}
+          icon={<FiCalendar size={14} />}
+          onClick={() => setDatePickerOpen(true)}
+        />
+
+        <TimeBlock>
+          <TimeRow>
             <FieldBtn
               label="Beginn"
               value={startTime}
               icon={<FiClock size={14} />}
               onClick={() => setStartPickerOpen(true)}
+              $prominent
             />
+            <TimeArrow><FiArrowRight size={15} /></TimeArrow>
             <FieldBtn
               label="Ende"
               value={endTime}
               icon={<FiClock size={14} />}
               onClick={() => setEndPickerOpen(true)}
+              $prominent
             />
-          </Row>
-        </TopRow>
+          </TimeRow>
+          {totalMins > 0 && (
+            <TimeResult>
+              <TimeResultValue>{formatMinutes(totalMins)}</TimeResultValue>
+              <TimeResultLabel>Arbeitszeit</TimeResultLabel>
+            </TimeResult>
+          )}
+        </TimeBlock>
 
         <FormGroup>
           <Label>Pause</Label>
@@ -278,13 +309,9 @@ export const AddHoursForm: React.FC<Props> = ({ onAdded }) => {
               onClick={() => setObjectPickerOpen(true)}
             />
           </ObjektSelectWrap>
-
-          <ObjektRowActions>
-            <TotalDisplay>{totalMins > 0 ? formatMinutes(totalMins) : '—'}</TotalDisplay>
-            <SubmitButton loading={loading} disabled={totalMins <= 0}>
-              <HiPlus size={20} />
-            </SubmitButton>
-          </ObjektRowActions>
+          <SubmitButton loading={loading} disabled={totalMins <= 0}>
+            <HiPlus size={20} />
+          </SubmitButton>
         </ObjektRow>
       </Form>
 
@@ -322,6 +349,33 @@ export const AddHoursForm: React.FC<Props> = ({ onAdded }) => {
         onChange={(v) => { setModalObjectId(v); setLocationNote(''); }}
         objects={objects}
       />
+
+      <Modal
+        isOpen={showLongShiftConfirm}
+        onClose={() => setShowLongShiftConfirm(false)}
+        title="Lange Schicht?"
+        footer={
+          <ModalFooter>
+            <Button $variant="secondary" type="button" onClick={() => setShowLongShiftConfirm(false)}>
+              Abbrechen
+            </Button>
+            <SubmitButton
+              type="button"
+              loading={loading}
+              loadingText="Speichern…"
+              onClick={handleLongShiftConfirm}
+            >
+              Ja, stimmt so
+            </SubmitButton>
+          </ModalFooter>
+        }
+      >
+        <LongShiftText>
+          Du hast wirklich so lange gearbeitet?
+          <strong>{formatMinutes(totalMins)}</strong>
+          {startTime} – {endTime} Uhr
+        </LongShiftText>
+      </Modal>
 
       <Modal
         isOpen={showLocationModal}
