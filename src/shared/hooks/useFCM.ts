@@ -32,8 +32,8 @@ export const useFCM = (uid: string | null) => {
         if (title && Notification.permission === 'granted') {
           new Notification(title, {
             body,
-            icon: '/favicon.svg',
-            badge: '/favicon.svg',
+            icon: '/apple-touch-icon.png',
+            badge: '/apple-touch-icon.png',
           });
         }
       });

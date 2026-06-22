@@ -28,8 +28,8 @@ export const sendPushOnNotification = onDocumentCreated(
         notification: { title, body },
         webpush: {
           notification: {
-            icon: "/favicon.svg",
-            badge: "/favicon.svg",
+            icon: "/apple-touch-icon.png",
+            badge: "/apple-touch-icon.png",
             vibrate: [200, 100, 200],
           },
           fcmOptions: { link: "/" },
