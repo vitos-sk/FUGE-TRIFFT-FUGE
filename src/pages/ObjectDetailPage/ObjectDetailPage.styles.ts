@@ -4,6 +4,9 @@ export const PageBody = styled.div`
   display: flex;
   flex-direction: column;
   padding-top: 8px;
+  max-width: 760px;
+  margin: 0 auto;
+  width: 100%;
 `;
 
 export const NotFoundText = styled.p`

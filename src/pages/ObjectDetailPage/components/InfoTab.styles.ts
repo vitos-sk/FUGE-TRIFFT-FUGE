@@ -54,6 +54,7 @@ export const DangerZone = styled.div`
   border-top: 1px solid ${({ theme }) => theme.colors.border};
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
   gap: 8px;
 `;
 

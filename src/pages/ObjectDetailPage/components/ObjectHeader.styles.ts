@@ -119,6 +119,10 @@ export const HeroActions = styled.div`
   padding: 12px 0;
   margin-bottom: 8px;
   border-bottom: 1px solid ${({ theme }) => theme.colors.border};
+  max-width: 760px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
 `;
 
 export const ActionBtn = styled.a`
@@ -135,8 +139,6 @@ export const ActionBtn = styled.a`
   min-height: 44px;
   transition: color 0.15s, border-color 0.15s, background 0.15s;
   white-space: nowrap;
-  flex: 1;
-  justify-content: center;
 
   &:hover {
     color: #fff;
@@ -146,5 +148,10 @@ export const ActionBtn = styled.a`
 
   &:active {
     background: rgba(255, 255, 255, 0.1);
+  }
+
+  @media (max-width: 640px) {
+    flex: 1;
+    justify-content: center;
   }
 `;

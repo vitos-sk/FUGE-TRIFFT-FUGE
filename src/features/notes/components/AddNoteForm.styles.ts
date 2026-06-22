@@ -8,7 +8,7 @@ export const Form = styled.form`
 
 export const ChatBar = styled.div`
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   gap: 8px;
   background: rgba(255, 255, 255, 0.04);
   backdrop-filter: blur(12px);
