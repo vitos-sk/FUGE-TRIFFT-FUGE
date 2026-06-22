@@ -8,7 +8,7 @@ import { useToast } from '@shared/ui/Toast';
 import { useConfirm } from '@shared/ui/ConfirmDialog';
 import { deleteNote, updateNote } from '@shared/services/notesService';
 import type { Note } from '@shared/types';
-import { Item, Header, Author, Time, NoteText, Actions, EditRow } from './NoteItem.styles';
+import { Item, Header, Avatar, Author, Time, NoteText, Actions, EditRow } from './NoteItem.styles';
 
 const MAX_CHARS = 600;
 
@@ -74,6 +74,7 @@ export const NoteItem: React.FC<Props> = ({ note, objectId, uid, isAdmin, highli
   return (
     <Item ref={itemRef} $highlighted={highlighted}>
       <Header>
+        <Avatar>{note.authorName.charAt(0).toUpperCase()}</Avatar>
         <Author>{note.authorName}</Author>
         <Time>
           {note.createdAt?.toDate

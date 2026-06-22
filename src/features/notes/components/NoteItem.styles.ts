@@ -7,13 +7,19 @@ const flashHighlight = keyframes`
 `;
 
 export const Item = styled.div<{ $highlighted?: boolean }>`
-  padding: 14px 16px;
+  padding: 14px 16px 14px 14px;
   border-bottom: 1px solid ${({ theme }) => theme.colors.border};
-  transition: background ${({ theme }) => theme.transitions.fast};
+  border-left: 2px solid transparent;
+  transition:
+    background ${({ theme }) => theme.transitions.fast},
+    border-left-color ${({ theme }) => theme.transitions.fast};
   animation: ${({ $highlighted }) => $highlighted ? flashHighlight : 'none'} 0.9s ease-out;
 
   &:last-child { border-bottom: none; }
-  &:hover { background: rgba(255,255,255,0.02); }
+  &:hover {
+    background: rgba(255, 255, 255, 0.02);
+    border-left-color: rgba(255, 255, 255, 0.1);
+  }
 `;
 
 export const Header = styled.div`
@@ -22,6 +28,22 @@ export const Header = styled.div`
   gap: 8px;
   margin-bottom: 8px;
   flex-wrap: wrap;
+`;
+
+export const Avatar = styled.div`
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  flex-shrink: 0;
+  user-select: none;
 `;
 
 export const Author = styled.span`

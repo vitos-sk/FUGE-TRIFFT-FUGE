@@ -69,6 +69,13 @@ export const HeroTitle = styled.h1`
   }
 `;
 
+export const HeroMetaRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+`;
+
 export const HeroMeta = styled.p`
   font-size: 12px;
   font-weight: 500;
@@ -77,8 +84,32 @@ export const HeroMeta = styled.p`
   align-items: center;
   gap: 4px;
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
+  min-width: 0;
+  flex: 1;
 
   svg { flex-shrink: 0; }
+`;
+
+export const DeadlineChip = styled.span<{ $urgent: boolean }>`
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 99px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  flex-shrink: 0;
+  background: ${({ $urgent }) =>
+    $urgent ? 'rgba(204,34,34,0.22)' : 'rgba(255,255,255,0.09)'};
+  border: 1px solid ${({ $urgent }) =>
+    $urgent ? 'rgba(204,34,34,0.45)' : 'rgba(255,255,255,0.13)'};
+  color: ${({ $urgent }) =>
+    $urgent ? '#e53333' : 'rgba(255,255,255,0.65)'};
+  box-shadow: ${({ $urgent }) =>
+    $urgent ? '0 0 12px rgba(204,34,34,0.28)' : 'none'};
+  text-shadow: none;
 `;
 
 export const HeroActions = styled.div`
@@ -90,23 +121,30 @@ export const HeroActions = styled.div`
   border-bottom: 1px solid ${({ theme }) => theme.colors.border};
 `;
 
-export const MapsIconBtn = styled.a`
+export const ActionBtn = styled.a`
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   color: ${({ theme }) => theme.colors.textSecondary};
   border: 1px solid rgba(255, 255, 255, 0.1);
-  background: transparent;
+  background: rgba(255, 255, 255, 0.03);
   border-radius: ${({ theme }) => theme.borderRadiusSm};
-  padding: 6px 12px;
+  padding: 10px 16px;
+  min-height: 44px;
   transition: color 0.15s, border-color 0.15s, background 0.15s;
   white-space: nowrap;
+  flex: 1;
+  justify-content: center;
 
   &:hover {
     color: #fff;
     border-color: rgba(255, 255, 255, 0.22);
-    background: rgba(255, 255, 255, 0.06);
+    background: rgba(255, 255, 255, 0.07);
+  }
+
+  &:active {
+    background: rgba(255, 255, 255, 0.1);
   }
 `;

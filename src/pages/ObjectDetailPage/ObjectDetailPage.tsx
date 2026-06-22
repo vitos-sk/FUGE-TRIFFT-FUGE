@@ -1,7 +1,5 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
-import { FiCamera, FiMessageSquare, FiCheckSquare, FiInfo } from "react-icons/fi";
-import { Tabs } from "@shared/ui/Tabs";
 import { NotesFeed } from "@features/notes/components/NotesFeed";
 import { PhotoGrid } from "@features/photos/components/PhotoGrid";
 import { Modal } from "@shared/ui/Modal";
@@ -9,18 +7,18 @@ import { ObjectForm } from "@features/objects/components/ObjectForm";
 import { Loader } from "@shared/ui/Loader";
 import { useAuth } from "@shared/hooks/useAuth";
 import { useObjectDetail } from "@features/objects/hooks/useObjectDetail";
-import type { TabId } from "@shared/types";
 import { ObjectHeader } from "./components/ObjectHeader";
-import { ChecklistTab } from "./components/ChecklistTab";
 import { InfoTab } from "./components/InfoTab";
-import { TabContent, NotFoundText } from "./ObjectDetailPage.styles";
-
-const TABS = [
-  { id: "photos", label: "Fotos", icon: <FiCamera size={13} /> },
-  { id: "notes", label: "Notizen", icon: <FiMessageSquare size={13} /> },
-  { id: "checklist", label: "Checkliste", icon: <FiCheckSquare size={13} /> },
-  { id: "info", label: "Info", icon: <FiInfo size={13} /> },
-];
+import {
+  PageBody,
+  NotFoundText,
+  SectionBlock,
+  SectionHeader,
+  SectionLabel,
+  NotesBadge,
+  SectionDivider,
+  AdminSection,
+} from "./ObjectDetailPage.styles";
 
 const ObjectDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -28,32 +26,16 @@ const ObjectDetailPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const photoParam = searchParams.get("photo");
   const noteParam = searchParams.get("note");
-  const tabParam = searchParams.get("tab") as TabId | null;
   const { isAdmin } = useAuth();
 
   const {
     object,
     loading,
-    tab,
-    setTab,
     showEditModal,
     setShowEditModal,
-    newCheckItem,
-    setNewCheckItem,
     handleUpdate,
     handleDelete,
-    addCheckItem,
-    toggleCheck,
-    removeCheckItem,
-    doneCount,
-    checklistPct,
   } = useObjectDetail(id, () => navigate("/"));
-
-  useEffect(() => {
-    if (photoParam) setTab("photos");
-    else if (noteParam) setTab("notes");
-    else if (tabParam) setTab(tabParam);
-  }, [photoParam, noteParam, tabParam]);
 
   if (!loading && !object) {
     return <NotFoundText>Objekt nicht gefunden.</NotFoundText>;
@@ -63,52 +45,50 @@ const ObjectDetailPage: React.FC = () => {
     <>
       {object && <ObjectHeader object={object} />}
 
-      <Tabs tabs={TABS} activeTab={tab} onChange={(t) => setTab(t as TabId)} />
+      {loading ? (
+        <Loader />
+      ) : object ? (
+        <PageBody>
+          <SectionBlock>
+            <SectionHeader>
+              <SectionLabel>Notizen</SectionLabel>
+              {!!object.noteCount && <NotesBadge>{object.noteCount}</NotesBadge>}
+            </SectionHeader>
+            <NotesFeed
+              objectId={object.id}
+              objectTitle={object.title}
+              highlightNoteId={noteParam ?? undefined}
+            />
+          </SectionBlock>
 
-      <TabContent>
-        {loading || !object ? (
-          loading ? (
-            <Loader />
-          ) : null
-        ) : (
-          <>
-            {tab === "notes" && (
-              <NotesFeed
-                objectId={object.id}
-                objectTitle={object.title}
-                highlightNoteId={noteParam ?? undefined}
-              />
-            )}
-            {tab === "photos" && (
-              <PhotoGrid
-                objectId={object.id}
-                highlightPhotoId={photoParam ?? undefined}
-                objectTitle={object.title}
-              />
-            )}
-            {tab === "checklist" && (
-              <ChecklistTab
-                checklist={object.checklist}
-                doneCount={doneCount}
-                checklistPct={checklistPct}
-                onToggleCheck={toggleCheck}
-                onRemoveItem={removeCheckItem}
-                newCheckItem={newCheckItem}
-                setNewCheckItem={setNewCheckItem}
-                onAddItem={addCheckItem}
-              />
-            )}
-            {tab === "info" && (
-              <InfoTab
-                object={object}
-                isAdmin={isAdmin}
-                onEdit={() => setShowEditModal(true)}
-                onDelete={handleDelete}
-              />
-            )}
-          </>
-        )}
-      </TabContent>
+          <SectionDivider />
+
+          <SectionBlock>
+            <SectionHeader>
+              <SectionLabel>Fotos</SectionLabel>
+            </SectionHeader>
+            <PhotoGrid
+              objectId={object.id}
+              highlightPhotoId={photoParam ?? undefined}
+              objectTitle={object.title}
+            />
+          </SectionBlock>
+
+          {isAdmin && (
+            <>
+              <SectionDivider />
+              <AdminSection>
+                <InfoTab
+                  object={object}
+                  isAdmin={isAdmin}
+                  onEdit={() => setShowEditModal(true)}
+                  onDelete={handleDelete}
+                />
+              </AdminSection>
+            </>
+          )}
+        </PageBody>
+      ) : null}
 
       <Modal
         isOpen={showEditModal}

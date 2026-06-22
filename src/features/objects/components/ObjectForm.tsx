@@ -55,9 +55,10 @@ export const ObjectForm: React.FC<Props> = ({
   onCancel,
   submitLabel = 'Speichern',
 }) => {
-  const [title, setTitle]       = useState(initial.title ?? '');
-  const [address, setAddress]   = useState(initial.address ?? '');
-  const [city, setCity]         = useState(initial.city ?? '');
+  const [title, setTitle]             = useState(initial.title ?? '');
+  const [address, setAddress]         = useState(initial.address ?? '');
+  const [city, setCity]               = useState(initial.city ?? '');
+  const [whatsappLink, setWhatsappLink] = useState(initial.whatsappLink ?? '');
   const [deadline, setDeadline] = useState(
     initial.deadline?.toDate?.()
       ? initial.deadline.toDate().toISOString().slice(0, 10)
@@ -132,6 +133,7 @@ export const ObjectForm: React.FC<Props> = ({
         address,
         city,
         deadline: deadline ? Timestamp.fromDate(new Date(deadline)) : null,
+        whatsappLink: whatsappLink.trim() || undefined,
       });
     } finally {
       setLoading(false);
@@ -194,6 +196,16 @@ export const ObjectForm: React.FC<Props> = ({
           />
         </FormGroup>
       </Row>
+
+      <FormGroup>
+        <Label>WhatsApp-Gruppe</Label>
+        <Input
+          value={whatsappLink}
+          onChange={(e) => setWhatsappLink(e.target.value)}
+          placeholder="https://chat.whatsapp.com/…"
+          type="url"
+        />
+      </FormGroup>
 
       <Actions>
         <Button type="button" $variant="secondary" onClick={onCancel}>

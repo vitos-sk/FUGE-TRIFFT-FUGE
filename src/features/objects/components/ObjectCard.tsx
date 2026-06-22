@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format, isPast, differenceInDays } from 'date-fns';
 import { de } from 'date-fns/locale';
-import { FiMapPin, FiAlertTriangle, FiCheckSquare, FiCalendar, FiMoreVertical, FiArchive, FiTrash2 } from 'react-icons/fi';
+import { FiMapPin, FiAlertTriangle, FiCalendar, FiMoreVertical, FiArchive, FiTrash2 } from 'react-icons/fi';
 import { useAuth } from '@shared/hooks/useAuth';
 import { useObjectCard } from '../hooks/useObjectCard';
 import { MapPreview } from '@shared/ui/MapPreview';
@@ -21,12 +21,7 @@ import {
   CardBody,
   MetaRow,
   MetaItem,
-  ChecklistBar,
-  ChecklistLabel,
-  ProgressTrack,
-  ProgressFill,
   DeadlineGroup,
-  ChecklistLabelLeft,
 } from './ObjectCard.styles';
 
 interface Props {
@@ -43,12 +38,6 @@ export const ObjectCard: React.FC<Props> = ({ object }) => {
   const isSoon = deadline && !isOverdue
     ? differenceInDays(deadline, new Date()) <= 3
     : false;
-
-  const checklist = object.checklist ?? [];
-  const checkTotal = checklist.length;
-  const checkDone = checklist.filter((c) => c.done).length;
-  const checkPct = checkTotal > 0 ? Math.round((checkDone / checkTotal) * 100) : 0;
-  const allDone = checkTotal > 0 && checkDone === checkTotal;
 
   return (
     <Card
@@ -95,33 +84,16 @@ export const ObjectCard: React.FC<Props> = ({ object }) => {
         </CardMeta>
       </CardHeader>
 
-      {(deadline || checkTotal > 0) && (
+      {deadline && (
         <CardBody>
-          {deadline && (
-            <MetaRow>
-              <DeadlineGroup>
-                <MetaItem $warn={isOverdue} $soon={isSoon}>
-                  {isOverdue ? <FiAlertTriangle size={11} /> : <FiCalendar size={11} />}
-                  {format(deadline, 'dd. MMM yy', { locale: de })}
-                </MetaItem>
-              </DeadlineGroup>
-            </MetaRow>
-          )}
-
-          {checkTotal > 0 && (
-            <ChecklistBar>
-              <ChecklistLabel>
-                <ChecklistLabelLeft>
-                  <FiCheckSquare size={10} />
-                  Checkliste
-                </ChecklistLabelLeft>
-                <span>{checkDone}/{checkTotal}</span>
-              </ChecklistLabel>
-              <ProgressTrack>
-                <ProgressFill $pct={checkPct} $done={allDone} />
-              </ProgressTrack>
-            </ChecklistBar>
-          )}
+          <MetaRow>
+            <DeadlineGroup>
+              <MetaItem $warn={isOverdue} $soon={isSoon}>
+                {isOverdue ? <FiAlertTriangle size={11} /> : <FiCalendar size={11} />}
+                {format(deadline, 'dd. MMM yy', { locale: de })}
+              </MetaItem>
+            </DeadlineGroup>
+          </MetaRow>
         </CardBody>
       )}
     </Card>

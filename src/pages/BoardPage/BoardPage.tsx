@@ -20,7 +20,7 @@ const BoardPage: React.FC = () => {
   const handleCreate = async (data: Partial<CRMObject>) => {
     if (!uid) return;
     await createObject(
-      data as Omit<CRMObject, "id" | "createdAt" | "materials" | "checklist">,
+      data as Omit<CRMObject, "id" | "createdAt" | "materials">,
       uid,
     );
     setShowModal(false);

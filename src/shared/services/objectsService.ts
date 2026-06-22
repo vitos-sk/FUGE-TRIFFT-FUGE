@@ -14,7 +14,7 @@ import {
 } from 'firebase/firestore';
 import { ref, deleteObject as deleteStorageObject } from 'firebase/storage';
 import { db, storage } from './firebase';
-import type { CRMObject, Material, ChecklistItem } from '../types';
+import type { CRMObject, Material } from '../types';
 
 export const subscribeToObjects = (
   onData: (objects: CRMObject[]) => void,
@@ -38,7 +38,7 @@ export const getObject = async (id: string): Promise<CRMObject | null> => {
 };
 
 export const createObject = async (
-  data: Omit<CRMObject, 'id' | 'createdAt' | 'materials' | 'checklist'>,
+  data: Omit<CRMObject, 'id' | 'createdAt' | 'materials'>,
   uid: string
 ) => {
   return addDoc(collection(db, 'objects'), {
@@ -46,7 +46,6 @@ export const createObject = async (
     createdBy: uid,
     createdAt: Timestamp.now(),
     materials: [],
-    checklist: [],
     noteCount: 0,
   });
 };
@@ -90,9 +89,6 @@ const extractStoragePath = (url: string): string | null => {
 
 export const updateMaterials = async (id: string, materials: Material[]) =>
   updateDoc(doc(db, 'objects', id), { materials });
-
-export const updateChecklist = async (id: string, checklist: ChecklistItem[]) =>
-  updateDoc(doc(db, 'objects', id), { checklist });
 
 export const archiveObject = async (id: string) =>
   updateDoc(doc(db, 'objects', id), { archived: true, archivedAt: Timestamp.now() });

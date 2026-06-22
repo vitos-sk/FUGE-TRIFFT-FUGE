@@ -173,40 +173,8 @@ export const MetaItem = styled.div<{ $warn?: boolean; $soon?: boolean }>`
   ${({ $warn, $soon, theme }) => !$warn && !$soon && css`color: ${theme.colors.textMuted};`}
 `;
 
-export const ChecklistBar = styled.div``;
-
-export const ChecklistLabel = styled.div`
-  display: flex;
-  justify-content: space-between;
-  font-size: 10px;
-  font-weight: 600;
-  color: ${({ theme }) => theme.colors.textMuted};
-  margin-bottom: 4px;
-`;
-
-export const ProgressTrack = styled.div`
-  height: 2px;
-  background: rgba(255, 255, 255, 0.07);
-  border-radius: 9999px;
-  overflow: hidden;
-`;
-
-export const ProgressFill = styled.div<{ $pct: number; $done: boolean }>`
-  height: 100%;
-  width: ${({ $pct }) => $pct}%;
-  background: ${({ $done, theme }) => ($done ? theme.colors.success : theme.colors.accent)};
-  border-radius: 9999px;
-  transition: width 0.4s ease;
-`;
-
 export const DeadlineGroup = styled.div`
   display: flex;
   gap: 10px;
   align-items: center;
-`;
-
-export const ChecklistLabelLeft = styled.span`
-  display: flex;
-  align-items: center;
-  gap: 4px;
 `;

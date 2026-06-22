@@ -39,19 +39,6 @@ export const InfoTab: React.FC<InfoTabProps> = ({
   return (
     <div>
       <InfoGrid>
-        <InfoItemWide>
-          <InfoLabel>Objektname</InfoLabel>
-          <InfoValue>{object.title}</InfoValue>
-        </InfoItemWide>
-        <InfoItemWide>
-          <InfoLabel>Adresse</InfoLabel>
-          <InfoValue>
-            <span>{object.address}, {object.city}</span>
-            <CopyBtn onClick={copyAddress} title="Adresse kopieren">
-              {copied ? <FiCheck size={14} color="#22a35a" /> : <FiCopy size={14} />}
-            </CopyBtn>
-          </InfoValue>
-        </InfoItemWide>
         <InfoItem>
           <InfoLabel>Deadline</InfoLabel>
           <InfoValue>
@@ -68,6 +55,15 @@ export const InfoTab: React.FC<InfoTabProps> = ({
               : '—'}
           </InfoValue>
         </InfoItem>
+        <InfoItemWide>
+          <InfoLabel>Adresse</InfoLabel>
+          <InfoValue>
+            <span>{object.address}, {object.city}</span>
+            <CopyBtn onClick={copyAddress} title="Adresse kopieren">
+              {copied ? <FiCheck size={14} color="#22a35a" /> : <FiCopy size={14} />}
+            </CopyBtn>
+          </InfoValue>
+        </InfoItemWide>
       </InfoGrid>
 
       {isAdmin && (

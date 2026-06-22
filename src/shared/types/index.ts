@@ -18,18 +18,13 @@ export interface Material {
   status: 'needed' | 'ordered' | 'delivered';
 }
 
-export interface ChecklistItem {
-  id: string;
-  text: string;
-  done: boolean;
-}
-
 export interface CRMObject {
   id: string;
   title: string;
   address: string;
   city: string;
   deadline: Timestamp | null;
+  whatsappLink?: string;
   createdBy: string;
   createdAt: Timestamp;
   lastNoteText?: string;
@@ -38,7 +33,6 @@ export interface CRMObject {
   noteCount?: number;
   lastActivityAt?: Timestamp | null;
   materials: Material[];
-  checklist: ChecklistItem[];
   archived?: boolean;
   archivedAt?: Timestamp | null;
 }
@@ -92,4 +86,3 @@ export interface Notification {
   createdAt: Timestamp;
 }
 
-export type TabId = 'notes' | 'photos' | 'material' | 'checklist' | 'info';
