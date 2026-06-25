@@ -90,15 +90,13 @@ export const MenuBtn = styled.button`
 `;
 
 export const Dropdown = styled.div`
-  position: absolute;
-  top: calc(100% + 4px);
-  right: 0;
+  position: fixed;
   background: rgba(16, 16, 16, 0.97);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: ${({ theme }) => theme.borderRadius};
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
   min-width: 190px;
-  z-index: 500;
+  z-index: 1000;
   overflow: hidden;
 `;
 

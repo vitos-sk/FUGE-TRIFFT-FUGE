@@ -128,12 +128,18 @@ export const ObjectForm: React.FC<Props> = ({
     e.preventDefault();
     setLoading(true);
     try {
+      const deadlineDate = deadline ? new Date(deadline) : null;
+      const deadlineTimestamp =
+        deadlineDate && !isNaN(deadlineDate.getTime()) && deadlineDate.getFullYear() <= 9999
+          ? Timestamp.fromDate(deadlineDate)
+          : null;
+
       await onSubmit({
         title,
         address,
         city,
-        deadline: deadline ? Timestamp.fromDate(new Date(deadline)) : null,
-        whatsappLink: whatsappLink.trim() || undefined,
+        deadline: deadlineTimestamp,
+        ...(whatsappLink.trim() ? { whatsappLink: whatsappLink.trim() } : {}),
       });
     } finally {
       setLoading(false);
@@ -193,6 +199,7 @@ export const ObjectForm: React.FC<Props> = ({
             type="date"
             value={deadline}
             onChange={(e) => setDeadline(e.target.value)}
+            max="9999-12-31"
           />
         </FormGroup>
       </Row>

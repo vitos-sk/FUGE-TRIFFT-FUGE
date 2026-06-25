@@ -1,4 +1,5 @@
 import React from 'react';
+import ReactDOM from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { format, isPast, differenceInDays } from 'date-fns';
 import { de } from 'date-fns/locale';
@@ -31,7 +32,7 @@ interface Props {
 export const ObjectCard: React.FC<Props> = ({ object }) => {
   const navigate = useNavigate();
   const { isAdmin } = useAuth();
-  const { menuOpen, setMenuOpen, archiving, menuRef, handleArchive, handleDelete } = useObjectCard(object);
+  const { menuOpen, dropdownPos, dropdownRef, btnRef, archiving, openMenu, handleArchive, handleDelete } = useObjectCard(object);
 
   const deadline = object.deadline?.toDate?.();
   const isOverdue = deadline ? isPast(deadline) : false;
@@ -40,62 +41,70 @@ export const ObjectCard: React.FC<Props> = ({ object }) => {
     : false;
 
   return (
-    <Card
-      $archiving={archiving}
-      onClick={() => !archiving && navigate(`/objects/${object.id}`)}
-    >
-      <MapPreview address={object.address} city={object.city} height={120} borderRadiusTop="8px" />
-      <CardHeader>
-        <CardTop>
-          <Title>{object.title}</Title>
+    <>
+      <Card
+        $archiving={archiving}
+        onClick={() => !archiving && navigate(`/objects/${object.id}`)}
+      >
+        <MapPreview address={object.address} city={object.city} height={120} borderRadiusTop="8px" />
+        <CardHeader>
+          <CardTop>
+            <Title>{object.title}</Title>
 
-          {isAdmin && (
-            <MenuWrapper ref={menuRef}>
-              <MenuBtn
-                onClick={(e) => { e.stopPropagation(); setMenuOpen((v) => !v); }}
-                title="Optionen"
-                aria-label="Optionen"
-                aria-haspopup="true"
-                aria-expanded={menuOpen}
-              >
-                <FiMoreVertical size={15} />
-              </MenuBtn>
-              {menuOpen && (
-                <Dropdown>
-                  <DropdownItem $success onClick={handleArchive}>
-                    <FiArchive size={14} />
-                    Archivieren
-                  </DropdownItem>
-                  <DropdownItem $danger onClick={handleDelete}>
-                    <FiTrash2 size={14} />
-                    Löschen
-                  </DropdownItem>
-                </Dropdown>
-              )}
-            </MenuWrapper>
-          )}
-        </CardTop>
+            {isAdmin && (
+              <MenuWrapper>
+                <MenuBtn
+                  ref={btnRef}
+                  onClick={(e) => { e.stopPropagation(); openMenu(); }}
+                  title="Optionen"
+                  aria-label="Optionen"
+                  aria-haspopup="true"
+                  aria-expanded={menuOpen}
+                >
+                  <FiMoreVertical size={15} />
+                </MenuBtn>
+              </MenuWrapper>
+            )}
+          </CardTop>
 
-        <CardMeta>
-          <Location>
-            <FiMapPin size={11} />
-            {object.address}, {object.city}
-          </Location>
-        </CardMeta>
-      </CardHeader>
+          <CardMeta>
+            <Location>
+              <FiMapPin size={11} />
+              {object.address}, {object.city}
+            </Location>
+          </CardMeta>
+        </CardHeader>
 
-      {deadline && (
-        <CardBody>
-          <MetaRow>
-            <DeadlineGroup>
-              <MetaItem $warn={isOverdue} $soon={isSoon}>
-                {isOverdue ? <FiAlertTriangle size={11} /> : <FiCalendar size={11} />}
-                {format(deadline, 'dd. MMM yy', { locale: de })}
-              </MetaItem>
-            </DeadlineGroup>
-          </MetaRow>
-        </CardBody>
+        {deadline && (
+          <CardBody>
+            <MetaRow>
+              <DeadlineGroup>
+                <MetaItem $warn={isOverdue} $soon={isSoon}>
+                  {isOverdue ? <FiAlertTriangle size={11} /> : <FiCalendar size={11} />}
+                  {format(deadline, 'dd. MMM yy', { locale: de })}
+                </MetaItem>
+              </DeadlineGroup>
+            </MetaRow>
+          </CardBody>
+        )}
+      </Card>
+
+      {isAdmin && menuOpen && dropdownPos && ReactDOM.createPortal(
+        <Dropdown
+          ref={dropdownRef}
+          style={{ top: dropdownPos.top, right: dropdownPos.right }}
+        >
+          <DropdownItem $success onClick={handleArchive}>
+            <FiArchive size={14} />
+            Archivieren
+          </DropdownItem>
+          <DropdownItem $danger onClick={handleDelete}>
+            <FiTrash2 size={14} />
+            Löschen
+          </DropdownItem>
+        </Dropdown>,
+        document.body
       )}
-    </Card>
+    </>
   );
 };
