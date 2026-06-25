@@ -6,6 +6,7 @@ import { format, startOfWeek, endOfWeek } from "date-fns";
 import { de } from "date-fns/locale";
 import { AddHoursForm } from "@features/hours/components/AddHoursForm";
 import { HoursTable } from "@features/hours/components/HoursTable";
+
 import { useHoursPage } from "@features/hours/hooks/useHoursPage";
 import { useOnlineStatus } from "@shared/hooks/useOnlineStatus";
 import { OfflineBanner } from "@shared/ui/OfflineBanner";
