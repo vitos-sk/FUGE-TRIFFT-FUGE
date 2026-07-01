@@ -1,5 +1,5 @@
 import React, { useState, useId } from 'react';
-import { sendPasswordReset } from '@shared/services/authService';
+import { sendPasswordReset } from '@features/auth/services';
 import { Input, FormGroup, Label } from '@shared/ui/Input';
 import { FormTitle, FormSubtitle, Form, ErrorMsg, SuccessMsg, BackLink, SubmitBtn } from './ResetForm.styles';
 

@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { FiSearch, FiInbox } from 'react-icons/fi';
-import { restoreObject, deleteObjectPermanently } from '@shared/services/objectsService';
+import { restoreObject, deleteObjectPermanently } from '@features/objects/services';
 import { useArchivedObjects } from '@features/objects/hooks/useObjects';
 import { useToast } from '@shared/ui/Toast';
 import { useConfirm } from '@shared/ui/ConfirmDialog';
-import { useAuth } from '@shared/hooks/useAuth';
+import { useAuth } from '@features/auth/hooks';
 import type { CRMObject } from '@shared/types';
 import { ArchiveCard } from './components/ArchiveCard';
 import {

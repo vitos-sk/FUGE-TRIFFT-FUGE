@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { format, isPast, differenceInDays } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { FiMapPin, FiAlertTriangle, FiCalendar, FiMoreVertical, FiArchive, FiTrash2 } from 'react-icons/fi';
-import { useAuth } from '@shared/hooks/useAuth';
+import { useAuth } from '@features/auth/hooks';
 import { useObjectCard } from '../hooks/useObjectCard';
 import { MapPreview } from '@shared/ui/MapPreview';
 import type { CRMObject } from '@shared/types';

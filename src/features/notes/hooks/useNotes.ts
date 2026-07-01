@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { subscribeToNotes } from '@shared/services/notesService';
+import { subscribeToNotes } from '@features/notes/services';
 import type { Note } from '@shared/types';
 
 export const useNotes = (objectId: string) => {

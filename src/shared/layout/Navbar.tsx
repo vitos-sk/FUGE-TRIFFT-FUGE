@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiPower, FiLock, FiInbox, FiSliders, FiUsers } from 'react-icons/fi';
-import { logoutUser } from '../services/authService';
-import { useAuth } from '../hooks/useAuth';
+import { logoutUser } from '@features/auth/services';
+import { useAuth } from '@features/auth/hooks';
 import { useArchivedCount } from '@features/objects/hooks/useObjects';
 import { NotifBell } from '@features/notifications/components/NotifBell';
 import { ChangePasswordModal } from '../ui/ChangePasswordModal';

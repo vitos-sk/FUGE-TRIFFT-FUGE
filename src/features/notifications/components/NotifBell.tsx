@@ -3,7 +3,7 @@ import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { FiBell, FiX, FiTrash2, FiCamera, FiMessageSquare } from 'react-icons/fi';
 import { useNotifications } from '../hooks/useNotifications';
-import { markNotificationRead, markAllRead, deleteNotification, deleteAllNotifications } from '@shared/services/notificationsService';
+import { markNotificationRead, markAllRead, deleteNotification, deleteAllNotifications } from '@features/notifications/services';
 import { NotifDot } from '@shared/ui/Badge';
 import { Button } from '@shared/ui/Button';
 import { useNavigate } from 'react-router-dom';

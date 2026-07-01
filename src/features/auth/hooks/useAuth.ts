@@ -1,4 +1,4 @@
-import { useAuthContext } from '../context/AuthContext';
+import { useAuthContext } from '@features/auth/context';
 
 export const useAuth = () => {
   const { firebaseUser, appUser, loading, initializing } = useAuthContext();

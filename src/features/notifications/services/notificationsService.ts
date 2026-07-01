@@ -13,8 +13,8 @@ import {
   getDocs,
   where,
 } from 'firebase/firestore';
-import { db } from './firebase';
-import type { Notification } from '../types';
+import { db } from '@shared/services/firebase';
+import type { Notification } from '@shared/types';
 
 export const subscribeToNotifications = (
   uid: string,

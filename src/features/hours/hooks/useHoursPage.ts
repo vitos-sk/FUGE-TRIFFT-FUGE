@@ -2,9 +2,9 @@ import { useState, useEffect, useCallback } from 'react';
 import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, format } from 'date-fns';
 import { de } from 'date-fns/locale';
 import * as XLSX from 'xlsx';
-import { getAllHours, getAllHoursFromCache, getHoursForUser, getHoursForUserFromCache } from '@shared/services/hoursService';
-import { getAllUsers } from '@shared/services/authService';
-import { useAuth } from '@shared/hooks/useAuth';
+import { getAllHours, getAllHoursFromCache, getHoursForUser, getHoursForUserFromCache } from '@features/hours/services';
+import { getAllUsers } from '@features/auth/services';
+import { useAuth } from '@features/auth/hooks';
 import type { WorkHourEntry, AppUser } from '@shared/types';
 
 export type RangePreset = 'week' | 'month' | 'pick' | 'custom';

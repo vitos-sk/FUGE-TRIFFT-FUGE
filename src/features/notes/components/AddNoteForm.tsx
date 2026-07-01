@@ -1,9 +1,9 @@
 import React, { useState, useRef } from "react";
 import { FiSend } from "react-icons/fi";
-import { addNote } from "@shared/services/notesService";
-import { useAuth } from "@shared/hooks/useAuth";
+import { addNote } from '@features/notes/services';
+import { useAuth } from '@features/auth/hooks';
 import { useToast } from "@shared/ui/Toast";
-import { useAuthContext } from "@shared/context/AuthContext";
+import { useAuthContext } from '@features/auth/context';
 import { Form, ChatBar, ChatInput, CharCount, SendBtn, ErrorBox } from "./AddNoteForm.styles";
 
 const MAX_CHARS = 600;

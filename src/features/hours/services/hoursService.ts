@@ -15,8 +15,8 @@ import {
 } from 'firebase/firestore';
 import type { QuerySnapshot, DocumentData } from 'firebase/firestore';
 
-import { db } from './firebase';
-import type { WorkHourEntry } from '../types';
+import { db } from '@shared/services/firebase';
+import type { WorkHourEntry } from '@shared/types';
 
 const calculateMinutes = (start: string, end: string, breakMins: number): number => {
   const [sh, sm] = start.split(':').map(Number);
@@ -27,7 +27,12 @@ const calculateMinutes = (start: string, end: string, breakMins: number): number
   return Math.max(0, endMins - startMins - breakMins);
 };
 
-const toDateStr = (d: Date) => d.toISOString().slice(0, 10);
+const toDateStr = (d: Date) => {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+};
 
 const mapSnap = (snap: QuerySnapshot<DocumentData>): WorkHourEntry[] =>
   snap.docs.map((d) => ({ id: d.id, ...(d.data() as object) } as WorkHourEntry));

@@ -12,8 +12,8 @@ import {
   writeBatch,
   getDocs,
 } from 'firebase/firestore';
-import { db } from './firebase';
-import type { Note, NoteTag } from '../types';
+import { db } from '@shared/services/firebase';
+import type { Note, NoteTag } from '@shared/types';
 
 export const subscribeToNotes = (
   objectId: string,

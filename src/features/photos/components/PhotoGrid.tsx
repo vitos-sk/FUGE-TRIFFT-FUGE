@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FiTrash2, FiX, FiChevronLeft, FiChevronRight, FiColumns } from 'react-icons/fi';
-import { subscribeToPhotos, deletePhoto } from '@shared/services/photosService';
+import { subscribeToPhotos, deletePhoto } from '@features/photos/services';
 import { Badge } from '@shared/ui/Badge';
 import { PhotoUpload } from './PhotoUpload';
 import { PhotoCompare } from './PhotoCompare';
 import { useConfirm } from '@shared/ui/ConfirmDialog';
 import { useToast } from '@shared/ui/Toast';
-import { useAuth } from '@shared/hooks/useAuth';
+import { useAuth } from '@features/auth/hooks';
 import type { Photo, PhotoType } from '@shared/types';
 import { Loader } from '@shared/ui/Loader';
 import {

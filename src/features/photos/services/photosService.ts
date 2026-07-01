@@ -19,8 +19,8 @@ import {
   deleteObject,
 } from 'firebase/storage';
 import imageCompression from 'browser-image-compression';
-import { db, storage } from './firebase';
-import type { Photo, PhotoType } from '../types';
+import { db, storage } from '@shared/services/firebase';
+import type { Photo, PhotoType } from '@shared/types';
 
 async function compressToJpeg(file: File): Promise<Blob> {
   try {

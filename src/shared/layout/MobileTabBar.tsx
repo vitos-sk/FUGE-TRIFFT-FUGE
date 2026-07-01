@@ -1,7 +1,7 @@
 import React from 'react';
 import { useMatch } from 'react-router-dom';
 import { FiGrid, FiClock, FiBarChart2 } from 'react-icons/fi';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '@features/auth/hooks';
 import { Bar, TabItem, ActiveBar, TabIcon, TabLabel, TabIconWrapper, TabBadge } from './MobileTabBar.styles';
 
 interface TabProps {

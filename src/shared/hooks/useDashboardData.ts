@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { onSnapshot, collection, query, where } from 'firebase/firestore';
 import { subDays, format } from 'date-fns';
 import { db } from '@shared/services/firebase';
-import { getAllUsers } from '@shared/services/authService';
+import { getAllUsers } from '@features/auth/services';
 import type { WorkHourEntry, AppUser } from '@shared/types';
 
 export const useDashboardData = () => {

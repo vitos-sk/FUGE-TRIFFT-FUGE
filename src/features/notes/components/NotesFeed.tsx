@@ -2,7 +2,7 @@ import React from 'react';
 import { NoteItem } from './NoteItem';
 import { AddNoteForm } from './AddNoteForm';
 import { useNotes } from '../hooks/useNotes';
-import { useAuth } from '@shared/hooks/useAuth';
+import { useAuth } from '@features/auth/hooks';
 import { Loader } from '@shared/ui/Loader';
 import { Wrapper, Feed, Empty } from './NotesFeed.styles';
 

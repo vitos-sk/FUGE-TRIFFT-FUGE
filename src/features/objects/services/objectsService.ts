@@ -13,8 +13,8 @@ import {
   getDoc,
 } from 'firebase/firestore';
 import { ref, deleteObject as deleteStorageObject } from 'firebase/storage';
-import { db, storage } from './firebase';
-import type { CRMObject, Material } from '../types';
+import { db, storage } from '@shared/services/firebase';
+import type { CRMObject, Material } from '@shared/types';
 
 export const subscribeToObjects = (
   onData: (objects: CRMObject[]) => void,

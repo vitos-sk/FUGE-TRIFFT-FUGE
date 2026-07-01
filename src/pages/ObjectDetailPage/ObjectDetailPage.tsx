@@ -5,7 +5,7 @@ import { PhotoGrid } from "@features/photos/components/PhotoGrid";
 import { Modal } from "@shared/ui/Modal";
 import { ObjectForm } from "@features/objects/components/ObjectForm";
 import { Loader } from "@shared/ui/Loader";
-import { useAuth } from "@shared/hooks/useAuth";
+import { useAuth } from '@features/auth/hooks';
 import { useObjectDetail } from "@features/objects/hooks/useObjectDetail";
 import { ObjectHeader } from "./components/ObjectHeader";
 import { InfoTab } from "./components/InfoTab";

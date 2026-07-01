@@ -3,7 +3,7 @@ import { Modal } from '@shared/ui/Modal';
 import { Button } from '@shared/ui/Button';
 import { Input, Select, FormGroup, Label } from '@shared/ui/Input';
 import { useToast } from '@shared/ui/Toast';
-import { createUser, updateUserName } from '@shared/services/authService';
+import { createUser, updateUserName } from '@features/auth/services';
 import type { AppUser, UserRole } from '@shared/types';
 import { Form, FormActions, ErrorMsg } from './UserModals.styles';
 

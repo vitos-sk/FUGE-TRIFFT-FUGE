@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FiUserPlus } from 'react-icons/fi';
-import { getAllUsers, toggleUserDisabled } from '@shared/services/authService';
-import { useAuth } from '@shared/hooks/useAuth';
+import { getAllUsers, toggleUserDisabled } from '@features/auth/services';
+import { useAuth } from '@features/auth/hooks';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@shared/ui/Toast';
 import { useConfirm } from '@shared/ui/ConfirmDialog';

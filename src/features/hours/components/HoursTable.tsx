@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React from 'react';
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { FiX, FiEdit2, FiCalendar, FiClock, FiMapPin } from 'react-icons/fi';
@@ -11,12 +11,9 @@ import { TimePickerSheet } from './TimePickerSheet';
 import { ObjectPickerSheet } from './ObjectPickerSheet';
 import { SubmitButton } from '@shared/ui/SubmitButton';
 import { Modal } from '@shared/ui/Modal';
-import { useToast } from '@shared/ui/Toast';
-import { useConfirm } from '@shared/ui/ConfirmDialog';
-import { deleteHourEntry, updateHourEntry } from '@shared/services/hoursService';
-import { subscribeToObjects } from '@shared/services/objectsService';
-import { useAuth } from '@shared/hooks/useAuth';
-import type { WorkHourEntry, CRMObject } from '@shared/types';
+import { useHoursTable } from '../hooks/useHoursTable';
+import { BREAK_OPTIONS, formatMinutes, formatDateDisplay } from '../utils/timeUtils';
+import type { WorkHourEntry } from '@shared/types';
 import {
   Outer,
   TableWrapper,
@@ -44,35 +41,6 @@ import {
   CharCount,
 } from './HoursTable.styles';
 
-// ─── Helpers ────────────────────────────────────────────────────────────────────
-
-const EDIT_BREAKS = [0, 10, 15, 30, 60];
-const EDIT_BREAK_OPTIONS = EDIT_BREAKS.map((b) => ({ value: b, label: b === 0 ? 'Keine' : `${b} min` }));
-
-const calcMins = (start: string, end: string, brk: number): number => {
-  if (!start || !end) return 0;
-  const [sh, sm] = start.split(':').map(Number);
-  const [eh, em] = end.split(':').map(Number);
-  let endMins = eh * 60 + em;
-  const startMins = sh * 60 + sm;
-  if (endMins <= startMins) endMins += 24 * 60;
-  return Math.max(0, endMins - startMins - brk);
-};
-
-const formatMinutes = (mins: number): string => {
-  const h = Math.floor(mins / 60);
-  const m = mins % 60;
-  return `${h}:${String(m).padStart(2, '0')} h`;
-};
-
-const formatDateDisplay = (iso: string): string => {
-  if (!iso) return '';
-  const [y, m, d] = iso.split('-');
-  return `${d}.${m}.${y}`;
-};
-
-// ─── Component ─────────────────────────────────────────────────────────────────
-
 interface Props {
   entries: WorkHourEntry[];
   showWorker?: boolean;
@@ -80,158 +48,33 @@ interface Props {
 }
 
 export const HoursTable: React.FC<Props> = ({ entries, showWorker = false, onDelete }) => {
-  const { uid } = useAuth();
-  const toast = useToast();
-  const confirm = useConfirm();
-
-  // ── Кастомный скроллбар ──────────────────────────────────────────────────
-  const tableWrapperRef = useRef<HTMLDivElement>(null);
-  const thumbRef = useRef<HTMLDivElement>(null);
-  const [thumbState, setThumbState] = useState({ left: 0, width: 100 });
-  const [hasOverflow, setHasOverflow] = useState(false);
-
-  const updateThumb = useCallback(() => {
-    const el = tableWrapperRef.current;
-    if (!el) return;
-    const ratio = el.clientWidth / el.scrollWidth;
-    const overflows = ratio < 0.999;
-    setHasOverflow(overflows);
-    if (!overflows) return;
-    const thumbW = Math.max(ratio * 100, 8);
-    const maxScroll = el.scrollWidth - el.clientWidth;
-    const scrollRatio = maxScroll > 0 ? el.scrollLeft / maxScroll : 0;
-    setThumbState({ left: scrollRatio * (100 - thumbW), width: thumbW });
-  }, []);
-
-  useEffect(() => {
-    const el = tableWrapperRef.current;
-    if (!el) return;
-    el.addEventListener('scroll', updateThumb, { passive: true });
-    const ro = new ResizeObserver(updateThumb);
-    ro.observe(el);
-    updateThumb();
-    return () => { el.removeEventListener('scroll', updateThumb); ro.disconnect(); };
-  }, [updateThumb]);
-
-  const handleTrackClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target !== e.currentTarget) return;
-    const el = tableWrapperRef.current;
-    if (!el) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    const ratio = (e.clientX - rect.left) / rect.width;
-    el.scrollLeft = ratio * (el.scrollWidth - el.clientWidth);
-  };
-
-  const handleThumbPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    const el = tableWrapperRef.current;
-    const thumb = thumbRef.current;
-    if (!el || !thumb) return;
-    const startX = e.clientX;
-    const startScroll = el.scrollLeft;
-    const trackW = thumb.parentElement!.clientWidth;
-    const thumbW = thumb.clientWidth;
-    const maxScroll = el.scrollWidth - el.clientWidth;
-    thumb.setPointerCapture(e.pointerId);
-    const onMove = (ev: PointerEvent) => {
-      const dx = ev.clientX - startX;
-      el.scrollLeft = startScroll + (dx / (trackW - thumbW)) * maxScroll;
-    };
-    const onUp = () => {
-      window.removeEventListener('pointermove', onMove);
-      window.removeEventListener('pointerup', onUp);
-    };
-    window.addEventListener('pointermove', onMove);
-    window.addEventListener('pointerup', onUp);
-  };
-  // ────────────────────────────────────────────────────────────────────────
-
-  const [editEntry, setEditEntry] = useState<WorkHourEntry | null>(null);
-  const [editDate, setEditDate] = useState('');
-  const [editStart, setEditStart] = useState('');
-  const [editEnd, setEditEnd] = useState('');
-  const [editBreak, setEditBreak] = useState(0);
-  const [editObjectId, setEditObjectId] = useState('');
-  const [editLocationText, setEditLocationText] = useState('');
-  const [objects, setObjects] = useState<CRMObject[]>([]);
-  const [saving, setSaving] = useState(false);
-  const [editDatePickerOpen, setEditDatePickerOpen] = useState(false);
-  const [editStartPickerOpen, setEditStartPickerOpen] = useState(false);
-  const [editEndPickerOpen, setEditEndPickerOpen] = useState(false);
-  const [editObjectPickerOpen, setEditObjectPickerOpen] = useState(false);
-
-  useEffect(() => {
-    const unsub = subscribeToObjects((data) => {
-      const active = data.filter((o) => !o.archived);
-      active.sort((a, b) => {
-        const ta = (a.lastActivityAt ?? a.lastNoteAt ?? a.createdAt)?.toDate?.()?.getTime() ?? 0;
-        const tb = (b.lastActivityAt ?? b.lastNoteAt ?? b.createdAt)?.toDate?.()?.getTime() ?? 0;
-        return tb - ta;
-      });
-      setObjects(active);
-    });
-    return unsub;
-  }, []);
-
-  const openEdit = (entry: WorkHourEntry) => {
-    setEditEntry(entry);
-    setEditDate(entry.date);
-    setEditStart(entry.startTime);
-    setEditEnd(entry.endTime);
-    setEditBreak(entry.breakMinutes);
-    setEditObjectId(entry.objectId ?? '');
-    setEditLocationText(!entry.objectId && entry.objectTitle ? entry.objectTitle : '');
-  };
-
-  const handleSave = async () => {
-    if (!editEntry) return;
-    const totalMinutes = calcMins(editStart, editEnd, editBreak);
-    if (totalMinutes <= 0) return;
-    setSaving(true);
-    try {
-      const selectedObj = objects.find((o) => o.id === editObjectId);
-      await updateHourEntry(editEntry.id, {
-        date: editDate,
-        startTime: editStart,
-        endTime: editEnd,
-        breakMinutes: editBreak,
-        totalMinutes,
-        objectId: editObjectId || null,
-        objectTitle: editObjectId
-          ? selectedObj?.title
-          : editLocationText.trim() || undefined,
-      });
-      toast.success('Stunden aktualisiert');
-      setEditEntry(null);
-      onDelete?.();
-    } catch {
-      toast.error('Fehler beim Speichern.');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleDelete = async (id: string, date: string) => {
-    const ok = await confirm({
-      title: 'Eintrag löschen',
-      message: `Stundeneintrag vom ${date} wirklich löschen?`,
-      confirmLabel: 'Löschen',
-      danger: true,
-    });
-    if (!ok) return;
-    try {
-      await deleteHourEntry(id);
-      toast.success('Eintrag gelöscht');
-      onDelete?.();
-    } catch {
-      toast.error('Fehler beim Löschen.');
-    }
-  };
-
-  const editTotal = calcMins(editStart, editEnd, editBreak);
-  const editObjTitle = editObjectId
-    ? (objects.find((o) => o.id === editObjectId)?.title ?? editObjectId)
-    : '⚠ kein Objekt';
+  const {
+    uid,
+    tableWrapperRef,
+    thumbRef,
+    thumbState,
+    hasOverflow,
+    handleTrackClick,
+    handleThumbPointerDown,
+    editEntry, setEditEntry,
+    editDate, setEditDate,
+    editStart, setEditStart,
+    editEnd, setEditEnd,
+    editBreak, setEditBreak,
+    editObjectId, setEditObjectId,
+    editLocationText, setEditLocationText,
+    objects,
+    saving,
+    editDatePickerOpen, setEditDatePickerOpen,
+    editStartPickerOpen, setEditStartPickerOpen,
+    editEndPickerOpen, setEditEndPickerOpen,
+    editObjectPickerOpen, setEditObjectPickerOpen,
+    editTotal,
+    editObjTitle,
+    openEdit,
+    handleSave,
+    handleDelete,
+  } = useHoursTable({ onDelete });
 
   if (entries.length === 0) {
     return (
@@ -240,7 +83,6 @@ export const HoursTable: React.FC<Props> = ({ entries, showWorker = false, onDel
       </Outer>
     );
   }
-
 
   return (
     <>
@@ -332,7 +174,7 @@ export const HoursTable: React.FC<Props> = ({ entries, showWorker = false, onDel
           <FormGroup>
             <Label>Pause</Label>
             <SegmentedControl
-              options={EDIT_BREAK_OPTIONS}
+              options={BREAK_OPTIONS}
               value={editBreak}
               onChange={(v) => setEditBreak(v as number)}
             />

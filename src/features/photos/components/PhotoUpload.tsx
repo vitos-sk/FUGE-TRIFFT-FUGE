@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { FiCamera, FiImage, FiX } from 'react-icons/fi';
-import { uploadPhoto } from '@shared/services/photosService';
-import { useAuth } from '@shared/hooks/useAuth';
+import { uploadPhoto } from '@features/photos/services';
+import { useAuth } from '@features/auth/hooks';
 import { Button } from '@shared/ui/Button';
 import { Select, FormGroup, Label, Input } from '@shared/ui/Input';
 import { useToast } from '@shared/ui/Toast';

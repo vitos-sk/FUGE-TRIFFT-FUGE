@@ -1,5 +1,5 @@
 import React, { useState, useId } from 'react';
-import { loginUser } from '@shared/services/authService';
+import { loginUser } from '@features/auth/services';
 import { Input, FormGroup, Label } from '@shared/ui/Input';
 import { FormTitle, FormSubtitle, Form, ErrorMsg, ForgotLink, SubmitBtn } from './LoginForm.styles';
 

@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 import { useObjects } from "@features/objects/hooks/useObjects";
-import { useAuth } from "@shared/hooks/useAuth";
+import { useAuth } from '@features/auth/hooks';
 import { FiPlus } from "react-icons/fi";
 import { ObjectCard } from "@features/objects/components/ObjectCard";
 import { ObjectForm } from "@features/objects/components/ObjectForm";
 import { Modal } from "@shared/ui/Modal";
 import { OfflineBanner } from "@shared/ui/OfflineBanner";
 import { useOnlineStatus } from "@shared/hooks/useOnlineStatus";
-import { createObject } from "@shared/services/objectsService";
+import { createObject } from '@features/objects/services';
 import type { CRMObject } from "@shared/types";
 import { Header, PageTitle, Grid, Empty, FAB } from "./BoardPage.styles";
 

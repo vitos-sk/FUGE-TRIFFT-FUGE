@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FiUserPlus } from 'react-icons/fi';
-import { getAllUsers, toggleUserDisabled } from '@shared/services/authService';
+import { getAllUsers, toggleUserDisabled } from '@features/auth/services';
 import { useToast } from '@shared/ui/Toast';
 import { useConfirm } from '@shared/ui/ConfirmDialog';
 import { Button } from '@shared/ui/Button';

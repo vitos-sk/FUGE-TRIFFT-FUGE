@@ -10,8 +10,8 @@ import {
 import { initializeApp, deleteApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { doc, setDoc, getDoc, updateDoc, collection, getDocs, Timestamp } from 'firebase/firestore';
-import { auth, db, firebaseConfig } from './firebase';
-import type { AppUser, UserRole } from '../types';
+import { auth, db, firebaseConfig } from '@shared/services/firebase';
+import type { AppUser, UserRole } from '@shared/types';
 
 export const loginUser = (email: string, password: string) =>
   signInWithEmailAndPassword(auth, email, password);

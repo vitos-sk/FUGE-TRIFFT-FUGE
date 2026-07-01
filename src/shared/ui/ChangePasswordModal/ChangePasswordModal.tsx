@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { FiEye, FiEyeOff } from 'react-icons/fi';
 import { Modal } from '../Modal';
 import { Input, FormGroup, Label } from '../Input';
-import { changePassword } from '../../services/authService';
+import { changePassword } from '@features/auth/services';
 import { Form, PasswordWrapper, EyeBtn, ErrorMsg, SuccessMsg, Actions, Btn } from './ChangePasswordModal.styles';
 
 function mapFirebaseError(code: string): string {

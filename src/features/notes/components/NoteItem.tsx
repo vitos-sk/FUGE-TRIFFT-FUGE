@@ -6,7 +6,7 @@ import { Button } from '@shared/ui/Button';
 import { Textarea } from '@shared/ui/Input';
 import { useToast } from '@shared/ui/Toast';
 import { useConfirm } from '@shared/ui/ConfirmDialog';
-import { deleteNote, updateNote } from '@shared/services/notesService';
+import { deleteNote, updateNote } from '@features/notes/services';
 import type { Note } from '@shared/types';
 import { Item, Header, Avatar, Author, Time, NoteText, Actions, EditRow } from './NoteItem.styles';
 

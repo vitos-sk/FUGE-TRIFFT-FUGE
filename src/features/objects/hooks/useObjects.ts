@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { subscribeToObjects, subscribeToArchivedObjects } from '@shared/services/objectsService';
+import { subscribeToObjects, subscribeToArchivedObjects } from '@features/objects/services';
 import type { CRMObject } from '@shared/types';
 
 export const useObjects = () => {

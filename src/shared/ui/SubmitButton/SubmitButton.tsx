@@ -1,6 +1,6 @@
-import React from 'react';
-import { Button } from '../Button';
-import { Spinner } from '../Spinner';
+import React from "react";
+import { Button } from "../Button";
+import { Spinner } from "../Spinner";
 
 interface Props {
   loading?: boolean;
@@ -11,7 +11,7 @@ interface Props {
   fullWidth?: boolean;
   onClick?: () => void;
   /** Default: 'submit' */
-  type?: 'submit' | 'button';
+  type?: "submit" | "button";
 }
 
 export const SubmitButton: React.FC<Props> = ({
@@ -21,7 +21,7 @@ export const SubmitButton: React.FC<Props> = ({
   loadingText,
   fullWidth,
   onClick,
-  type = 'submit',
+  type = "submit",
 }) => (
   <Button
     type={type}

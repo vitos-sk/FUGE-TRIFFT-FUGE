@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { getToken, onMessage } from 'firebase/messaging';
 import { getMessagingInstance } from '../services/firebase';
-import { updateFCMToken } from '../services/authService';
+import { updateFCMToken } from '@features/auth/services';
 
 export const useFCM = (uid: string | null) => {
   useEffect(() => {

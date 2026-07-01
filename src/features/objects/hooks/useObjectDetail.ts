@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { onSnapshot, doc as fsDoc } from 'firebase/firestore';
 import { v4 as uuidv4 } from 'uuid';
 import { db } from '@shared/services/firebase';
-import { updateObject, deleteObject, updateMaterials } from '@shared/services/objectsService';
+import { updateObject, deleteObject, updateMaterials } from '@features/objects/services';
 import { useToast } from '@shared/ui/Toast';
 import { useConfirm } from '@shared/ui/ConfirmDialog';
 import type { CRMObject, Material } from '@shared/types';

@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { subscribeToNotifications } from '@shared/services/notificationsService';
+import { subscribeToNotifications } from '@features/notifications/services';
 import type { Notification } from '@shared/types';
 
 export const useNotifications = (uid: string | null) => {

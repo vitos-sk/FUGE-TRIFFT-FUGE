@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { archiveObject, restoreObject, deleteObjectPermanently } from '@shared/services/objectsService';
+import { archiveObject, restoreObject, deleteObjectPermanently } from '@features/objects/services';
 import { useToast } from '@shared/ui/Toast';
 import { useConfirm } from '@shared/ui/ConfirmDialog';
 import type { CRMObject } from '@shared/types';
