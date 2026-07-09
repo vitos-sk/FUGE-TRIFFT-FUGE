@@ -8,7 +8,7 @@ import {
   orderBy,
   Timestamp,
 } from 'firebase/firestore';
-import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from 'firebase/storage';
 import { db, storage } from '@shared/services/firebase';
 import { compressToJpeg } from './compressImage';
 import type { PhotoComparison } from '@shared/types';
@@ -73,6 +73,31 @@ export const createComparison = async (
   });
 };
 
-export const deleteComparison = async (objectId: string, comparisonId: string): Promise<void> => {
+export const deleteComparison = async (
+  objectId: string,
+  comparisonId: string,
+  beforeUrl?: string,
+  afterUrl?: string,
+): Promise<void> => {
   await deleteDoc(doc(db, 'objects', objectId, 'comparisons', comparisonId));
+  if (beforeUrl) await deleteComparisonImage(beforeUrl);
+  if (afterUrl) await deleteComparisonImage(afterUrl);
+};
+
+// Only ever deletes files under objects/{id}/comparisons/ — a URL pointing at
+// objects/{id}/photos/ (picked from the existing gallery) is silently ignored,
+// so a still-in-use regular photo is never touched.
+export const deleteComparisonImage = async (url: string): Promise<void> => {
+  const path = extractStoragePath(url);
+  if (!path || !path.includes('/comparisons/')) return;
+  await deleteObject(ref(storage, path)).catch(() => {});
+};
+
+const extractStoragePath = (url: string): string | null => {
+  try {
+    const match = url.match(/\/o\/(.+?)\?/);
+    return match ? decodeURIComponent(match[1]) : null;
+  } catch {
+    return null;
+  }
 };

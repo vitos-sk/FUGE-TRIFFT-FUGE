@@ -42,7 +42,7 @@ export const PhotoCompare: React.FC<Props> = ({ objectId, photos }) => {
     });
     if (!ok) return;
     try {
-      await deleteComparison(objectId, comparison.id);
+      await deleteComparison(objectId, comparison.id, comparison.beforeUrl, comparison.afterUrl);
       toast.success('Vergleich gelöscht');
     } catch {
       toast.error('Fehler beim Löschen.');

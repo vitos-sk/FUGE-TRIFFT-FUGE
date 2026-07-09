@@ -4,7 +4,7 @@ import { BottomSheet } from '@shared/ui/BottomSheet';
 import { Button } from '@shared/ui/Button';
 import { useAuth } from '@features/auth/hooks';
 import { useToast } from '@shared/ui/Toast';
-import { uploadComparisonImage, createComparison } from '@features/photos/services';
+import { uploadComparisonImage, createComparison, deleteComparisonImage } from '@features/photos/services';
 import type { Photo } from '@shared/types';
 import {
   SlotSection,
@@ -57,6 +57,8 @@ export const ComparisonPickerSheet: React.FC<Props> = ({ isOpen, onClose, object
   };
 
   const handleClose = () => {
+    if (urls.before) void deleteComparisonImage(urls.before);
+    if (urls.after) void deleteComparisonImage(urls.after);
     reset();
     onClose();
   };
@@ -92,7 +94,8 @@ export const ComparisonPickerSheet: React.FC<Props> = ({ isOpen, onClose, object
     try {
       await createComparison(objectId, urls.before, urls.after, uid, user.name);
       toast.success('Vergleich erstellt');
-      handleClose();
+      reset();
+      onClose();
     } catch (err) {
       console.error('[ComparisonPickerSheet] create failed:', err);
       setError('Erstellen fehlgeschlagen. Bitte erneut versuchen.');
@@ -112,7 +115,12 @@ export const ComparisonPickerSheet: React.FC<Props> = ({ isOpen, onClose, object
         {url ? (
           <SlotPreview>
             <SlotPreviewImg src={url} alt={SLOT_LABELS[slot]} />
-            <ChangeBtn onClick={() => setUrls((prev) => ({ ...prev, [slot]: null }))}>
+            <ChangeBtn
+              onClick={() => {
+                void deleteComparisonImage(url);
+                setUrls((prev) => ({ ...prev, [slot]: null }));
+              }}
+            >
               Ändern
             </ChangeBtn>
           </SlotPreview>
