@@ -48,17 +48,23 @@ export interface Note {
   createdAt: Timestamp;
 }
 
-export type PhotoType = 'before' | 'after' | 'daily' | 'problem';
-
 export interface Photo {
   id: string;
   url: string;
   storagePath?: string;
   caption: string;
-  type: PhotoType;
   uploadedBy: string;
   uploadedByName: string;
   uploadedAt: Timestamp;
+}
+
+export interface PhotoComparison {
+  id: string;
+  beforeUrl: string;
+  afterUrl: string;
+  createdBy: string;
+  createdByName: string;
+  createdAt: Timestamp;
 }
 
 export interface WorkHourEntry {

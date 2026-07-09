@@ -3,9 +3,8 @@ import { FiCamera, FiImage, FiX } from 'react-icons/fi';
 import { uploadPhoto } from '@features/photos/services';
 import { useAuth } from '@features/auth/hooks';
 import { Button } from '@shared/ui/Button';
-import { Select, FormGroup, Label, Input } from '@shared/ui/Input';
+import { FormGroup, Label, Input } from '@shared/ui/Input';
 import { useToast } from '@shared/ui/Toast';
-import type { PhotoType } from '@shared/types';
 import {
   PickerRow,
   PickerBtn,
@@ -19,13 +18,6 @@ import {
   HiddenInput,
 } from './PhotoUpload.styles';
 
-const TYPE_OPTIONS: { value: PhotoType; label: string }[] = [
-  { value: 'daily',   label: 'Täglich' },
-  { value: 'before',  label: 'Vorher' },
-  { value: 'after',   label: 'Nachher' },
-  { value: 'problem', label: 'Problem' },
-];
-
 // iOS sometimes delivers HEIC as application/octet-stream — check extension too
 const ACCEPTED = ['image/jpeg','image/png','image/webp','image/gif','image/heic','image/heif','application/octet-stream'];
 
@@ -35,7 +27,6 @@ interface Props {
 }
 
 export const PhotoUpload: React.FC<Props> = ({ objectId, objectTitle }) => {
-  const [type, setType] = useState<PhotoType>('daily');
   const [caption, setCaption] = useState('');
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -92,7 +83,7 @@ export const PhotoUpload: React.FC<Props> = ({ objectId, objectTitle }) => {
     setProgress(0);
 
     try {
-      await uploadPhoto(objectId, file, type, caption, uid, user.name, setProgress, objectTitle);
+      await uploadPhoto(objectId, file, caption, uid, user.name, setProgress, objectTitle);
       clearFile();
       setCaption('');
       setProgress(0);
@@ -166,14 +157,6 @@ export const PhotoUpload: React.FC<Props> = ({ objectId, objectTitle }) => {
 
       {file && !uploading && (
         <Row>
-          <FormGroup style={{ flexShrink: 0, width: 110 }}>
-            <Label>Typ</Label>
-            <Select value={type} onChange={(e) => setType(e.target.value as PhotoType)}>
-              {TYPE_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>{o.label}</option>
-              ))}
-            </Select>
-          </FormGroup>
           <FormGroup style={{ flex: 1, minWidth: 0 }}>
             <Label>Beschriftung (optional)</Label>
             <Input

@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { SegGroup, SegBtn } from './SegmentedControl.styles';
 
 export { SegGroup, SegBtn } from './SegmentedControl.styles';
@@ -5,6 +6,7 @@ export { SegGroup, SegBtn } from './SegmentedControl.styles';
 export interface SegOption<T extends string | number = string | number> {
   value: T;
   label: string;
+  icon?: ReactNode;
 }
 
 interface Props<T extends string | number> {
@@ -13,6 +15,7 @@ interface Props<T extends string | number> {
   onChange: (v: T) => void;
   className?: string;
   columns?: number;
+  variant?: 'default' | 'tabs';
 }
 
 export function SegmentedControl<T extends string | number>({
@@ -21,16 +24,19 @@ export function SegmentedControl<T extends string | number>({
   onChange,
   className,
   columns,
+  variant = 'default',
 }: Props<T>) {
   return (
-    <SegGroup className={className} $cols={columns ?? options.length}>
+    <SegGroup className={className} $cols={columns ?? options.length} $variant={variant}>
       {options.map((opt) => (
         <SegBtn
           key={String(opt.value)}
           type="button"
           $active={opt.value === value}
+          $variant={variant}
           onClick={() => onChange(opt.value)}
         >
+          {opt.icon}
           {opt.label}
         </SegBtn>
       ))}

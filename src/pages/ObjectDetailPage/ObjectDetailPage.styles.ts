@@ -13,44 +13,18 @@ export const NotFoundText = styled.p`
   padding: 40px 0;
 `;
 
-/* Desktop 2-column grid: Photos left (60%) | Notes right (40%) */
+/* Fotos/Chat switcher — same max-width as the content below so both align */
+export const TabBarWrapper = styled.div`
+  max-width: 680px;
+  width: 100%;
+  margin: 0 auto 20px;
+`;
+
+/* Single-column content: only one section (Fotos or Chat) is visible at a time */
 export const ContentGrid = styled.div`
-  @media (min-width: 1025px) {
-    display: grid;
-    grid-template-columns: 60fr 40fr;
-    gap: 40px;
-    align-items: start;
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-
-  @media (max-width: 1024px) {
-    max-width: 680px;
-    margin: 0 auto;
-    width: 100%;
-  }
-`;
-
-/* On desktop: Notes moves to the RIGHT column (order 2) */
-export const LeftCol = styled.div`
-  @media (min-width: 1025px) {
-    order: 2;
-  }
-`;
-
-/* On desktop: Photos moves to the LEFT column (order 1) */
-export const RightCol = styled.div`
-  display: flex;
-  flex-direction: column;
-
-  @media (min-width: 1025px) {
-    order: 1;
-  }
-
-  /* Mobile: separate visually from notes above */
-  @media (max-width: 1024px) {
-    padding-top: 4px;
-  }
+  max-width: 680px;
+  width: 100%;
+  margin: 0 auto;
 `;
 
 export const SectionBlock = styled.section`
@@ -97,49 +71,12 @@ export const NotesBadge = styled.span`
   margin-left: auto;
 `;
 
-/* The "Fuge" double-line divider: two 1px lines with a 2px gap (like a grout joint) */
-export const SectionDivider = styled.div`
-  height: 4px;
-  position: relative;
-  margin: 4px 0;
-
-  &::before,
-  &::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: ${({ theme }) => theme.colors.border};
-  }
-
-  &::before {
-    top: 0;
-  }
-
-  &::after {
-    bottom: 0;
-  }
-
-  /* Hidden on desktop when inside the 2-col grid (columns visually separate) */
-  @media (min-width: 1025px) {
-    display: none;
-  }
-`;
-
+/* Admin (InfoTab) always renders below the active Fotos/Chat section —
+   the "Fuge" double-line divider marks that seam */
 export const AdminSection = styled.section`
   padding: 20px 0;
-
-  /* On mobile, add a Fuge divider above the admin section */
-  @media (max-width: 1024px) {
-    border-top: 1px solid ${({ theme }) => theme.colors.border};
-    box-shadow: inset 0 3px 0 ${({ theme }) => theme.colors.border};
-    padding-top: 24px;
-    margin-top: 4px;
-  }
-
-  /* On desktop: no top border (right column context provides separation) */
-  @media (min-width: 1025px) {
-    padding-top: 0;
-  }
+  border-top: 1px solid ${({ theme }) => theme.colors.border};
+  box-shadow: inset 0 3px 0 ${({ theme }) => theme.colors.border};
+  padding-top: 24px;
+  margin-top: 4px;
 `;

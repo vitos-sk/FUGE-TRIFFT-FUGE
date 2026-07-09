@@ -25,6 +25,16 @@ service firebase.storage {
       allow delete: if isActive();
     }
 
+    // Vergleich (before/after) captures: uploaded directly, never deleted from Storage
+    // (deleting a comparison only removes the Firestore doc — the image may still be
+    // in use as a regular photo, or was captured standalone for the comparison).
+    match /objects/{objectId}/comparisons/{fileName} {
+      allow read:   if isActive();
+      allow create: if isActive() && request.resource.size <= 10 * 1024 * 1024;
+      allow update: if false;
+      allow delete: if false;
+    }
+
     // Catch-all: only admin can touch anything else.
     match /{allPaths=**} {
       allow read, write: if isAdmin();

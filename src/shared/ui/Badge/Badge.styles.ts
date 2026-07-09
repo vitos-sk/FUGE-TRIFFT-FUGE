@@ -1,9 +1,8 @@
 import styled, { css } from 'styled-components';
-import type { NoteTag, PhotoType } from '../../types';
+import type { NoteTag } from '../../types';
 
 interface BadgeProps {
   $tag?: NoteTag;
-  $photoType?: PhotoType;
 }
 
 const tagColors: Record<NoteTag, string> = {
@@ -12,13 +11,6 @@ const tagColors: Record<NoteTag, string> = {
   problem: '#c0392b',
   delivery: '#2980b9',
   general: '#666',
-};
-
-const photoTypeColors: Record<PhotoType, string> = {
-  before: '#3498db',
-  after: '#27ae60',
-  daily: '#c9a84c',
-  problem: '#c0392b',
 };
 
 export const Badge = styled.span<BadgeProps>`
@@ -39,14 +31,6 @@ export const Badge = styled.span<BadgeProps>`
       background: ${tagColors[$tag]}20;
       color: ${tagColors[$tag]};
       border: 1px solid ${tagColors[$tag]}40;
-    `}
-
-  ${({ $photoType }) =>
-    $photoType &&
-    css`
-      background: ${photoTypeColors[$photoType]}20;
-      color: ${photoTypeColors[$photoType]};
-      border: 1px solid ${photoTypeColors[$photoType]}40;
     `}
 `;
 

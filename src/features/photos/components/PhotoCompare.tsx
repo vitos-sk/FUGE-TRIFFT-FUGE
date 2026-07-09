@@ -1,146 +1,87 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
-import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
-import type { Photo } from '@shared/types';
+import React, { useEffect, useState } from 'react';
+import { FiPlus } from 'react-icons/fi';
+import { subscribeToComparisons, deleteComparison } from '@features/photos/services';
+import { useAuth } from '@features/auth/hooks';
+import { useConfirm } from '@shared/ui/ConfirmDialog';
+import { useToast } from '@shared/ui/Toast';
+import type { Photo, PhotoComparison } from '@shared/types';
+import { ComparisonCard } from './ComparisonCard';
+import { ComparisonPickerSheet } from './ComparisonPickerSheet';
 import {
   CompareWrapper,
-  CompareContainer,
-  CompareAfterImg,
-  CompareBeforeImg,
-  CompareLabel,
-  CompareDivider,
-  DividerLine,
-  DividerKnob,
-  ThumbSection,
-  ThumbGroup,
-  ThumbGroupLabel,
-  ThumbRow,
-  ThumbImg,
+  CreateBtn,
+  CompareList,
   CompareEmpty,
   CompareEmptyTitle,
   CompareEmptyHint,
 } from './PhotoCompare.styles';
 
 interface Props {
+  objectId: string;
   photos: Photo[];
 }
 
-export const PhotoCompare: React.FC<Props> = ({ photos }) => {
-  const beforePhotos = useMemo(() => photos.filter((p) => p.type === 'before'), [photos]);
-  const afterPhotos = useMemo(() => photos.filter((p) => p.type === 'after'), [photos]);
+export const PhotoCompare: React.FC<Props> = ({ objectId, photos }) => {
+  const [comparisons, setComparisons] = useState<PhotoComparison[]>([]);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const { uid, isAdmin } = useAuth();
+  const confirm = useConfirm();
+  const toast = useToast();
 
-  const [beforeIdx, setBeforeIdx] = useState(0);
-  const [afterIdx, setAfterIdx] = useState(0);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const isDragging = useRef(false);
+  useEffect(() => {
+    const unsub = subscribeToComparisons(objectId, setComparisons);
+    return unsub;
+  }, [objectId]);
 
-  const setPos = useCallback((clientX: number) => {
-    const el = containerRef.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    const pos = Math.max(2, Math.min(98, ((clientX - rect.left) / rect.width) * 100));
-    el.style.setProperty('--slider-pos', `${pos}%`);
-  }, []);
-
-  const onPointerDown = useCallback(
-    (e: React.PointerEvent<HTMLDivElement>) => {
-      e.preventDefault();
-      isDragging.current = true;
-      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-      setPos(e.clientX);
-    },
-    [setPos],
-  );
-
-  const onPointerMove = useCallback(
-    (e: React.PointerEvent<HTMLDivElement>) => {
-      if (isDragging.current) setPos(e.clientX);
-    },
-    [setPos],
-  );
-
-  const stopDrag = useCallback(() => {
-    isDragging.current = false;
-  }, []);
-
-  if (beforePhotos.length === 0 || afterPhotos.length === 0) {
-    return (
-      <CompareEmpty>
-        <CompareEmptyTitle>Kein Vergleich möglich</CompareEmptyTitle>
-        <CompareEmptyHint>
-          {beforePhotos.length === 0 && 'Noch keine Vorher-Fotos vorhanden. '}
-          {afterPhotos.length === 0 && 'Noch keine Nachher-Fotos vorhanden. '}
-          Lade Fotos mit Typ "Vorher" und "Nachher" hoch.
-        </CompareEmptyHint>
-      </CompareEmpty>
-    );
-  }
-
-  const beforePhoto = beforePhotos[Math.min(beforeIdx, beforePhotos.length - 1)];
-  const afterPhoto = afterPhotos[Math.min(afterIdx, afterPhotos.length - 1)];
-  const showThumbs = beforePhotos.length > 1 || afterPhotos.length > 1;
+  const handleDelete = async (comparison: PhotoComparison) => {
+    const ok = await confirm({
+      title: 'Vergleich löschen',
+      message: 'Diesen Vorher/Nachher-Vergleich wirklich löschen?',
+      confirmLabel: 'Löschen',
+      danger: true,
+    });
+    if (!ok) return;
+    try {
+      await deleteComparison(objectId, comparison.id);
+      toast.success('Vergleich gelöscht');
+    } catch {
+      toast.error('Fehler beim Löschen.');
+    }
+  };
 
   return (
     <CompareWrapper>
-      <CompareContainer
-        ref={containerRef}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={stopDrag}
-        onPointerCancel={stopDrag}
-      >
-        <CompareAfterImg src={afterPhoto.url} alt="Nachher" draggable={false} />
-        <CompareBeforeImg src={beforePhoto.url} alt="Vorher" draggable={false} />
+      <CreateBtn onClick={() => setSheetOpen(true)}>
+        <FiPlus size={14} />
+        Vergleich erstellen
+      </CreateBtn>
 
-        <CompareLabel $side="left">Vorher</CompareLabel>
-        <CompareLabel $side="right">Nachher</CompareLabel>
-
-        <CompareDivider>
-          <DividerLine />
-          <DividerKnob>
-            <FiChevronLeft size={11} />
-            <FiChevronRight size={11} />
-          </DividerKnob>
-        </CompareDivider>
-      </CompareContainer>
-
-      {showThumbs && (
-        <ThumbSection>
-          {beforePhotos.length > 1 && (
-            <ThumbGroup>
-              <ThumbGroupLabel>Vorher</ThumbGroupLabel>
-              <ThumbRow>
-                {beforePhotos.map((p, i) => (
-                  <ThumbImg
-                    key={p.id}
-                    src={p.url}
-                    $active={i === beforeIdx}
-                    onClick={() => setBeforeIdx(i)}
-                    alt=""
-                    draggable={false}
-                  />
-                ))}
-              </ThumbRow>
-            </ThumbGroup>
-          )}
-          {afterPhotos.length > 1 && (
-            <ThumbGroup>
-              <ThumbGroupLabel>Nachher</ThumbGroupLabel>
-              <ThumbRow>
-                {afterPhotos.map((p, i) => (
-                  <ThumbImg
-                    key={p.id}
-                    src={p.url}
-                    $active={i === afterIdx}
-                    onClick={() => setAfterIdx(i)}
-                    alt=""
-                    draggable={false}
-                  />
-                ))}
-              </ThumbRow>
-            </ThumbGroup>
-          )}
-        </ThumbSection>
+      {comparisons.length === 0 ? (
+        <CompareEmpty>
+          <CompareEmptyTitle>Noch keine Vergleiche</CompareEmptyTitle>
+          <CompareEmptyHint>
+            Erstelle einen Vorher/Nachher-Vergleich aus vorhandenen Fotos oder mit der Kamera.
+          </CompareEmptyHint>
+        </CompareEmpty>
+      ) : (
+        <CompareList>
+          {comparisons.map((c) => (
+            <ComparisonCard
+              key={c.id}
+              comparison={c}
+              canDelete={isAdmin || c.createdBy === uid}
+              onDelete={handleDelete}
+            />
+          ))}
+        </CompareList>
       )}
+
+      <ComparisonPickerSheet
+        isOpen={sheetOpen}
+        onClose={() => setSheetOpen(false)}
+        objectId={objectId}
+        photos={photos}
+      />
     </CompareWrapper>
   );
 };

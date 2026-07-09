@@ -1,4 +1,5 @@
 import styled, { keyframes } from 'styled-components';
+import { Button } from '@shared/ui/Button';
 
 const flashHighlight = keyframes`
   0%   { border-left-color: rgba(204,34,34,0.9); background: rgba(204,34,34,0.12); }
@@ -79,6 +80,24 @@ export const Actions = styled.div`
   gap: 2px;
   margin-left: 6px;
   flex-shrink: 0;
+`;
+
+/* Neutral icon action — hover reveals a subtle border to signal it's clickable */
+export const EditIconBtn = styled(Button)`
+  padding: 3px 5px;
+
+  &:hover:not(:disabled) {
+    border-color: ${({ theme }) => theme.colors.borderHover};
+  }
+`;
+
+/* Destructive icon action — hover turns danger red instead of neutral */
+export const DeleteIconBtn = styled(EditIconBtn)`
+  &:hover:not(:disabled) {
+    color: ${({ theme }) => theme.colors.danger};
+    background: ${({ theme }) => theme.colors.accentDim};
+    border-color: transparent;
+  }
 `;
 
 export const EditRow = styled.div`

@@ -10,13 +10,13 @@ import { HoursTable } from "@features/hours/components/HoursTable";
 import { useHoursPage } from "@features/hours/hooks/useHoursPage";
 import { useOnlineStatus } from "@shared/hooks/useOnlineStatus";
 import { OfflineBanner } from "@shared/ui/OfflineBanner";
+import { SegmentedControl, type SegOption } from "@shared/ui/SegmentedControl";
 import type { WorkHourEntry } from "@shared/types";
 import { WageModal } from "./components/WageModal";
 import { FilterBar } from "./components/FilterBar";
 import { TableSkeleton } from "./components/TableSkeleton";
 import {
-  TabBar,
-  Tab,
+  TabBarWrapper,
   ViewPanel,
   StatsCard,
   StatsLeft,
@@ -138,35 +138,25 @@ const HoursPage: React.FC = () => {
 
   const { periodLabel } = getPeriodAndWorker();
 
+  const viewOption: SegOption<"view" | "add"> = {
+    value: "view",
+    label: "Übersicht",
+    icon: <FiList size={14} />,
+  };
+  const addOption: SegOption<"view" | "add"> = {
+    value: "add",
+    label: "Eintragen",
+    icon: <HiPlus size={16} />,
+  };
+  const tabOptions = isAdmin ? [viewOption, addOption] : [addOption, viewOption];
+
   return (
     <>
       {/* <PageTitle>Arbeitsstunden</PageTitle> */}
 
-      <TabBar>
-        {isAdmin ? (
-          <>
-            <Tab $active={tab === "view"} onClick={() => setTab("view")}>
-              <FiList size={14} />
-              Übersicht
-            </Tab>
-            <Tab $active={tab === "add"} onClick={() => setTab("add")}>
-              <HiPlus size={16} />
-              Eintragen
-            </Tab>
-          </>
-        ) : (
-          <>
-            <Tab $active={tab === "add"} onClick={() => setTab("add")}>
-              <HiPlus size={16} />
-              Eintragen
-            </Tab>
-            <Tab $active={tab === "view"} onClick={() => setTab("view")}>
-              <FiList size={14} />
-              Übersicht
-            </Tab>
-          </>
-        )}
-      </TabBar>
+      <TabBarWrapper>
+        <SegmentedControl options={tabOptions} value={tab} onChange={setTab} variant="tabs" />
+      </TabBarWrapper>
 
       {tab === "add" && (
         <>

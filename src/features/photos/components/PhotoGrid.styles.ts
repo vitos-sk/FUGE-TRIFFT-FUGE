@@ -58,9 +58,6 @@ export const PhotoCard = styled.div<{ $highlighted?: boolean }>`
   &:hover .delete-btn {
     opacity: 1;
   }
-  &:hover .type-badge {
-    opacity: 1;
-  }
 
   &:active {
     opacity: 0.9;
@@ -86,28 +83,6 @@ export const Img = styled.img`
   object-fit: cover;
   transition: transform ${({ theme }) => theme.transitions.normal};
   animation: ${fadeIn} 0.3s ease;
-`;
-
-/* Bottom-left badge overlay positioned like a tile corner — flat where it meets edges */
-export const PhotoTypeBadge = styled.span`
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: rgba(255, 255, 255, 0.9);
-  background: rgba(0, 0, 0, 0.72);
-  padding: 3px 7px;
-  border-radius: 0 6px 0 8px;
-  white-space: nowrap;
-  line-height: 1.4;
-  transition: opacity 0.15s;
-
-  @media (min-width: 641px) {
-    opacity: 0;
-  }
 `;
 
 export const Overlay = styled.div`
@@ -310,49 +285,4 @@ export const Empty = styled.p`
   font-size: 14px;
   text-align: center;
   padding: 40px 0;
-`;
-
-export const FilterRow = styled.div`
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-`;
-
-export const FilterChip = styled.button<{ $active: boolean; $color: string }>`
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  height: 28px;
-  padding: 0 11px;
-  border-radius: 9999px;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  white-space: nowrap;
-  cursor: pointer;
-  transition: color 0.15s, background 0.15s, border-color 0.15s;
-
-  color: ${({ $active, $color }) =>
-    $active ? $color : 'rgba(255,255,255,0.38)'};
-  background: ${({ $active, $color }) =>
-    $active ? `${$color}18` : 'transparent'};
-  border: 1px solid
-    ${({ $active, $color }) =>
-      $active ? `${$color}50` : 'rgba(255,255,255,0.1)'};
-
-  &:hover {
-    color: ${({ $color }) => $color};
-    border-color: ${({ $color }) => `${$color}40`};
-    background: ${({ $color }) => `${$color}10`};
-  }
-
-  &:active {
-    opacity: 0.75;
-  }
-
-  @media (max-width: 640px) {
-    height: 32px;
-    padding: 0 12px;
-  }
 `;

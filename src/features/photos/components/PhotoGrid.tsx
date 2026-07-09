@@ -1,13 +1,13 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { FiTrash2, FiX, FiChevronLeft, FiChevronRight, FiColumns } from 'react-icons/fi';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { FiTrash2, FiX, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import { subscribeToPhotos, deletePhoto } from '@features/photos/services';
-import { Badge } from '@shared/ui/Badge';
 import { PhotoUpload } from './PhotoUpload';
 import { PhotoCompare } from './PhotoCompare';
 import { useConfirm } from '@shared/ui/ConfirmDialog';
 import { useToast } from '@shared/ui/Toast';
 import { useAuth } from '@features/auth/hooks';
-import type { Photo, PhotoType } from '@shared/types';
+import { SegmentedControl } from '@shared/ui/SegmentedControl';
+import type { Photo } from '@shared/types';
 import { Loader } from '@shared/ui/Loader';
 import {
   Wrapper,
@@ -16,7 +16,6 @@ import {
   Img,
   Overlay,
   Caption,
-  PhotoTypeBadge,
   DeleteBtn,
   Lightbox,
   LightboxInner,
@@ -27,33 +26,13 @@ import {
   LightboxCounter,
   LightboxNav,
   Empty,
-  FilterRow,
-  FilterChip,
 } from './PhotoGrid.styles';
 
-const photoTypeLabels: Record<PhotoType, string> = {
-  before: 'Vorher',
-  after: 'Nachher',
-  daily: 'Täglich',
-  problem: 'Problem',
-};
+type ViewMode = 'fotos' | 'vergleich';
 
-type FilterKey = 'all' | PhotoType | 'compare';
-
-interface FilterDef {
-  key: FilterKey;
-  label: string;
-  color: string;
-  icon?: React.ReactNode;
-}
-
-const FILTERS: FilterDef[] = [
-  { key: 'all',     label: 'Alle',      color: '#cc2222' },
-  { key: 'daily',   label: 'Täglich',   color: '#c9a84c' },
-  { key: 'before',  label: 'Vorher',    color: '#3498db' },
-  { key: 'after',   label: 'Nachher',   color: '#27ae60' },
-  { key: 'problem', label: 'Problem',   color: '#c0392b' },
-  { key: 'compare', label: 'Vergleich', color: '#8b5cf6', icon: <FiColumns size={11} /> },
+const VIEW_OPTIONS: { value: ViewMode; label: string }[] = [
+  { value: 'fotos', label: 'Fotos' },
+  { value: 'vergleich', label: 'Vergleich' },
 ];
 
 interface Props {
@@ -66,7 +45,7 @@ export const PhotoGrid: React.FC<Props> = ({ objectId, highlightPhotoId, objectT
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(true);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
-  const [activeFilter, setActiveFilter] = useState<FilterKey>('all');
+  const [view, setView] = useState<ViewMode>('fotos');
   const touchStartX = useRef(0);
   const touchStartY = useRef(0);
   const confirm = useConfirm();
@@ -87,11 +66,6 @@ export const PhotoGrid: React.FC<Props> = ({ objectId, highlightPhotoId, objectT
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }, [highlightPhotoId, loading]);
 
-  const filteredPhotos = useMemo(() => {
-    if (activeFilter === 'all' || activeFilter === 'compare') return photos;
-    return photos.filter((p) => p.type === activeFilter);
-  }, [photos, activeFilter]);
-
   const goPrev = useCallback(
     () => setLightboxIndex((i) => (i !== null && i > 0 ? i - 1 : i)),
     [],
@@ -99,8 +73,8 @@ export const PhotoGrid: React.FC<Props> = ({ objectId, highlightPhotoId, objectT
 
   const goNext = useCallback(
     () =>
-      setLightboxIndex((i) => (i !== null && i < filteredPhotos.length - 1 ? i + 1 : i)),
-    [filteredPhotos.length],
+      setLightboxIndex((i) => (i !== null && i < photos.length - 1 ? i + 1 : i)),
+    [photos.length],
   );
 
   useEffect(() => {
@@ -115,10 +89,10 @@ export const PhotoGrid: React.FC<Props> = ({ objectId, highlightPhotoId, objectT
   }, [lightboxIndex, goNext, goPrev]);
 
   useEffect(() => {
-    if (lightboxIndex !== null && lightboxIndex >= filteredPhotos.length) {
-      setLightboxIndex(filteredPhotos.length > 0 ? filteredPhotos.length - 1 : null);
+    if (lightboxIndex !== null && lightboxIndex >= photos.length) {
+      setLightboxIndex(photos.length > 0 ? photos.length - 1 : null);
     }
-  }, [filteredPhotos.length, lightboxIndex]);
+  }, [photos.length, lightboxIndex]);
 
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
@@ -139,7 +113,7 @@ export const PhotoGrid: React.FC<Props> = ({ objectId, highlightPhotoId, objectT
     e.preventDefault();
     const ok = await confirm({
       title: 'Foto löschen',
-      message: `Foto "${photo.caption || photo.type}" wirklich permanent löschen?`,
+      message: `Foto "${photo.caption || 'Foto'}" wirklich permanent löschen?`,
       confirmLabel: 'Löschen',
       danger: true,
     });
@@ -147,7 +121,7 @@ export const PhotoGrid: React.FC<Props> = ({ objectId, highlightPhotoId, objectT
     try {
       await deletePhoto(objectId, photo);
       toast.success('Foto gelöscht');
-      if (lightboxIndex !== null && filteredPhotos[lightboxIndex]?.id === photo.id) {
+      if (lightboxIndex !== null && photos[lightboxIndex]?.id === photo.id) {
         setLightboxIndex(null);
       }
     } catch {
@@ -155,7 +129,7 @@ export const PhotoGrid: React.FC<Props> = ({ objectId, highlightPhotoId, objectT
     }
   };
 
-  const lbPhoto = lightboxIndex !== null ? filteredPhotos[lightboxIndex] : undefined;
+  const lbPhoto = lightboxIndex !== null ? photos[lightboxIndex] : undefined;
 
   return (
     <Wrapper>
@@ -166,33 +140,16 @@ export const PhotoGrid: React.FC<Props> = ({ objectId, highlightPhotoId, objectT
           <PhotoUpload objectId={objectId} objectTitle={objectTitle} />
 
           {photos.length > 0 && (
-            <FilterRow>
-              {FILTERS.map((f) => (
-                <FilterChip
-                  key={f.key}
-                  $active={activeFilter === f.key}
-                  $color={f.color}
-                  onClick={() => setActiveFilter(f.key)}
-                  aria-pressed={activeFilter === f.key}
-                >
-                  {f.icon}
-                  {f.label}
-                </FilterChip>
-              ))}
-            </FilterRow>
+            <SegmentedControl options={VIEW_OPTIONS} value={view} onChange={setView} />
           )}
 
-          {activeFilter === 'compare' ? (
-            <PhotoCompare photos={photos} />
-          ) : filteredPhotos.length === 0 ? (
-            <Empty>
-              {photos.length === 0
-                ? 'Noch keine Fotos hochgeladen.'
-                : 'Keine Fotos in dieser Kategorie.'}
-            </Empty>
+          {view === 'vergleich' ? (
+            <PhotoCompare objectId={objectId} photos={photos} />
+          ) : photos.length === 0 ? (
+            <Empty>Noch keine Fotos hochgeladen.</Empty>
           ) : (
             <Grid>
-              {filteredPhotos.map((photo, idx) => (
+              {photos.map((photo, idx) => (
                   <PhotoCard
                     key={photo.id}
                     id={`photo-${photo.id}`}
@@ -214,7 +171,6 @@ export const PhotoGrid: React.FC<Props> = ({ objectId, highlightPhotoId, objectT
                         <Caption>{photo.caption}</Caption>
                       </Overlay>
                     )}
-                    <PhotoTypeBadge className="type-badge">{photoTypeLabels[photo.type]}</PhotoTypeBadge>
                   </PhotoCard>
               ))}
             </Grid>
@@ -222,6 +178,7 @@ export const PhotoGrid: React.FC<Props> = ({ objectId, highlightPhotoId, objectT
 
           {lbPhoto && (
             <Lightbox
+              data-lightbox
               onClick={() => setLightboxIndex(null)}
               onTouchStart={handleTouchStart}
               onTouchEnd={handleTouchEnd}
@@ -233,9 +190,8 @@ export const PhotoGrid: React.FC<Props> = ({ objectId, highlightPhotoId, objectT
               <LightboxInner onClick={(e) => e.stopPropagation()}>
                 <LightboxImg src={lbPhoto.url} alt={lbPhoto.caption || 'Foto'} />
                 <LightboxFooter>
-                  <Badge $photoType={lbPhoto.type}>{photoTypeLabels[lbPhoto.type]}</Badge>
                   {lbPhoto.caption && <LightboxCaption>{lbPhoto.caption}</LightboxCaption>}
-                  <LightboxCounter>{lightboxIndex! + 1} / {filteredPhotos.length}</LightboxCounter>
+                  <LightboxCounter>{lightboxIndex! + 1} / {photos.length}</LightboxCounter>
                 </LightboxFooter>
               </LightboxInner>
 
@@ -244,7 +200,7 @@ export const PhotoGrid: React.FC<Props> = ({ objectId, highlightPhotoId, objectT
                   <FiChevronLeft size={22} />
                 </LightboxNav>
               )}
-              {lightboxIndex! < filteredPhotos.length - 1 && (
+              {lightboxIndex! < photos.length - 1 && (
                 <LightboxNav $side="right" onClick={(e) => { e.stopPropagation(); goNext(); }}>
                   <FiChevronRight size={22} />
                 </LightboxNav>

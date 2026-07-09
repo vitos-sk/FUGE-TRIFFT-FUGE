@@ -18,24 +18,9 @@ import {
   getDownloadURL,
   deleteObject,
 } from 'firebase/storage';
-import imageCompression from 'browser-image-compression';
 import { db, storage } from '@shared/services/firebase';
-import type { Photo, PhotoType } from '@shared/types';
-
-async function compressToJpeg(file: File): Promise<Blob> {
-  try {
-    const compressed = await imageCompression(file, {
-      maxSizeMB: 2,
-      maxWidthOrHeight: 2048,
-      useWebWorker: false,
-      fileType: 'image/jpeg',
-      initialQuality: 0.85,
-    });
-    return compressed;
-  } catch {
-    return file;
-  }
-}
+import { compressToJpeg } from './compressImage';
+import type { Photo } from '@shared/types';
 
 export const subscribeToPhotos = (
   objectId: string,
@@ -55,7 +40,6 @@ export const subscribeToPhotos = (
 export const uploadPhoto = async (
   objectId: string,
   file: File,
-  type: PhotoType,
   caption: string,
   uploadedBy: string,
   uploadedByName: string,
@@ -86,7 +70,6 @@ export const uploadPhoto = async (
             url,
             storagePath,
             caption,
-            type,
             uploadedBy,
             uploadedByName,
             uploadedAt: now,
@@ -96,13 +79,10 @@ export const uploadPhoto = async (
 
           // Notify all other users
           try {
-            const typeLabels: Record<PhotoType, string> = {
-              daily: 'Täglich', before: 'Vorher', after: 'Nachher', problem: 'Problem',
-            };
             const usersSnap = await getDocs(collection(db, 'users'));
             const batch = writeBatch(db);
             const title = `Neues Foto — ${objectTitle || 'Objekt'}`;
-            const body = `${uploadedByName}: ${caption || typeLabels[type]}`;
+            const body = `${uploadedByName}: ${caption || 'Neues Foto'}`;
             usersSnap.docs.forEach((userDoc) => {
               if (userDoc.id === uploadedBy) return;
               const notifRef = doc(collection(db, 'notifications', userDoc.id, 'items'));
@@ -125,7 +105,6 @@ export const uploadPhoto = async (
             url,
             storagePath,
             caption,
-            type,
             uploadedBy,
             uploadedByName,
             uploadedAt: now,

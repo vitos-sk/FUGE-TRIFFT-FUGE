@@ -13,11 +13,12 @@ firebase.initializeApp({
 const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage((payload) => {
-  const { title, body } = payload.notification ?? {};
+  const { title, body } = payload.data ?? {};
   if (title) {
     self.registration.showNotification(title, {
       body,
       icon: "/apple-touch-icon.png",
+      badge: "/apple-touch-icon.png",
     });
   }
 });

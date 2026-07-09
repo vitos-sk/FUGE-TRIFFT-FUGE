@@ -8,7 +8,7 @@ import { useToast } from '@shared/ui/Toast';
 import { useConfirm } from '@shared/ui/ConfirmDialog';
 import { deleteNote, updateNote } from '@features/notes/services';
 import type { Note } from '@shared/types';
-import { Item, Header, Avatar, Author, Time, NoteText, Actions, EditRow } from './NoteItem.styles';
+import { Item, Header, Avatar, Author, Time, NoteText, Actions, EditRow, EditIconBtn, DeleteIconBtn } from './NoteItem.styles';
 
 const MAX_CHARS = 600;
 
@@ -83,24 +83,22 @@ export const NoteItem: React.FC<Props> = ({ note, objectId, uid, isAdmin, highli
         </Time>
         {canEdit && !editing && (
           <Actions>
-            <Button
+            <EditIconBtn
               $variant="ghost"
               $size="sm"
               onClick={() => setEditing(true)}
               title="Bearbeiten"
-              style={{ color: '#666', padding: '3px 5px' }}
             >
               <FiEdit2 size={13} />
-            </Button>
-            <Button
+            </EditIconBtn>
+            <DeleteIconBtn
               $variant="ghost"
               $size="sm"
               onClick={handleDelete}
               title="Löschen"
-              style={{ color: '#666', padding: '3px 5px' }}
             >
               <FiTrash2 size={13} />
-            </Button>
+            </DeleteIconBtn>
           </Actions>
         )}
       </Header>

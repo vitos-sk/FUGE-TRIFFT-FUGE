@@ -18,8 +18,15 @@ export const useFCM = (uid: string | null) => {
       if (!messaging) return;
 
       try {
+        // Own scope so this SW registration doesn't clobber the vite-plugin-pwa
+        // service worker, which also registers at "/" by default.
+        const swRegistration = await navigator.serviceWorker.register(
+          '/firebase-messaging-sw.js',
+          { scope: '/firebase-cloud-messaging-push-scope' },
+        );
         const token = await getToken(messaging, {
           vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
+          serviceWorkerRegistration: swRegistration,
         });
         if (token) await updateFCMToken(uid, token);
       } catch {
@@ -28,7 +35,7 @@ export const useFCM = (uid: string | null) => {
 
       // Show notification when app is in foreground
       onMessage(messaging, (payload) => {
-        const { title, body } = payload.notification ?? {};
+        const { title, body } = payload.data ?? {};
         if (title && Notification.permission === 'granted') {
           new Notification(title, {
             body,

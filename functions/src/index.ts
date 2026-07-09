@@ -25,20 +25,12 @@ export const sendPushOnNotification = onDocumentCreated(
     try {
       await getMessaging().send({
         token: fcmToken,
-        notification: { title, body },
+        // Data-only payload: the browser must NOT auto-display this.
+        // Showing the notification is entirely up to firebase-messaging-sw.js
+        // (onBackgroundMessage) — otherwise both fire and the user sees it twice.
+        data: { title, body },
         webpush: {
-          notification: {
-            icon: "/apple-touch-icon.png",
-            badge: "/apple-touch-icon.png",
-            vibrate: [200, 100, 200],
-          },
           fcmOptions: { link: "/" },
-        },
-        android: {
-          notification: {
-            icon: "ic_notification",
-            sound: "default",
-          },
         },
       });
     } catch (err: unknown) {

@@ -111,7 +111,7 @@ export const InfoValue = styled.div`
 `;
 
 export const CopyBtn = styled.button`
-  color: ${({ theme }) => theme.colors.textMuted};
+  color: ${({ theme }) => theme.colors.textSecondary};
   padding: 4px;
   border-radius: 4px;
   min-height: 28px;
@@ -123,7 +123,7 @@ export const CopyBtn = styled.button`
   flex-shrink: 0;
 
   &:hover {
-    color: ${({ theme }) => theme.colors.textPrimary};
+    color: ${({ theme }) => theme.colors.accentHover};
     background: rgba(255, 255, 255, 0.06);
   }
 

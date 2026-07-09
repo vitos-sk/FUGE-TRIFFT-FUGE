@@ -50,6 +50,12 @@ service cloud.firestore {
         allow create: if isActive();
         allow delete: if isAdmin() || (isActive() && resource.data.uploadedBy == request.auth.uid);
       }
+
+      match /comparisons/{comparisonId} {
+        allow read: if isActive();
+        allow create: if isActive();
+        allow delete: if isAdmin() || (isActive() && resource.data.createdBy == request.auth.uid);
+      }
     }
 
     // Work hours
