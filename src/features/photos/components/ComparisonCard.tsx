@@ -1,4 +1,4 @@
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { FiChevronLeft, FiChevronRight, FiTrash2 } from 'react-icons/fi';
 import type { PhotoComparison } from '@shared/types';
 import {
@@ -23,6 +23,7 @@ interface Props {
 export const ComparisonCard: React.FC<Props> = ({ comparison, canDelete, onDelete }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
+  const [deletePressed, setDeletePressed] = useState(false);
 
   const setPos = useCallback((clientX: number) => {
     const el = containerRef.current;
@@ -34,9 +35,14 @@ export const ComparisonCard: React.FC<Props> = ({ comparison, canDelete, onDelet
 
   const onPointerDown = useCallback(
     (e: React.PointerEvent<HTMLDivElement>) => {
-      if ((e.target as HTMLElement).closest('button')) return;
+      if ((e.target as HTMLElement).closest('button, [data-drag-ignore]')) return;
       e.preventDefault();
       isDragging.current = true;
+      // Marks the slider drag globally so the tab-swipe listener in
+      // ObjectDetailPage can recognize the gesture even if the finger
+      // physically ends up outside this container (touchend isn't
+      // retargeted by setPointerCapture the way pointer events are).
+      document.body.setAttribute('data-slider-dragging', 'true');
       (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
       setPos(e.clientX);
     },
@@ -52,6 +58,12 @@ export const ComparisonCard: React.FC<Props> = ({ comparison, canDelete, onDelet
 
   const stopDrag = useCallback(() => {
     isDragging.current = false;
+    // pointerup fires (and is retargeted by pointer capture) before the
+    // corresponding touchend — defer clearing the flag so that touchend
+    // still sees the drag as active.
+    setTimeout(() => {
+      document.body.removeAttribute('data-slider-dragging');
+    }, 0);
   }, []);
 
   return (
@@ -79,7 +91,20 @@ export const ComparisonCard: React.FC<Props> = ({ comparison, canDelete, onDelet
 
         {canDelete && (
           <DeleteBtn
+            type="button"
+            data-drag-ignore="true"
+            $pressed={deletePressed}
             title="Vergleich löschen"
+            onPointerDown={(e) => {
+              e.stopPropagation();
+              setDeletePressed(true);
+            }}
+            onPointerUp={(e) => {
+              e.stopPropagation();
+              setDeletePressed(false);
+            }}
+            onPointerCancel={() => setDeletePressed(false)}
+            onPointerLeave={() => setDeletePressed(false)}
             onClick={(e) => {
               e.stopPropagation();
               onDelete(comparison);

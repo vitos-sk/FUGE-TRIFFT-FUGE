@@ -65,6 +65,10 @@ const ObjectDetailPage: React.FC = () => {
       if (Math.abs(dy) > Math.abs(dx) * 0.75) return;
       if ((e.target as Element).closest("[data-lightbox]")) return;
       if ((e.target as Element).closest("[data-compare-slider]")) return;
+      // Fallback for when the finger leaves the compare slider's DOM bounds
+      // mid-drag: touchend isn't retargeted by setPointerCapture the way
+      // pointer events are, so closest() above can miss it.
+      if (document.body.hasAttribute("data-slider-dragging")) return;
       if (dx < 0) setActiveTab("chat");
       else setActiveTab("fotos");
     };

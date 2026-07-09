@@ -111,7 +111,7 @@ export const DividerKnob = styled.div`
   }
 `;
 
-export const DeleteBtn = styled.button`
+export const DeleteBtn = styled.button<{ $pressed?: boolean }>`
   position: absolute;
   top: 8px;
   right: 8px;
@@ -129,6 +129,15 @@ export const DeleteBtn = styled.button`
   backdrop-filter: blur(4px);
   z-index: 10;
 
+  /* Enlarges the tap target to ~44px (Apple HIG) without growing the
+     visible circle — the pseudo-element still hit-tests as part of the button. */
+  &::after {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+  }
+
   &:hover {
     background: rgba(180, 30, 30, 0.85);
     color: #fff;
@@ -139,6 +148,16 @@ export const DeleteBtn = styled.button`
     color: #fff;
     transform: scale(0.9);
   }
+
+  /* Manual press state driven by pointer handlers — iOS Safari frequently
+     fails to render :active on a fast tap without it. */
+  ${({ $pressed }) =>
+    $pressed &&
+    `
+    background: rgba(180, 30, 30, 0.85);
+    color: #fff;
+    transform: scale(0.9);
+  `}
 `;
 
 export const Meta = styled.p`

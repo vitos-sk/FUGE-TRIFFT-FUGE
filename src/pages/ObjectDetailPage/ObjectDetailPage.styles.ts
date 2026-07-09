@@ -17,14 +17,13 @@ export const NotFoundText = styled.p`
 export const TabBarWrapper = styled.div`
   max-width: 680px;
   width: 100%;
-  margin: 0 auto 20px;
+  margin: 0 0 20px;
 `;
 
 /* Single-column content: only one section (Fotos or Chat) is visible at a time */
 export const ContentGrid = styled.div`
   max-width: 680px;
   width: 100%;
-  margin: 0 auto;
 `;
 
 export const SectionBlock = styled.section`

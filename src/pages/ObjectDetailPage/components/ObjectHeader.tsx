@@ -15,6 +15,7 @@ import {
   HeroTitle,
   HeroMetaRow,
   HeroMeta,
+  MapsBtn,
   DeadlineChip,
   HeroActions,
   ActionBtn,
@@ -54,6 +55,17 @@ export const ObjectHeader: React.FC<ObjectHeaderProps> = ({ object, onOpenInfo }
               <FiMapPin size={11} />
               {object.address}, {object.city}
             </HeroMeta>
+            <MapsBtn
+              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                `${object.address}, ${object.city}`,
+              )}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              title="In Google Maps öffnen"
+              aria-label="In Google Maps öffnen"
+            >
+              <SiGooglemaps size={13} color="#EA4335" />
+            </MapsBtn>
             {deadline && (
               <DeadlineChip $urgent={isUrgent}>
                 <FiClock size={9} />
@@ -64,19 +76,8 @@ export const ObjectHeader: React.FC<ObjectHeaderProps> = ({ object, onOpenInfo }
         </HeroContent>
       </HeroSection>
 
-      <HeroActions>
-        <ActionBtn
-          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-            `${object.address}, ${object.city}`,
-          )}`}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <SiGooglemaps size={13} color="#EA4335" />
-          Google Maps
-        </ActionBtn>
-
-        {object.whatsappLink && (
+      {object.whatsappLink && (
+        <HeroActions>
           <ActionBtn
             href={object.whatsappLink}
             target="_blank"
@@ -85,8 +86,8 @@ export const ObjectHeader: React.FC<ObjectHeaderProps> = ({ object, onOpenInfo }
             <SiWhatsapp size={13} color="#25D366" />
             WhatsApp
           </ActionBtn>
-        )}
-      </HeroActions>
+        </HeroActions>
+      )}
     </>
   );
 };

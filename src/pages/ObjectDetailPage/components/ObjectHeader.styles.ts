@@ -124,7 +124,39 @@ export const HeroMetaRow = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 8px;
+`;
+
+/* Small circular overlay button, styled like HeroMenuBtn, sitting inline
+   next to the address instead of stacked below the photo. */
+export const MapsBtn = styled.a`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  color: rgba(255, 255, 255, 0.88);
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 9999px;
+  transition: color 0.15s, background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+
+  &:hover {
+    color: #fff;
+    background: rgba(0, 0, 0, 0.7);
+    border-color: rgba(255, 255, 255, 0.22);
+  }
+
+  &:active {
+    opacity: 0.75;
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(204, 34, 34, 0.35);
+  }
 `;
 
 export const HeroMeta = styled.p`
