@@ -64,6 +64,39 @@ export const HeroBack = styled(Link)`
   }
 `;
 
+export const HeroMenuBtn = styled.button`
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  color: rgba(255, 255, 255, 0.88);
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 9999px;
+  transition: color 0.15s, background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+
+  &:hover {
+    color: #fff;
+    background: rgba(0, 0, 0, 0.7);
+    border-color: rgba(255, 255, 255, 0.22);
+  }
+
+  &:active {
+    opacity: 0.75;
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(204, 34, 34, 0.35);
+  }
+`;
+
 export const HeroContent = styled.div`
   position: absolute;
   bottom: 18px;

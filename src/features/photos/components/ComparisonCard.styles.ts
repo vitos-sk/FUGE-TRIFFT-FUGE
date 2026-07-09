@@ -6,7 +6,7 @@ export const Card = styled.div`
   gap: 8px;
 `;
 
-export const CompareContainer = styled.div`
+export const CompareContainer = styled.div.attrs({ 'data-compare-slider': true })`
   --slider-pos: 50%;
   position: relative;
   aspect-ratio: 4 / 3;
@@ -125,13 +125,19 @@ export const DeleteBtn = styled.button`
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.2s, transform 0.15s;
   backdrop-filter: blur(4px);
   z-index: 10;
 
   &:hover {
     background: rgba(180, 30, 30, 0.85);
     color: #fff;
+  }
+
+  &:active {
+    background: rgba(180, 30, 30, 0.85);
+    color: #fff;
+    transform: scale(0.9);
   }
 `;
 

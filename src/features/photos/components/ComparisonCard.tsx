@@ -34,6 +34,7 @@ export const ComparisonCard: React.FC<Props> = ({ comparison, canDelete, onDelet
 
   const onPointerDown = useCallback(
     (e: React.PointerEvent<HTMLDivElement>) => {
+      if ((e.target as HTMLElement).closest('button')) return;
       e.preventDefault();
       isDragging.current = true;
       (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
@@ -77,7 +78,13 @@ export const ComparisonCard: React.FC<Props> = ({ comparison, canDelete, onDelet
         </CompareDivider>
 
         {canDelete && (
-          <DeleteBtn title="Vergleich löschen" onClick={() => onDelete(comparison)}>
+          <DeleteBtn
+            title="Vergleich löschen"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(comparison);
+            }}
+          >
             <FiTrash2 size={13} />
           </DeleteBtn>
         )}

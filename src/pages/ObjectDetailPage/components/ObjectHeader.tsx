@@ -1,7 +1,7 @@
 import React from 'react';
 
 const NOW = Date.now();
-import { FiMapPin, FiClock } from 'react-icons/fi';
+import { FiMapPin, FiClock, FiMoreVertical } from 'react-icons/fi';
 import { SiGooglemaps, SiWhatsapp } from 'react-icons/si';
 import { format } from 'date-fns';
 import { MapPreview } from '@shared/ui/MapPreview';
@@ -10,6 +10,7 @@ import {
   HeroSection,
   HeroGradient,
   HeroBack,
+  HeroMenuBtn,
   HeroContent,
   HeroTitle,
   HeroMetaRow,
@@ -21,9 +22,10 @@ import {
 
 interface ObjectHeaderProps {
   object: CRMObject;
+  onOpenInfo: () => void;
 }
 
-export const ObjectHeader: React.FC<ObjectHeaderProps> = ({ object }) => {
+export const ObjectHeader: React.FC<ObjectHeaderProps> = ({ object, onOpenInfo }) => {
   const deadline = object.deadline?.toDate?.() ?? null;
   const daysUntil = deadline
     ? Math.ceil((deadline.getTime() - NOW) / 86_400_000)
@@ -42,6 +44,9 @@ export const ObjectHeader: React.FC<ObjectHeaderProps> = ({ object }) => {
         />
         <HeroGradient />
         <HeroBack to="/objects">← Zurück</HeroBack>
+        <HeroMenuBtn onClick={onOpenInfo} aria-label="Objektdetails öffnen">
+          <FiMoreVertical size={16} />
+        </HeroMenuBtn>
         <HeroContent>
           <HeroTitle>{object.title}</HeroTitle>
           <HeroMetaRow>

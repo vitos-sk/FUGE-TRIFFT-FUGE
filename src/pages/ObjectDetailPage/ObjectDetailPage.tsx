@@ -20,7 +20,6 @@ import {
   SectionHeader,
   SectionLabel,
   NotesBadge,
-  AdminSection,
 } from "./ObjectDetailPage.styles";
 
 type DetailTab = "fotos" | "chat";
@@ -39,6 +38,7 @@ const ObjectDetailPage: React.FC = () => {
   const { isAdmin } = useAuth();
 
   const [activeTab, setActiveTab] = useState<DetailTab>(noteParam ? "chat" : "fotos");
+  const [showInfoModal, setShowInfoModal] = useState(false);
 
   const {
     object,
@@ -64,6 +64,7 @@ const ObjectDetailPage: React.FC = () => {
       if (Math.abs(dx) < 60) return;
       if (Math.abs(dy) > Math.abs(dx) * 0.75) return;
       if ((e.target as Element).closest("[data-lightbox]")) return;
+      if ((e.target as Element).closest("[data-compare-slider]")) return;
       if (dx < 0) setActiveTab("chat");
       else setActiveTab("fotos");
     };
@@ -81,7 +82,9 @@ const ObjectDetailPage: React.FC = () => {
 
   return (
     <>
-      {object && <ObjectHeader object={object} />}
+      {object && (
+        <ObjectHeader object={object} onOpenInfo={() => setShowInfoModal(true)} />
+      )}
 
       {loading ? (
         <Loader />
@@ -125,17 +128,6 @@ const ObjectDetailPage: React.FC = () => {
                 />
               </SectionBlock>
             )}
-
-            {isAdmin && (
-              <AdminSection>
-                <InfoTab
-                  object={object}
-                  isAdmin={isAdmin}
-                  onEdit={() => setShowEditModal(true)}
-                  onDelete={handleDelete}
-                />
-              </AdminSection>
-            )}
           </ContentGrid>
         </PageBody>
       ) : null}
@@ -151,6 +143,24 @@ const ObjectDetailPage: React.FC = () => {
           onCancel={() => setShowEditModal(false)}
         />
       </Modal>
+
+      {object && (
+        <Modal
+          isOpen={showInfoModal}
+          onClose={() => setShowInfoModal(false)}
+          title="Objektdetails"
+        >
+          <InfoTab
+            object={object}
+            isAdmin={isAdmin}
+            onEdit={() => {
+              setShowInfoModal(false);
+              setShowEditModal(true);
+            }}
+            onDelete={handleDelete}
+          />
+        </Modal>
+      )}
     </>
   );
 };

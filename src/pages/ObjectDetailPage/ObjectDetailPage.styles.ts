@@ -70,13 +70,3 @@ export const NotesBadge = styled.span`
   line-height: 1.6;
   margin-left: auto;
 `;
-
-/* Admin (InfoTab) always renders below the active Fotos/Chat section —
-   the "Fuge" double-line divider marks that seam */
-export const AdminSection = styled.section`
-  padding: 20px 0;
-  border-top: 1px solid ${({ theme }) => theme.colors.border};
-  box-shadow: inset 0 3px 0 ${({ theme }) => theme.colors.border};
-  padding-top: 24px;
-  margin-top: 4px;
-`;
