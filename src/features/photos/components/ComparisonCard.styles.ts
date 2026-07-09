@@ -6,7 +6,9 @@ export const Card = styled.div`
   gap: 8px;
 `;
 
-export const CompareContainer = styled.div.attrs({ 'data-compare-slider': true })`
+export const CompareContainer = styled.div.attrs<{ 'data-compare-slider'?: boolean }>({
+  'data-compare-slider': true,
+})`
   --slider-pos: 50%;
   position: relative;
   aspect-ratio: 4 / 3;
