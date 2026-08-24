@@ -1,251 +1,296 @@
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
+import { glassSurface } from '../../../styles/glass';
 
-export const HeroSection = styled.div`
-  position: relative;
-  height: 320px;
-  margin: -28px -24px 0 -24px;
-  background: #060303;
+/* Compact header card: thumbnail + title/address, meta strip below */
+export const HeaderCard = styled.header`
+  ${glassSurface};
+  border-radius: 14px;
   overflow: hidden;
-
-  @media (max-width: 768px) {
-    height: 200px;
-    margin: -18px -16px 0 -16px;
-  }
 `;
 
-export const HeroGradient = styled.div`
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    to bottom,
-    transparent 0%,
-    rgba(6, 3, 3, 0.25) 35%,
-    rgba(6, 3, 3, 0.72) 68%,
-    #060303 95%
-  );
-  pointer-events: none;
-  z-index: 1;
-`;
-
-export const HeroBack = styled(Link)`
-  position: absolute;
-  top: 14px;
-  left: 16px;
-  z-index: 2;
-  display: inline-flex;
+export const TopRow = styled.div`
+  display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.88);
-  background: rgba(0, 0, 0, 0.55);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 9999px;
-  padding: 8px 14px;
-  text-shadow: none;
-  transition: color 0.15s, background 0.15s;
-  -webkit-tap-highlight-color: transparent;
-  white-space: nowrap;
+  gap: 12px;
+  padding: 12px;
 
-  &:hover {
-    color: #fff;
-    background: rgba(0, 0, 0, 0.7);
-    border-color: rgba(255, 255, 255, 0.22);
-  }
-
-  &:active {
-    opacity: 0.75;
-  }
-
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(204, 34, 34, 0.35);
+  @media (max-width: 640px) {
+    gap: 10px;
+    padding: 10px;
   }
 `;
 
-export const HeroMenuBtn = styled.button`
-  position: absolute;
-  top: 14px;
-  right: 16px;
-  z-index: 2;
+export const BackBtn = styled(Link)`
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
   width: 34px;
   height: 34px;
-  color: rgba(255, 255, 255, 0.88);
-  background: rgba(0, 0, 0, 0.55);
-  border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 9999px;
-  transition: color 0.15s, background 0.15s;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  background: transparent;
+  border: 1px solid transparent;
+  transition: color ${({ theme }) => theme.transitions.fast},
+    background ${({ theme }) => theme.transitions.fast};
   -webkit-tap-highlight-color: transparent;
 
   &:hover {
-    color: #fff;
-    background: rgba(0, 0, 0, 0.7);
-    border-color: rgba(255, 255, 255, 0.22);
+    color: ${({ theme }) => theme.colors.textPrimary};
+    background: rgba(255, 255, 255, 0.06);
   }
 
   &:active {
-    opacity: 0.75;
+    opacity: 0.7;
   }
 
   &:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 3px rgba(204, 34, 34, 0.35);
+    box-shadow: ${({ theme }) => theme.shadows.focus};
   }
 `;
 
-export const HeroContent = styled.div`
-  position: absolute;
-  bottom: 18px;
-  left: 16px;
-  right: 16px;
-  z-index: 2;
-`;
-
-export const HeroTitle = styled.h1`
-  font-size: 28px;
-  font-weight: 700;
-  color: #fff;
-  letter-spacing: -0.025em;
-  line-height: 1.2;
-  text-wrap: balance;
-  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.85), 0 1px 4px rgba(0, 0, 0, 0.6);
-  margin-bottom: 7px;
+/* Square map thumbnail standing in for the object photo */
+export const Thumb = styled.div`
+  position: relative;
+  flex-shrink: 0;
+  width: 62px;
+  height: 62px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid ${({ theme }) => theme.glass.border};
 
   @media (max-width: 640px) {
-    font-size: 24px;
+    width: 54px;
+    height: 54px;
   }
 `;
 
-export const HeroMetaRow = styled.div`
+/* Sits behind the map image and shows through when it fails to load */
+export const ThumbFallback = styled.div`
+  position: absolute;
+  inset: 0;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+  justify-content: center;
+  color: ${({ theme }) => theme.colors.textMuted};
+
+  + img {
+    position: relative;
+    z-index: 1;
+  }
 `;
 
-/* Small circular overlay button, styled like HeroMenuBtn, sitting inline
-   next to the address instead of stacked below the photo. */
+export const TitleBlock = styled.div`
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+`;
+
+export const Title = styled.h1`
+  font-size: 21px;
+  font-weight: 700;
+  color: ${({ theme }) => theme.colors.textPrimary};
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  @media (max-width: 640px) {
+    font-size: 19px;
+  }
+`;
+
+export const AddressRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+`;
+
+export const Address = styled.span`
+  font-size: 12px;
+  font-weight: 500;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  svg {
+    flex-shrink: 0;
+  }
+`;
+
 export const MapsBtn = styled.a`
   display: inline-flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  width: 34px;
-  height: 34px;
-  color: rgba(255, 255, 255, 0.88);
-  background: rgba(0, 0, 0, 0.55);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  width: 22px;
+  height: 22px;
   border-radius: 9999px;
-  transition: color 0.15s, background 0.15s;
+  transition: background ${({ theme }) => theme.transitions.fast};
   -webkit-tap-highlight-color: transparent;
 
   &:hover {
-    color: #fff;
-    background: rgba(0, 0, 0, 0.7);
-    border-color: rgba(255, 255, 255, 0.22);
-  }
-
-  &:active {
-    opacity: 0.75;
+    background: rgba(255, 255, 255, 0.08);
   }
 
   &:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 3px rgba(204, 34, 34, 0.35);
+    box-shadow: ${({ theme }) => theme.shadows.focus};
   }
 `;
 
-export const HeroMeta = styled.p`
-  font-size: 12px;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.7);
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
-  min-width: 0;
-  flex: 1;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-
-  svg { flex-shrink: 0; }
-`;
-
+/* Deadline pill — stands where the mockup shows the status chip */
 export const DeadlineChip = styled.span<{ $urgent: boolean }>`
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 3px 9px;
-  border-radius: 99px;
-  font-size: 10px;
+  gap: 5px;
+  align-self: flex-start;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 10.5px;
   font-weight: 700;
   letter-spacing: 0.03em;
   white-space: nowrap;
-  flex-shrink: 0;
   background: ${({ $urgent }) =>
-    $urgent ? 'rgba(204,34,34,0.22)' : 'rgba(255,255,255,0.09)'};
-  border: 1px solid ${({ $urgent }) =>
-    $urgent ? 'rgba(204,34,34,0.45)' : 'rgba(255,255,255,0.13)'};
-  color: ${({ $urgent }) =>
-    $urgent ? '#e53333' : 'rgba(255,255,255,0.65)'};
-  box-shadow: ${({ $urgent }) =>
-    $urgent ? '0 0 12px rgba(204,34,34,0.28)' : 'none'};
+    $urgent ? 'rgba(204,34,34,0.16)' : 'rgba(255,255,255,0.06)'};
+  border: 1px solid
+    ${({ $urgent }) => ($urgent ? 'rgba(204,34,34,0.4)' : 'rgba(255,255,255,0.1)')};
+  color: ${({ $urgent, theme }) =>
+    $urgent ? theme.colors.accentHover : theme.colors.textSecondary};
 `;
 
-/* Strip below hero — transparent glass, no solid fill */
-export const HeroActions = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 0 4px;
-`;
-
-export const ActionBtn = styled.a`
+export const MenuBtn = styled.button`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  height: 52px;
-  padding: 0 22px;
-  font-size: 14px;
-  font-weight: 600;
-  color: ${({ theme }) => theme.colors.textPrimary};
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+  align-self: flex-start;
+  width: 32px;
+  height: 32px;
+  border-radius: 9999px;
+  color: ${({ theme }) => theme.colors.textSecondary};
   background: transparent;
-  border-radius: 10px;
-  min-height: 44px;
-  transition: color 0.15s, border-color 0.15s, background 0.15s;
-  white-space: nowrap;
+  border: 1px solid transparent;
+  transition: color ${({ theme }) => theme.transitions.fast},
+    background ${({ theme }) => theme.transitions.fast};
   -webkit-tap-highlight-color: transparent;
 
   &:hover {
-    color: #fff;
-    border-color: rgba(255, 255, 255, 0.22);
+    color: ${({ theme }) => theme.colors.textPrimary};
     background: rgba(255, 255, 255, 0.06);
   }
 
   &:active {
-    opacity: 0.75;
-    background: rgba(255, 255, 255, 0.1);
+    opacity: 0.7;
   }
 
   &:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 3px rgba(204, 34, 34, 0.35);
+    box-shadow: ${({ theme }) => theme.shadows.focus};
+  }
+`;
+
+/* Two-cell strip with a divider, as in the mockup */
+export const MetaStrip = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-top: 1px solid ${({ theme }) => theme.glass.border};
+
+  > * + * {
+    border-left: 1px solid ${({ theme }) => theme.glass.border};
   }
 
-  /* Stretch equally on mobile */
+  /* Desktop: cells hug their text instead of splitting the whole card */
+  @media (min-width: 769px) {
+    grid-template-columns: repeat(2, minmax(0, max-content));
+    justify-content: start;
+  }
+`;
+
+export const MetaCell = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 14px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  svg {
+    flex-shrink: 0;
+    color: ${({ theme }) => theme.colors.textMuted};
+  }
+
   @media (max-width: 640px) {
-    flex: 1;
+    padding: 10px 12px;
+    font-size: 12px;
+    gap: 7px;
+  }
+`;
+
+/* Text needs its own box — a bare text node in a flex row won't ellipsize */
+export const MetaText = styled.span`
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
+export const WhatsAppRow = styled.div`
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+`;
+
+export const WhatsAppBtn = styled.a`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex: 1;
+  min-height: 44px;
+  padding: 0 20px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: ${({ theme }) => theme.colors.textPrimary};
+  ${glassSurface};
+  border-radius: 12px;
+  transition: border-color ${({ theme }) => theme.transitions.fast},
+    background ${({ theme }) => theme.transitions.fast};
+  -webkit-tap-highlight-color: transparent;
+
+  &:hover {
+    border-color: ${({ theme }) => theme.glass.borderHover};
+    background: ${({ theme }) => theme.glass.fillHover};
   }
 
-  /* Natural width on desktop */
+  &:active {
+    opacity: 0.8;
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: ${({ theme }) => theme.shadows.focus};
+  }
+
   @media (min-width: 641px) {
-    min-width: 150px;
+    flex: 0 0 auto;
+    min-width: 160px;
   }
 `;

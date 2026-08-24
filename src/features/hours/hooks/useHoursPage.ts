@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
-import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, format } from 'date-fns';
+import { startOfMonth, endOfMonth, format } from 'date-fns';
 import { de } from 'date-fns/locale';
 import * as XLSX from 'xlsx';
 import { getAllHours, getAllHoursFromCache, getHoursForUser, getHoursForUserFromCache } from '@features/hours/services';
 import { getAllUsers } from '@features/auth/services';
+import { getPeriodBounds } from '@features/hours/utils/periodLabel';
 import { useAuth } from '@features/auth/hooks';
 import type { WorkHourEntry, AppUser } from '@shared/types';
 
@@ -63,23 +64,8 @@ export const useHoursPage = () => {
     }
   }, [isAdmin]);
 
-  const getDateRange = (): [Date | undefined, Date | undefined] => {
-    const now = new Date();
-    if (range === 'week')  return [startOfWeek(now, { locale: de }), endOfWeek(now, { locale: de })];
-    if (range === 'month') return [startOfMonth(now), endOfMonth(now)];
-    if (range === 'pick') {
-      const [y, m] = pickedMonth.split('-').map(Number);
-      const d = new Date(y, m - 1);
-      return [startOfMonth(d), endOfMonth(d)];
-    }
-    if (range === 'custom') {
-      return [
-        customFrom ? new Date(customFrom + 'T00:00:00') : startOfMonth(now),
-        customTo ? new Date(customTo + 'T23:59:59') : now,
-      ];
-    }
-    return [startOfMonth(now), endOfMonth(now)];
-  };
+  const getDateRange = (): [Date, Date] =>
+    getPeriodBounds({ range, pickedMonth, customFrom, customTo });
 
   const setCustomRange = (from: string, to: string) => {
     setCustomFrom(from);

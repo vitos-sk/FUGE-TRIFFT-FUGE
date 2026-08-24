@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { FormGroup } from '@shared/ui/Input';
+import { Input } from '@shared/ui/Input';
 
 export const Form = styled.form`
   background: rgba(255, 255, 255, 0.03);
@@ -142,10 +142,6 @@ export const CharCount = styled.span<{ $warn: boolean }>`
   font-variant-numeric: tabular-nums;
 `;
 
-export const ModalFormGroupLast = styled(FormGroup)`
-  margin-top: 16px;
-`;
-
 export const LongShiftText = styled.p`
   font-size: 15px;
   color: rgba(255, 255, 255, 0.8);
@@ -160,4 +156,24 @@ export const LongShiftText = styled.p`
     display: block;
     margin: 10px 0 4px;
   }
+`;
+
+export const LocationHint = styled.p`
+  font-size: 13px;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.55);
+  margin: 0 0 18px;
+`;
+
+export const LocationInput = styled(Input)`
+  /* 16px verhindert das Auto-Zoom in iOS Safari */
+  font-size: 16px;
+  padding: 12px 14px;
+`;
+
+export const LocationExample = styled.p`
+  font-size: 12px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.35);
+  margin: 9px 0 0;
 `;

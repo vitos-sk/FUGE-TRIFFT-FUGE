@@ -1,5 +1,5 @@
-import React from 'react';
-import { FormGroup, Label, Input } from '@shared/ui/Input';
+import React, { useId } from 'react';
+import { FormGroup, Label } from '@shared/ui/Input';
 import { Button } from '@shared/ui/Button';
 import { SegmentedControl } from '@shared/ui/SegmentedControl';
 import { SubmitButton } from '@shared/ui/SubmitButton';
@@ -12,6 +12,7 @@ import { DatePickerSheet } from './DatePickerSheet';
 import { ObjectPickerSheet } from './ObjectPickerSheet';
 import { useAddHoursForm } from '../hooks/useAddHoursForm';
 import { BREAK_OPTIONS, formatMinutes, formatDateDisplay } from '../utils/timeUtils';
+import { LOCATION_NOTE_MAX } from '../utils/hoursConstants';
 import {
   Form,
   TimeBlock,
@@ -29,8 +30,10 @@ import {
   ModalFooter,
   CharCountRow,
   CharCount,
-  ModalFormGroupLast,
   LongShiftText,
+  LocationHint,
+  LocationInput,
+  LocationExample,
 } from './AddHoursForm.styles';
 
 interface Props {
@@ -50,22 +53,21 @@ export const AddHoursForm: React.FC<Props> = ({ onAdded }) => {
     isOnline,
     locationNote, setLocationNote,
     showLocationModal, setShowLocationModal,
-    modalObjectId, setModalObjectId,
     showLongShiftConfirm, setShowLongShiftConfirm,
     datePickerOpen, setDatePickerOpen,
     startPickerOpen, setStartPickerOpen,
     endPickerOpen, setEndPickerOpen,
     objectPickerOpen, setObjectPickerOpen,
-    modalObjectPickerOpen, setModalObjectPickerOpen,
     totalMins,
     selectedObjTitle,
-    modalObjTitle,
     pendingCount,
     uid,
     handleSubmit,
     handleLongShiftConfirm,
     handleLocationConfirm,
   } = useAddHoursForm({ onAdded });
+
+  const locationInputId = useId();
 
   return (
     <>
@@ -171,13 +173,6 @@ export const AddHoursForm: React.FC<Props> = ({ onAdded }) => {
         onChange={setObjectId}
         objects={objects}
       />
-      <ObjectPickerSheet
-        isOpen={modalObjectPickerOpen}
-        onClose={() => setModalObjectPickerOpen(false)}
-        value={modalObjectId}
-        onChange={(v) => { setModalObjectId(v); setLocationNote(''); }}
-        objects={objects}
-      />
 
       <Modal
         isOpen={showLongShiftConfirm}
@@ -220,7 +215,7 @@ export const AddHoursForm: React.FC<Props> = ({ onAdded }) => {
               type="button"
               loading={loading}
               loadingText="Speichern…"
-              disabled={!modalObjectId && !locationNote.trim()}
+              disabled={!locationNote.trim()}
               onClick={handleLocationConfirm}
             >
               Eintragen
@@ -228,35 +223,43 @@ export const AddHoursForm: React.FC<Props> = ({ onAdded }) => {
           </ModalFooter>
         }
       >
-        <FieldBtn
-          label={
-            <LabelWithIndicator>
-              Objekt auswählen{!modalObjectId && <RequiredDot />}
-            </LabelWithIndicator>
-          }
-          value={modalObjTitle}
-          icon={<FiMapPin size={14} />}
-          onClick={() => setModalObjectPickerOpen(true)}
-        />
+        <LocationHint>
+          Du hast kein Objekt ausgewählt. Schreib kurz auf, wo du gearbeitet hast –
+          dieser Text steht dann in deiner Stundenliste anstelle des Objekts.
+        </LocationHint>
 
-        {!modalObjectId && (
-          <ModalFormGroupLast>
-            <CharCountRow>
-              <Label>Kurzbeschreibung *</Label>
-              <CharCount $warn={locationNote.length >= 13}>
-                {locationNote.length} / 15
-              </CharCount>
-            </CharCountRow>
-            <Input
-              type="text"
-              value={locationNote}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLocationNote(e.target.value)}
-              placeholder="z.B. Baustelle FB…"
-              maxLength={15}
-              autoFocus
-            />
-          </ModalFormGroupLast>
-        )}
+        <FormGroup>
+          <CharCountRow>
+            <Label htmlFor={locationInputId}>
+              <LabelWithIndicator>
+                Ort / Baustelle{!locationNote.trim() && <RequiredDot />}
+              </LabelWithIndicator>
+            </Label>
+            <CharCount $warn={locationNote.length >= LOCATION_NOTE_MAX - 2}>
+              {locationNote.length} / {LOCATION_NOTE_MAX}
+            </CharCount>
+          </CharCountRow>
+          <LocationInput
+            id={locationInputId}
+            type="text"
+            value={locationNote}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLocationNote(e.target.value)}
+            onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+              if (e.key === 'Enter' && locationNote.trim()) {
+                e.preventDefault();
+                handleLocationConfirm();
+              }
+            }}
+            placeholder="z.B. Baustelle Freiburg"
+            maxLength={LOCATION_NOTE_MAX}
+            enterKeyHint="done"
+            autoFocus
+          />
+          <LocationExample>
+            z.B. „Baustelle Freiburg“, „Lager“, „Werkstatt“ oder „Fahrt Kunde Müller“
+          </LocationExample>
+        </FormGroup>
+
       </Modal>
     </>
   );

@@ -2,12 +2,13 @@ import React, { useState, useEffect } from "react";
 import { FiCopy, FiCheck, FiList } from "react-icons/fi";
 import { HiPlus } from "react-icons/hi";
 import { LuCalculator } from "react-icons/lu";
-import { format, startOfWeek, endOfWeek } from "date-fns";
+import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { AddHoursForm } from "@features/hours/components/AddHoursForm";
 import { HoursTable } from "@features/hours/components/HoursTable";
 
 import { useHoursPage } from "@features/hours/hooks/useHoursPage";
+import { formatPeriodTitle, formatPeriodRange } from "@features/hours/utils/periodLabel";
 import { useOnlineStatus } from "@shared/hooks/useOnlineStatus";
 import { OfflineBanner } from "@shared/ui/OfflineBanner";
 import { SegmentedControl, type SegOption } from "@shared/ui/SegmentedControl";
@@ -19,9 +20,10 @@ import {
   TabBarWrapper,
   ViewPanel,
   StatsCard,
-  StatsLeft,
+  StatsPeriod,
   StatsLabel,
   StatsValue,
+  StatsDivider,
   StatsActions,
   StatsBtn,
   SectionTitle,
@@ -106,21 +108,12 @@ const HoursPage: React.FC = () => {
   const totalMins = entries.reduce((acc, e) => acc + (e.totalMinutes || 0), 0);
   const totalH = Math.floor(totalMins / 60);
   const totalM = totalMins % 60;
+  const period = { range, pickedMonth, customFrom, customTo };
+  const periodTitle = formatPeriodTitle(period);
+  const periodRange = formatPeriodRange(period);
+
   const getPeriodAndWorker = () => {
-    const now = new Date();
-    let periodLabel: string;
-    if (range === "month") {
-      periodLabel = format(now, "MMMM yyyy", { locale: de });
-    } else if (range === "week") {
-      const ws = startOfWeek(now, { locale: de });
-      const we = endOfWeek(now, { locale: de });
-      periodLabel = `${format(ws, "dd.MM.")}–${format(we, "dd.MM.yyyy")}`;
-    } else if (range === "pick") {
-      const [y, m] = pickedMonth.split("-").map(Number);
-      periodLabel = format(new Date(y, m - 1), "MMMM yyyy", { locale: de });
-    } else {
-      periodLabel = format(now, "yyyy");
-    }
+    const periodLabel = periodRange;
     const workerLabel = !isAdmin
       ? (entries[0]?.userName ?? "")
       : selectedUser
@@ -135,8 +128,6 @@ const HoursPage: React.FC = () => {
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
   };
-
-  const { periodLabel } = getPeriodAndWorker();
 
   const viewOption: SegOption<"view" | "add"> = {
     value: "view",
@@ -174,30 +165,34 @@ const HoursPage: React.FC = () => {
         <>
           <ViewPanel>
             <StatsCard>
-              <StatsLeft>
-                <StatsLabel>Gesamtstunden ({periodLabel})</StatsLabel>
-                <StatsValue>
-                  {totalH}:{String(totalM).padStart(2, "0")} h
-                </StatsValue>
-              </StatsLeft>
+              <StatsPeriod>{periodTitle}</StatsPeriod>
+              <StatsValue>
+                {totalH}:{String(totalM).padStart(2, "0")} h
+              </StatsValue>
+              <StatsLabel>Gesamtstunden</StatsLabel>
 
               {!loading && entries.length > 0 && (
-                <StatsActions>
-                  <StatsBtn $done={copied} onClick={handleCopyReport}>
-                    {copied ? <FiCheck size={14} /> : <FiCopy size={14} />}
-                    {copied ? "Kopiert!" : "Bericht kopieren"}
-                  </StatsBtn>
-                  {isAdmin && (
-                    <StatsBtn onClick={() => setShowWageModal(true)}>
-                      <LuCalculator size={14} />€ Lohn berechnen
+                <>
+                  <StatsDivider />
+                  <StatsActions>
+                    <StatsBtn $done={copied} onClick={handleCopyReport}>
+                      {copied ? <FiCheck size={15} /> : <FiCopy size={15} />}
+                      {copied ? "Kopiert!" : "Bericht kopieren"}
                     </StatsBtn>
-                  )}
-                </StatsActions>
+                    {isAdmin && (
+                      <StatsBtn onClick={() => setShowWageModal(true)}>
+                        <LuCalculator size={15} />
+                        Lohn berechnen
+                      </StatsBtn>
+                    )}
+                  </StatsActions>
+                </>
               )}
             </StatsCard>
 
             <FilterBar
               isAdmin={isAdmin}
+              periodRange={periodRange}
               range={range}
               setRange={setRange}
               pickedMonth={pickedMonth}

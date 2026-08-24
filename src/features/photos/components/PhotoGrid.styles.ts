@@ -1,4 +1,5 @@
 import styled, { keyframes } from 'styled-components';
+import { glassSurface } from '../../../styles/glass';
 
 const fadeIn = keyframes`
   from { opacity: 0; }
@@ -14,7 +15,21 @@ const highlight = keyframes`
 export const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
+`;
+
+/* Date group: "Heute", "Gestern", "01. Juni 2026" */
+export const DayGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+`;
+
+export const DayHeading = styled.h3`
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: ${({ theme }) => theme.colors.textPrimary};
 `;
 
 /* 2 columns on mobile, 3 on tablet/desktop, 4 on wide screens */
@@ -29,34 +44,31 @@ export const Grid = styled.div`
 
   @media (max-width: 640px) {
     grid-template-columns: repeat(2, 1fr);
-    gap: 6px;
+    gap: 8px;
   }
 `;
 
 export const PhotoCard = styled.div<{ $highlighted?: boolean }>`
   position: relative;
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 4 / 3;
   overflow: hidden;
-  border-radius: 8px;
+  border-radius: 10px;
   border: 1px solid
     ${({ $highlighted, theme }) =>
       $highlighted ? theme.colors.accent : theme.colors.border};
   cursor: pointer;
   background: rgba(255, 255, 255, 0.04);
-  transition: all ${({ theme }) => theme.transitions.spring};
+  transition: border-color ${({ theme }) => theme.transitions.spring},
+    box-shadow ${({ theme }) => theme.transitions.spring};
   animation: ${({ $highlighted }) => ($highlighted ? highlight : 'none')} 1.6s
     ease-out;
 
   &:hover {
     border-color: ${({ theme }) => theme.colors.borderHover};
     box-shadow: 0 8px 28px rgba(0, 0, 0, 0.5);
-    transform: scale(1.02);
   }
   &:hover img {
-    transform: scale(1.06);
-  }
-  &:hover .delete-btn {
-    opacity: 1;
+    transform: scale(1.04);
   }
 
   &:active {
@@ -64,10 +76,7 @@ export const PhotoCard = styled.div<{ $highlighted?: boolean }>`
   }
 
   @media (max-width: 640px) {
-    border-radius: 6px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
     &:hover {
-      transform: none;
       box-shadow: none;
     }
     &:hover img {
@@ -87,55 +96,149 @@ export const Img = styled.img`
 
 export const Overlay = styled.div`
   position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: linear-gradient(transparent, rgba(0, 0, 0, 0.65));
-  padding: 24px 8px 8px;
+  inset: auto 0 0 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 8px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.72));
+  padding: 26px 8px 8px;
   pointer-events: none;
 `;
 
-export const Caption = styled.p`
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.85);
-  margin-top: 4px;
-  line-height: 1.3;
-
-  @media (max-width: 640px) {
-    display: none;
-  }
+/* "17:17 · VS" — capture time and the uploader's initials */
+export const StampRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.92);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+  min-width: 0;
 `;
 
-export const DeleteBtn = styled.button`
+export const StampDot = styled.span`
+  color: rgba(255, 255, 255, 0.5);
+`;
+
+export const CardCaption = styled.p`
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
+export const MenuBtn = styled.button`
   position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 32px;
-  height: 32px;
+  bottom: 6px;
+  right: 6px;
+  z-index: 2;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   border: none;
-  background: rgba(0, 0, 0, 0.65);
-  color: #ff6b6b;
+  background: rgba(0, 0, 0, 0.6);
+  color: rgba(255, 255, 255, 0.9);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  opacity: 0;
-  transition: opacity 0.2s, background 0.2s;
   backdrop-filter: blur(4px);
-  z-index: 10;
+  transition: background ${({ theme }) => theme.transitions.fast};
 
   &:hover {
-    background: rgba(180, 30, 30, 0.85);
-    color: #fff;
+    background: rgba(0, 0, 0, 0.82);
   }
 
-  @media (max-width: 640px) {
-    opacity: 1;
-    width: 36px;
-    height: 36px;
-    top: 4px;
-    right: 4px;
+  &:active {
+    opacity: 0.75;
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: ${({ theme }) => theme.shadows.focus};
+  }
+`;
+
+/* Action list inside the photo BottomSheet */
+export const SheetActions = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+`;
+
+export const SheetAction = styled.button<{ $danger?: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 14px;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  text-align: left;
+  border-radius: 10px;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.colors.bgCard};
+  color: ${({ $danger, theme }) =>
+    $danger ? theme.colors.danger : theme.colors.textPrimary};
+  cursor: pointer;
+  transition: background ${({ theme }) => theme.transitions.fast},
+    border-color ${({ theme }) => theme.transitions.fast};
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.bgElevated};
+    border-color: ${({ theme }) => theme.colors.borderHover};
+  }
+
+  &:active {
+    opacity: 0.85;
+  }
+`;
+
+/* Floating "Vorher / Nachher" pill, clear of the mobile tab bar */
+export const CompareFab = styled.button<{ $active: boolean }>`
+  position: fixed;
+  right: 16px;
+  bottom: 24px;
+  z-index: 150;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  height: 48px;
+  padding: 0 20px;
+  border-radius: 9999px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  color: ${({ $active }) => ($active ? '#fff' : 'rgba(255,255,255,0.95)')};
+  background: ${({ $active, theme }) =>
+    $active ? theme.colors.accent : 'rgba(30, 30, 30, 0.92)'};
+  border: 1px solid
+    ${({ $active, theme }) =>
+      $active ? theme.colors.accentHover : 'rgba(255,255,255,0.12)'};
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: background ${({ theme }) => theme.transitions.fast},
+    border-color ${({ theme }) => theme.transitions.fast};
+  -webkit-tap-highlight-color: transparent;
+
+  &:active {
+    opacity: 0.85;
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: ${({ theme }) => theme.shadows.focus};
+  }
+
+  @media (max-width: 768px) {
+    bottom: calc(62px + env(safe-area-inset-bottom, 0px) + 16px);
   }
 `;
 
@@ -280,9 +383,22 @@ export const LightboxNav = styled.button<{ $side: 'left' | 'right' }>`
   }
 `;
 
-export const Empty = styled.p`
-  color: ${({ theme }) => theme.colors.textMuted};
-  font-size: 14px;
+export const Empty = styled.div`
   text-align: center;
-  padding: 40px 0;
+  padding: 36px 16px;
+  ${glassSurface};
+  border-style: dashed;
+  border-radius: 14px;
+`;
+
+export const EmptyTitle = styled.p`
+  font-size: 14px;
+  font-weight: 600;
+  color: ${({ theme }) => theme.colors.textSecondary};
+`;
+
+export const EmptyHint = styled.p`
+  font-size: 12.5px;
+  color: ${({ theme }) => theme.colors.textMuted};
+  margin-top: 6px;
 `;

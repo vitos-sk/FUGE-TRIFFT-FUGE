@@ -1,10 +1,9 @@
 import styled from 'styled-components';
+import { glassSurface } from '../../styles/glass';
 
 export const PageBody = styled.div`
   display: flex;
   flex-direction: column;
-  padding-top: 8px;
-  /* Horizontal padding is handled by PageWrapper; no extra needed here */
 `;
 
 export const NotFoundText = styled.p`
@@ -13,59 +12,117 @@ export const NotFoundText = styled.p`
   padding: 40px 0;
 `;
 
-/* Fotos/Chat switcher — same max-width as the content below so both align */
-export const TabBarWrapper = styled.div`
-  max-width: 680px;
-  width: 100%;
-  margin: 0 0 20px;
+/* Full-width Fotos/Chat switcher with an accent underline on the active tab */
+export const TabsBar = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin-top: 12px;
+  ${glassSurface};
+  border-radius: 14px;
+  overflow: hidden;
+
+  /* Desktop: a compact segmented control, not a full-width banner */
+  @media (min-width: 769px) {
+    align-self: flex-start;
+    grid-template-columns: repeat(2, minmax(0, auto));
+    border-radius: 12px;
+  }
 `;
 
-/* Single-column content: only one section (Fotos or Chat) is visible at a time */
-export const ContentGrid = styled.div`
-  max-width: 680px;
-  width: 100%;
+export const TabBtn = styled.button<{ $active: boolean }>`
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 10px;
+  font-family: inherit;
+  white-space: nowrap;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  background: ${({ $active, theme }) =>
+    $active ? theme.glass.fillActive : 'transparent'};
+  border: none;
+  color: ${({ $active, theme }) =>
+    $active ? theme.colors.accentHover : theme.colors.textSecondary};
+  cursor: pointer;
+  transition: color ${({ theme }) => theme.transitions.fast},
+    background ${({ theme }) => theme.transitions.fast};
+  -webkit-tap-highlight-color: transparent;
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 2px;
+    background: ${({ theme }) => theme.colors.accent};
+    opacity: ${({ $active }) => ($active ? 1 : 0)};
+    transition: opacity ${({ theme }) => theme.transitions.fast};
+  }
+
+  &:hover {
+    color: ${({ $active, theme }) =>
+      $active ? theme.colors.accentHover : theme.colors.textPrimary};
+    background: ${({ $active, theme }) =>
+      $active ? theme.glass.fillActive : theme.glass.fillHover};
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: inset ${({ theme }) => theme.shadows.focus};
+  }
+
+  @media (min-width: 769px) {
+    padding: 11px 26px;
+    font-size: 13.5px;
+  }
+`;
+
+export const TabBadge = styled.span`
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9999px;
+  background: ${({ theme }) => theme.colors.accent};
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 `;
 
 export const SectionBlock = styled.section`
-  padding: 20px 0;
+  padding: 22px 0 0;
 `;
 
 export const SectionHeader = styled.div`
   display: flex;
-  align-items: center;
-  gap: 10px;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
   margin-bottom: 16px;
 `;
 
-/* Section label with a 4×4 accent red square bullet */
-export const SectionLabel = styled.span`
-  font-size: 10px;
+export const SectionTitle = styled.h2`
+  font-size: 22px;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: ${({ theme }) => theme.colors.textMuted};
-  display: flex;
-  align-items: center;
-  gap: 7px;
+  letter-spacing: -0.02em;
+  color: ${({ theme }) => theme.colors.textPrimary};
+  line-height: 1.2;
 
-  &::before {
-    content: '';
-    display: block;
-    width: 4px;
-    height: 4px;
-    background: ${({ theme }) => theme.colors.accent};
-    flex-shrink: 0;
+  @media (max-width: 640px) {
+    font-size: 20px;
   }
 `;
 
-export const NotesBadge = styled.span`
-  font-size: 11px;
-  font-weight: 600;
+export const SectionSubtitle = styled.p`
+  font-size: 13px;
+  font-weight: 500;
   color: ${({ theme }) => theme.colors.textSecondary};
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 99px;
-  padding: 1px 8px;
-  line-height: 1.6;
-  margin-left: auto;
+  margin-top: 4px;
+  line-height: 1.4;
 `;

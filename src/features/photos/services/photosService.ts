@@ -23,12 +23,13 @@ import { compressToJpeg } from './compressImage';
 import type { Photo } from '@shared/types';
 
 export const subscribeToPhotos = (
-  objectId: string,
+  basePath: string,
+  id: string,
   onData: (photos: Photo[]) => void,
   onError?: (e: Error) => void
 ) => {
   const q = query(
-    collection(db, 'objects', objectId, 'photos'),
+    collection(db, basePath, id, 'photos'),
     orderBy('uploadedAt', 'desc')
   );
   return onSnapshot(q, (snap) => {
@@ -38,18 +39,19 @@ export const subscribeToPhotos = (
 };
 
 export const uploadPhoto = async (
-  objectId: string,
+  basePath: string,
+  id: string,
   file: File,
   caption: string,
   uploadedBy: string,
   uploadedByName: string,
   onProgress?: (pct: number) => void,
-  objectTitle?: string,
+  title?: string,
 ): Promise<Photo> => {
   const blob = await compressToJpeg(file);
   onProgress?.(5);
 
-  const storagePath = `objects/${objectId}/photos/${Date.now()}.jpg`;
+  const storagePath = `${basePath}/${id}/photos/${Date.now()}.jpg`;
   const storageRef = ref(storage, storagePath);
 
   return new Promise((resolve, reject) => {
@@ -66,7 +68,7 @@ export const uploadPhoto = async (
         try {
           const url = await getDownloadURL(task.snapshot.ref);
           const now = Timestamp.now();
-          const docRef = await addDoc(collection(db, 'objects', objectId, 'photos'), {
+          const docRef = await addDoc(collection(db, basePath, id, 'photos'), {
             url,
             storagePath,
             caption,
@@ -74,22 +76,23 @@ export const uploadPhoto = async (
             uploadedByName,
             uploadedAt: now,
           });
-          await updateDoc(doc(db, 'objects', objectId), { lastActivityAt: now });
+          await updateDoc(doc(db, basePath, id), { lastActivityAt: now });
           onProgress?.(100);
 
           // Notify all other users
           try {
             const usersSnap = await getDocs(collection(db, 'users'));
             const batch = writeBatch(db);
-            const title = `Neues Foto — ${objectTitle || 'Objekt'}`;
+            const entityLabel = basePath === 'objects' ? title || 'Objekt' : title || 'Aufgabe';
+            const notifTitle = `Neues Foto — ${entityLabel}`;
             const body = `${uploadedByName}: ${caption || 'Neues Foto'}`;
             usersSnap.docs.forEach((userDoc) => {
               if (userDoc.id === uploadedBy) return;
               const notifRef = doc(collection(db, 'notifications', userDoc.id, 'items'));
               batch.set(notifRef, {
-                title,
+                title: notifTitle,
                 body,
-                objectId,
+                ...(basePath === 'objects' ? { objectId: id } : { taskId: id }),
                 photoId: docRef.id,
                 read: false,
                 createdAt: now,
@@ -117,8 +120,8 @@ export const uploadPhoto = async (
   });
 };
 
-export const deletePhoto = async (objectId: string, photo: Photo): Promise<void> => {
-  await deleteDoc(doc(db, 'objects', objectId, 'photos', photo.id));
+export const deletePhoto = async (basePath: string, id: string, photo: Photo): Promise<void> => {
+  await deleteDoc(doc(db, basePath, id, 'photos', photo.id));
   const path = photo.storagePath ?? extractStoragePath(photo.url);
   if (path) {
     await deleteObject(ref(storage, path)).catch(() => {});

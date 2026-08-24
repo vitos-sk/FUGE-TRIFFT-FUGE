@@ -3,10 +3,10 @@ import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { FiImage, FiMessageSquare } from "react-icons/fi";
 import { NotesFeed } from "@features/notes/components/NotesFeed";
 import { PhotoGrid } from "@features/photos/components/PhotoGrid";
+import { usePhotos } from "@features/photos/hooks";
 import { Modal } from "@shared/ui/Modal";
 import { ObjectForm } from "@features/objects/components/ObjectForm";
 import { Loader } from "@shared/ui/Loader";
-import { SegmentedControl, type SegOption } from "@shared/ui/SegmentedControl";
 import { useAuth } from '@features/auth/hooks';
 import { useObjectDetail } from "@features/objects/hooks/useObjectDetail";
 import { ObjectHeader } from "./components/ObjectHeader";
@@ -14,20 +14,16 @@ import { InfoTab } from "./components/InfoTab";
 import {
   PageBody,
   NotFoundText,
-  TabBarWrapper,
-  ContentGrid,
+  TabsBar,
+  TabBtn,
+  TabBadge,
   SectionBlock,
   SectionHeader,
-  SectionLabel,
-  NotesBadge,
+  SectionTitle,
+  SectionSubtitle,
 } from "./ObjectDetailPage.styles";
 
 type DetailTab = "fotos" | "chat";
-
-const TAB_OPTIONS: SegOption<DetailTab>[] = [
-  { value: "fotos", label: "Fotos", icon: <FiImage size={14} /> },
-  { value: "chat", label: "Chat", icon: <FiMessageSquare size={14} /> },
-];
 
 const ObjectDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -48,6 +44,9 @@ const ObjectDetailPage: React.FC = () => {
     handleUpdate,
     handleDelete,
   } = useObjectDetail(id, () => navigate("/"));
+
+  // One photo subscription for the page: the header shows the count, the grid the photos
+  const { photos, loading: photosLoading } = usePhotos(id);
 
   // Swipe between Fotos/Chat, mirroring the HoursPage view/add gesture.
   // Ignore swipes inside the photo lightbox — that gesture navigates photos, not tabs.
@@ -87,52 +86,76 @@ const ObjectDetailPage: React.FC = () => {
   return (
     <>
       {object && (
-        <ObjectHeader object={object} onOpenInfo={() => setShowInfoModal(true)} />
+        <ObjectHeader
+          object={object}
+          photoCount={photos.length}
+          onOpenInfo={() => setShowInfoModal(true)}
+        />
       )}
 
       {loading ? (
         <Loader />
       ) : object ? (
         <PageBody>
-          <TabBarWrapper>
-            <SegmentedControl
-              options={TAB_OPTIONS}
-              value={activeTab}
-              onChange={setActiveTab}
-              variant="tabs"
-            />
-          </TabBarWrapper>
+          <TabsBar role="tablist">
+            <TabBtn
+              role="tab"
+              aria-selected={activeTab === "fotos"}
+              $active={activeTab === "fotos"}
+              onClick={() => setActiveTab("fotos")}
+            >
+              <FiImage size={16} />
+              Fotos
+            </TabBtn>
+            <TabBtn
+              role="tab"
+              aria-selected={activeTab === "chat"}
+              $active={activeTab === "chat"}
+              onClick={() => setActiveTab("chat")}
+            >
+              <FiMessageSquare size={16} />
+              Chat
+              {!!object.noteCount && <TabBadge>{object.noteCount}</TabBadge>}
+            </TabBtn>
+          </TabsBar>
 
-          <ContentGrid>
-            {activeTab === "fotos" && (
-              <SectionBlock>
-                <SectionHeader>
-                  <SectionLabel>Fotos</SectionLabel>
-                </SectionHeader>
-                <PhotoGrid
-                  objectId={object.id}
-                  highlightPhotoId={photoParam ?? undefined}
-                  objectTitle={object.title}
-                />
-              </SectionBlock>
-            )}
+          {activeTab === "fotos" && (
+            <SectionBlock>
+              <SectionHeader>
+                <div>
+                  <SectionTitle>Baustellendokumentation</SectionTitle>
+                  <SectionSubtitle>
+                    Fortschritt und wichtige Details festhalten
+                  </SectionSubtitle>
+                </div>
+              </SectionHeader>
+              <PhotoGrid
+                objectId={object.id}
+                photos={photos}
+                loading={photosLoading}
+                highlightPhotoId={photoParam ?? undefined}
+                objectTitle={object.title}
+              />
+            </SectionBlock>
+          )}
 
-            {activeTab === "chat" && (
-              <SectionBlock>
-                <SectionHeader>
-                  <SectionLabel>Notizen</SectionLabel>
-                  {!!object.noteCount && (
-                    <NotesBadge>{object.noteCount}</NotesBadge>
-                  )}
-                </SectionHeader>
-                <NotesFeed
-                  objectId={object.id}
-                  objectTitle={object.title}
-                  highlightNoteId={noteParam ?? undefined}
-                />
-              </SectionBlock>
-            )}
-          </ContentGrid>
+          {activeTab === "chat" && (
+            <SectionBlock>
+              <SectionHeader>
+                <div>
+                  <SectionTitle>Projekt-Chat</SectionTitle>
+                  <SectionSubtitle>
+                    Nachrichten, Fragen und wichtige Infos zum Objekt
+                  </SectionSubtitle>
+                </div>
+              </SectionHeader>
+              <NotesFeed
+                objectId={object.id}
+                objectTitle={object.title}
+                highlightNoteId={noteParam ?? undefined}
+              />
+            </SectionBlock>
+          )}
         </PageBody>
       ) : null}
 

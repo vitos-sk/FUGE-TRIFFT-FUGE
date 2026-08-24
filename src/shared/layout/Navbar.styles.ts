@@ -1,14 +1,13 @@
 import styled from 'styled-components';
 import { Link, NavLink } from 'react-router-dom';
+import { glassBar } from '../../styles/glass';
 
 export const Nav = styled.nav`
   position: sticky;
   top: 0;
   z-index: 200;
-  background: rgba(10, 10, 10, 0.88);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
+  ${glassBar};
+  border-bottom: 1px solid ${({ theme }) => theme.glass.border};
   height: 58px;
   display: flex;
   align-items: center;

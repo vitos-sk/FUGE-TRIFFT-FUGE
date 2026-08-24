@@ -30,6 +30,21 @@ export const theme = {
     lg: '32px',
     xl: '48px',
   },
+  /* Frosted-glass layer: panels sit on the body's red glow + grain instead of
+     hiding it. Values match the chat input the rest of the UI was tuned against. */
+  glass: {
+    fill: 'rgba(255,255,255,0.045)',
+    fillHover: 'rgba(255,255,255,0.07)',
+    fillActive: 'rgba(204,34,34,0.10)',
+    border: 'rgba(255,255,255,0.10)',
+    borderHover: 'rgba(255,255,255,0.16)',
+    blur: 'blur(16px) saturate(125%)',
+    highlight: 'inset 0 1px 0 rgba(255,255,255,0.06)',
+    shadow: '0 8px 24px rgba(0,0,0,0.35)',
+    /* Sticky app bars need more opacity — content scrolls right under them */
+    barFill: 'rgba(12,8,8,0.72)',
+    barBlur: 'blur(20px) saturate(140%)',
+  },
   borderRadius: '8px',
   borderRadiusSm: '6px',
   borderRadiusPill: '9999px',

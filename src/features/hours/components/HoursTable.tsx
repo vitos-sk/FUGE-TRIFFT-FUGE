@@ -13,6 +13,7 @@ import { SubmitButton } from '@shared/ui/SubmitButton';
 import { Modal } from '@shared/ui/Modal';
 import { useHoursTable } from '../hooks/useHoursTable';
 import { BREAK_OPTIONS, formatMinutes, formatDateDisplay } from '../utils/timeUtils';
+import { LOCATION_NOTE_MAX } from '../utils/hoursConstants';
 import type { WorkHourEntry } from '@shared/types';
 import {
   Outer,
@@ -191,16 +192,16 @@ export const HoursTable: React.FC<Props> = ({ entries, showWorker = false, onDel
             <FormGroup>
               <CharCountRow>
                 <Label>Wo gearbeitet?</Label>
-                <CharCount $warn={editLocationText.length >= 13}>
-                  {editLocationText.length} / 15
+                <CharCount $warn={editLocationText.length >= LOCATION_NOTE_MAX - 2}>
+                  {editLocationText.length} / {LOCATION_NOTE_MAX}
                 </CharCount>
               </CharCountRow>
               <Input
                 type="text"
                 value={editLocationText}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditLocationText(e.target.value)}
-                placeholder="z.B. Baustelle Freiburg…"
-                maxLength={15}
+                placeholder="z.B. Baustelle Freiburg"
+                maxLength={LOCATION_NOTE_MAX}
               />
             </FormGroup>
           )}

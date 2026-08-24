@@ -4,7 +4,7 @@ export const Header = styled.div`
   display: flex;
   align-items: baseline;
   gap: 12px;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 `;
 
 export const PageTitle = styled.h1`
@@ -21,18 +21,38 @@ export const DateTag = styled.span`
   opacity: 0.5;
 `;
 
-export const ChartsGrid = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
+export const RefreshTag = styled.span`
+  margin-left: auto;
+  font-size: 10px;
+  color: ${({ theme }) => theme.colors.textMuted};
+  opacity: 0.6;
+  white-space: nowrap;
+`;
 
-  @media (max-width: 900px) {
+export const Stack = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+`;
+
+export const SplitGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1.35fr 1fr;
+  gap: 16px;
+  align-items: start;
+
+  @media (max-width: 1000px) {
     grid-template-columns: 1fr;
   }
 `;
 
-export const LoadingWrapper = styled.div`
-  display: flex;
-  justify-content: center;
-  padding: 80px 0;
+export const EvenGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: start;
+
+  @media (max-width: 1000px) {
+    grid-template-columns: 1fr;
+  }
 `;

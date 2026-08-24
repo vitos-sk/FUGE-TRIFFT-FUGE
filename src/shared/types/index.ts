@@ -81,11 +81,28 @@ export interface WorkHourEntry {
   createdAt: Timestamp;
 }
 
+export type TaskStatus = 'new' | 'in_progress' | 'done';
+
+// Rule: either objectId is set (customLocation not needed), or objectId === null
+// and customLocation is required and non-empty.
+export interface Task {
+  id: string;
+  objectId: string | null;
+  customLocation?: string;
+  workerId: string;
+  startAt: Timestamp;
+  description: string;
+  status: TaskStatus;
+  createdBy: string;
+  createdAt: Timestamp;
+}
+
 export interface Notification {
   id: string;
   title: string;
   body: string;
   objectId?: string;
+  taskId?: string;
   photoId?: string;
   noteId?: string;
   read: boolean;

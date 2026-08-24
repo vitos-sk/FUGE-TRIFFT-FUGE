@@ -1,5 +1,6 @@
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
+import { glassBar } from '../../styles/glass';
 
 export const Bar = styled.nav`
   display: none;
@@ -8,10 +9,8 @@ export const Bar = styled.nav`
   left: 0;
   right: 0;
   height: 62px;
-  background: rgba(10, 10, 10, 0.92);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-top: 1px solid ${({ theme }) => theme.colors.border};
+  ${glassBar};
+  border-top: 1px solid ${({ theme }) => theme.glass.border};
   z-index: 200;
   padding-bottom: env(safe-area-inset-bottom);
 

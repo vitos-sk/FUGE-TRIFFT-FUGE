@@ -1,22 +1,40 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { FiTrash2, FiX, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
-import { subscribeToPhotos, deletePhoto } from '@features/photos/services';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  FiTrash2,
+  FiX,
+  FiChevronLeft,
+  FiChevronRight,
+  FiMoreVertical,
+  FiMaximize2,
+  FiColumns,
+  FiImage,
+} from 'react-icons/fi';
+import { format } from 'date-fns';
+import { deletePhoto } from '@features/photos/services';
 import { PhotoUpload } from './PhotoUpload';
 import { PhotoCompare } from './PhotoCompare';
+import { BottomSheet } from '@shared/ui/BottomSheet';
 import { useConfirm } from '@shared/ui/ConfirmDialog';
 import { useToast } from '@shared/ui/Toast';
 import { useAuth } from '@features/auth/hooks';
-import { SegmentedControl } from '@shared/ui/SegmentedControl';
+import { formatDayHeading } from '@shared/utils/dateLabels';
 import type { Photo } from '@shared/types';
 import { Loader } from '@shared/ui/Loader';
 import {
   Wrapper,
+  DayGroup,
+  DayHeading,
   Grid,
   PhotoCard,
   Img,
   Overlay,
-  Caption,
-  DeleteBtn,
+  StampRow,
+  StampDot,
+  CardCaption,
+  MenuBtn,
+  SheetActions,
+  SheetAction,
+  CompareFab,
   Lightbox,
   LightboxInner,
   LightboxImg,
@@ -26,39 +44,65 @@ import {
   LightboxCounter,
   LightboxNav,
   Empty,
+  EmptyTitle,
+  EmptyHint,
 } from './PhotoGrid.styles';
 
 type ViewMode = 'fotos' | 'vergleich';
 
-const VIEW_OPTIONS: { value: ViewMode; label: string }[] = [
-  { value: 'fotos', label: 'Fotos' },
-  { value: 'vergleich', label: 'Vergleich' },
-];
-
 interface Props {
   objectId: string;
+  photos: Photo[];
+  loading: boolean;
   highlightPhotoId?: string;
   objectTitle?: string;
 }
 
-export const PhotoGrid: React.FC<Props> = ({ objectId, highlightPhotoId, objectTitle }) => {
-  const [photos, setPhotos] = useState<Photo[]>([]);
-  const [loading, setLoading] = useState(true);
+/** "Vitalii Schmidt" → "VS", "Dmitriy" → "DM" */
+const initials = (name: string): string => {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return '??';
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[1][0]).toUpperCase();
+};
+
+/** Photos come sorted newest first — group them into days in that same order */
+const groupByDay = (photos: Photo[]) => {
+  const groups: { key: string; label: string; photos: Photo[] }[] = [];
+  photos.forEach((photo) => {
+    const date = photo.uploadedAt?.toDate?.() ?? null;
+    const key = date ? format(date, 'yyyy-MM-dd') : 'unknown';
+    const last = groups[groups.length - 1];
+    if (last && last.key === key) {
+      last.photos.push(photo);
+      return;
+    }
+    groups.push({
+      key,
+      label: date ? formatDayHeading(date) : 'Ohne Datum',
+      photos: [photo],
+    });
+  });
+  return groups;
+};
+
+export const PhotoGrid: React.FC<Props> = ({
+  objectId,
+  photos,
+  loading,
+  highlightPhotoId,
+  objectTitle,
+}) => {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [view, setView] = useState<ViewMode>('fotos');
+  const [menuPhoto, setMenuPhoto] = useState<Photo | null>(null);
   const touchStartX = useRef(0);
   const touchStartY = useRef(0);
   const confirm = useConfirm();
   const toast = useToast();
   const { uid, isAdmin } = useAuth();
 
-  useEffect(() => {
-    const unsub = subscribeToPhotos(objectId, (data) => {
-      setPhotos(data);
-      setLoading(false);
-    });
-    return unsub;
-  }, [objectId]);
+  const groups = useMemo(() => groupByDay(photos), [photos]);
 
   useEffect(() => {
     if (!highlightPhotoId || loading) return;
@@ -88,12 +132,6 @@ export const PhotoGrid: React.FC<Props> = ({ objectId, highlightPhotoId, objectT
     return () => window.removeEventListener('keydown', onKey);
   }, [lightboxIndex, goNext, goPrev]);
 
-  useEffect(() => {
-    if (lightboxIndex !== null && lightboxIndex >= photos.length) {
-      setLightboxIndex(photos.length > 0 ? photos.length - 1 : null);
-    }
-  }, [photos.length, lightboxIndex]);
-
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
     touchStartY.current = e.touches[0].clientY;
@@ -108,9 +146,8 @@ export const PhotoGrid: React.FC<Props> = ({ objectId, highlightPhotoId, objectT
     }
   };
 
-  const handleDelete = async (e: React.MouseEvent, photo: Photo) => {
-    e.stopPropagation();
-    e.preventDefault();
+  const handleDelete = async (photo: Photo) => {
+    setMenuPhoto(null);
     const ok = await confirm({
       title: 'Foto löschen',
       message: `Foto "${photo.caption || 'Foto'}" wirklich permanent löschen?`,
@@ -119,7 +156,7 @@ export const PhotoGrid: React.FC<Props> = ({ objectId, highlightPhotoId, objectT
     });
     if (!ok) return;
     try {
-      await deletePhoto(objectId, photo);
+      await deletePhoto('objects', objectId, photo);
       toast.success('Foto gelöscht');
       if (lightboxIndex !== null && photos[lightboxIndex]?.id === photo.id) {
         setLightboxIndex(null);
@@ -129,7 +166,20 @@ export const PhotoGrid: React.FC<Props> = ({ objectId, highlightPhotoId, objectT
     }
   };
 
-  const lbPhoto = lightboxIndex !== null ? photos[lightboxIndex] : undefined;
+  const openLightboxFor = (photo: Photo) => {
+    setMenuPhoto(null);
+    const idx = photos.findIndex((p) => p.id === photo.id);
+    if (idx >= 0) setLightboxIndex(idx);
+  };
+
+  // Clamp during render so deleting the last photo can't leave a stale index
+  const lbIndex =
+    lightboxIndex === null || photos.length === 0
+      ? null
+      : Math.min(lightboxIndex, photos.length - 1);
+  const lbPhoto = lbIndex !== null ? photos[lbIndex] : undefined;
+  const canDeleteMenuPhoto =
+    !!menuPhoto && (isAdmin || menuPhoto.uploadedBy === uid);
 
   return (
     <Wrapper>
@@ -139,42 +189,104 @@ export const PhotoGrid: React.FC<Props> = ({ objectId, highlightPhotoId, objectT
         <>
           <PhotoUpload objectId={objectId} objectTitle={objectTitle} />
 
-          {photos.length > 0 && (
-            <SegmentedControl options={VIEW_OPTIONS} value={view} onChange={setView} />
-          )}
-
           {view === 'vergleich' ? (
             <PhotoCompare objectId={objectId} photos={photos} />
           ) : photos.length === 0 ? (
-            <Empty>Noch keine Fotos hochgeladen.</Empty>
+            <Empty>
+              <EmptyTitle>Noch keine Fotos</EmptyTitle>
+              <EmptyHint>
+                Halte den Fortschritt mit einem ersten Foto fest.
+              </EmptyHint>
+            </Empty>
           ) : (
-            <Grid>
-              {photos.map((photo, idx) => (
-                  <PhotoCard
-                    key={photo.id}
-                    id={`photo-${photo.id}`}
-                    $highlighted={photo.id === highlightPhotoId}
-                    onClick={() => setLightboxIndex(idx)}
-                  >
-                    <Img src={photo.url} alt={photo.caption || 'Foto'} loading="lazy" />
-                    {(isAdmin || photo.uploadedBy === uid) && (
-                      <DeleteBtn
-                        className="delete-btn"
-                        title="Foto löschen"
-                        onClick={(e) => handleDelete(e, photo)}
+            groups.map((group) => (
+              <DayGroup key={group.key}>
+                <DayHeading>{group.label}</DayHeading>
+                <Grid>
+                  {group.photos.map((photo) => {
+                    const uploadedAt = photo.uploadedAt?.toDate?.() ?? null;
+                    return (
+                      <PhotoCard
+                        key={photo.id}
+                        id={`photo-${photo.id}`}
+                        $highlighted={photo.id === highlightPhotoId}
+                        onClick={() => openLightboxFor(photo)}
                       >
-                        <FiTrash2 size={13} />
-                      </DeleteBtn>
-                    )}
-                    {photo.caption && (
-                      <Overlay>
-                        <Caption>{photo.caption}</Caption>
-                      </Overlay>
-                    )}
-                  </PhotoCard>
-              ))}
-            </Grid>
+                        <Img
+                          src={photo.url}
+                          alt={photo.caption || 'Foto'}
+                          loading="lazy"
+                        />
+                        <Overlay>
+                          <div>
+                            <StampRow>
+                              {uploadedAt ? format(uploadedAt, 'HH:mm') : '—'}
+                              <StampDot>·</StampDot>
+                              {initials(photo.uploadedByName || '?')}
+                            </StampRow>
+                            {photo.caption && (
+                              <CardCaption>{photo.caption}</CardCaption>
+                            )}
+                          </div>
+                        </Overlay>
+                        <MenuBtn
+                          title="Optionen"
+                          aria-label="Foto-Optionen"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setMenuPhoto(photo);
+                          }}
+                        >
+                          <FiMoreVertical size={15} />
+                        </MenuBtn>
+                      </PhotoCard>
+                    );
+                  })}
+                </Grid>
+              </DayGroup>
+            ))
           )}
+
+          <CompareFab
+            $active={view === 'vergleich'}
+            onClick={() =>
+              setView((v) => (v === 'fotos' ? 'vergleich' : 'fotos'))
+            }
+          >
+            {view === 'fotos' ? (
+              <>
+                <FiColumns size={17} />
+                Vorher / Nachher
+              </>
+            ) : (
+              <>
+                <FiImage size={17} />
+                Fotos
+              </>
+            )}
+          </CompareFab>
+
+          <BottomSheet
+            isOpen={!!menuPhoto}
+            onClose={() => setMenuPhoto(null)}
+            title={menuPhoto?.caption || 'Foto'}
+          >
+            <SheetActions>
+              <SheetAction onClick={() => menuPhoto && openLightboxFor(menuPhoto)}>
+                <FiMaximize2 size={17} />
+                In voller Größe ansehen
+              </SheetAction>
+              {canDeleteMenuPhoto && (
+                <SheetAction
+                  $danger
+                  onClick={() => menuPhoto && handleDelete(menuPhoto)}
+                >
+                  <FiTrash2 size={17} />
+                  Foto löschen
+                </SheetAction>
+              )}
+            </SheetActions>
+          </BottomSheet>
 
           {lbPhoto && (
             <Lightbox
@@ -191,16 +303,16 @@ export const PhotoGrid: React.FC<Props> = ({ objectId, highlightPhotoId, objectT
                 <LightboxImg src={lbPhoto.url} alt={lbPhoto.caption || 'Foto'} />
                 <LightboxFooter>
                   {lbPhoto.caption && <LightboxCaption>{lbPhoto.caption}</LightboxCaption>}
-                  <LightboxCounter>{lightboxIndex! + 1} / {photos.length}</LightboxCounter>
+                  <LightboxCounter>{lbIndex! + 1} / {photos.length}</LightboxCounter>
                 </LightboxFooter>
               </LightboxInner>
 
-              {lightboxIndex! > 0 && (
+              {lbIndex! > 0 && (
                 <LightboxNav $side="left" onClick={(e) => { e.stopPropagation(); goPrev(); }}>
                   <FiChevronLeft size={22} />
                 </LightboxNav>
               )}
-              {lightboxIndex! < photos.length - 1 && (
+              {lbIndex! < photos.length - 1 && (
                 <LightboxNav $side="right" onClick={(e) => { e.stopPropagation(); goNext(); }}>
                   <FiChevronRight size={22} />
                 </LightboxNav>

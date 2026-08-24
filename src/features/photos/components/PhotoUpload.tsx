@@ -6,6 +6,7 @@ import { Button } from '@shared/ui/Button';
 import { FormGroup, Label, Input } from '@shared/ui/Input';
 import { useToast } from '@shared/ui/Toast';
 import {
+  Root,
   PickerRow,
   PickerBtn,
   PreviewBox,
@@ -83,7 +84,7 @@ export const PhotoUpload: React.FC<Props> = ({ objectId, objectTitle }) => {
     setProgress(0);
 
     try {
-      await uploadPhoto(objectId, file, caption, uid, user.name, setProgress, objectTitle);
+      await uploadPhoto('objects', objectId, file, caption, uid, user.name, setProgress, objectTitle);
       clearFile();
       setCaption('');
       setProgress(0);
@@ -109,10 +110,10 @@ export const PhotoUpload: React.FC<Props> = ({ objectId, objectTitle }) => {
     : `Hochladen… ${progress}%`;
 
   return (
-    <div>
+    <Root>
       {!file && (
         <PickerRow>
-          <PickerBtn htmlFor="photo-camera">
+          <PickerBtn htmlFor="photo-camera" $primary>
             <HiddenInput
               id="photo-camera"
               ref={cameraRef}
@@ -121,8 +122,8 @@ export const PhotoUpload: React.FC<Props> = ({ objectId, objectTitle }) => {
               capture="environment"
               onChange={handleFileChange}
             />
-            <FiCamera size={15} />
-            Kamera
+            <FiCamera size={17} />
+            Foto hinzufügen
           </PickerBtn>
 
           <PickerBtn htmlFor="photo-gallery">
@@ -133,8 +134,8 @@ export const PhotoUpload: React.FC<Props> = ({ objectId, objectTitle }) => {
               accept="image/*,image/heic,image/heif"
               onChange={handleFileChange}
             />
-            <FiImage size={15} />
-            Galerie
+            <FiImage size={17} />
+            Aus Galerie
           </PickerBtn>
         </PickerRow>
       )}
@@ -171,6 +172,6 @@ export const PhotoUpload: React.FC<Props> = ({ objectId, objectTitle }) => {
           </Button>
         </Row>
       )}
-    </div>
+    </Root>
   );
 };

@@ -42,7 +42,7 @@ export const AddNoteForm: React.FC<Props> = ({ objectId, objectTitle }) => {
       await addNote(objectId, text.trim(), "general", uid, authorName, objectTitle);
       setText("");
       if (inputRef.current) inputRef.current.style.height = "auto";
-      toast.success("Notiz hinzugefügt");
+      toast.success("Nachricht gesendet");
       inputRef.current?.focus();
     } catch (err: unknown) {
       const msg = (err as { message?: string }).message ?? "";
@@ -88,7 +88,7 @@ export const AddNoteForm: React.FC<Props> = ({ objectId, objectTitle }) => {
           value={text}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
-          placeholder="Notiz schreiben…"
+          placeholder="Nachricht schreiben…"
           rows={1}
         />
         {nearLimit && text.length > 0 && (

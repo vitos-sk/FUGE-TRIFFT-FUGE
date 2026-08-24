@@ -1,59 +1,54 @@
-import styled, { keyframes } from 'styled-components';
-import { Button } from '@shared/ui/Button';
+import styled, { keyframes, css } from 'styled-components';
+import { glassSurfaceFlat } from '../../../styles/glass';
 
+/* Keeps the glass top highlight while the ring flashes */
 const flashHighlight = keyframes`
-  0%   { border-left-color: rgba(204,34,34,0.9); background: rgba(204,34,34,0.12); }
-  60%  { border-left-color: rgba(204,34,34,0.55); background: rgba(204,34,34,0.06); }
-  100% { border-left-color: inherit; background: transparent; }
+  0%   { box-shadow: 0 0 0 3px rgba(204,34,34,0.7), inset 0 1px 0 rgba(255,255,255,0.06); }
+  70%  { box-shadow: 0 0 0 6px rgba(204,34,34,0.2), inset 0 1px 0 rgba(255,255,255,0.06); }
+  100% { box-shadow: 0 0 0 0 rgba(204,34,34,0), inset 0 1px 0 rgba(255,255,255,0.06); }
 `;
 
-export const Item = styled.div<{ $highlighted?: boolean; $isOwn?: boolean }>`
-  padding: 12px 14px;
-  background: rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-top: 1px solid rgba(255, 255, 255, 0.07);
-  border-right: 1px solid rgba(255, 255, 255, 0.07);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-  border-left: 2px solid
-    ${({ $isOwn, theme }) =>
-      $isOwn ? theme.colors.accent : 'rgba(255,255,255,0.1)'};
-  border-radius: 0 8px 8px 0;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
-  transition:
-    background ${({ theme }) => theme.transitions.fast},
-    border-left-color ${({ theme }) => theme.transitions.fast};
-  animation: ${({ $highlighted }) =>
-      $highlighted ? flashHighlight : 'none'}
-    0.9s ease-out;
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.06);
-  }
-`;
-
-export const Header = styled.div`
+/* One chat row: avatar + bubble, mirrored for own messages */
+export const Row = styled.div<{ $isOwn: boolean }>`
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   gap: 8px;
-  margin-bottom: 7px;
-  flex-wrap: wrap;
+  flex-direction: ${({ $isOwn }) => ($isOwn ? 'row-reverse' : 'row')};
 `;
 
-export const Avatar = styled.div`
-  width: 22px;
-  height: 22px;
+export const Avatar = styled.div<{ $isOwn: boolean }>`
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.07);
-  border: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
-  font-weight: 700;
-  color: ${({ theme }) => theme.colors.textSecondary};
   flex-shrink: 0;
+  font-size: 11.5px;
+  font-weight: 700;
   user-select: none;
+  background: ${({ $isOwn, theme }) =>
+    $isOwn ? theme.colors.accentDim : 'rgba(255,255,255,0.07)'};
+  border: 1px solid
+    ${({ $isOwn }) => ($isOwn ? 'rgba(204,34,34,0.4)' : 'rgba(255,255,255,0.1)')};
+  color: ${({ $isOwn, theme }) =>
+    $isOwn ? theme.colors.accentHover : theme.colors.textSecondary};
+`;
+
+export const Column = styled.div<{ $isOwn: boolean }>`
+  display: flex;
+  flex-direction: column;
+  align-items: ${({ $isOwn }) => ($isOwn ? 'flex-end' : 'flex-start')};
+  gap: 4px;
+  max-width: min(78%, 520px);
+  min-width: 0;
+`;
+
+export const MetaRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 2px;
 `;
 
 export const Author = styled.span`
@@ -65,46 +60,111 @@ export const Author = styled.span`
 export const Time = styled.span`
   font-size: 11px;
   color: ${({ theme }) => theme.colors.textMuted};
-  margin-left: auto;
 `;
 
-export const NoteText = styled.p`
-  font-size: 14px;
-  color: ${({ theme }) => theme.colors.textPrimary};
-  line-height: 1.6;
+export const MenuBtn = styled.button`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: ${({ theme }) => theme.colors.textMuted};
+  cursor: pointer;
+  transition: color ${({ theme }) => theme.transitions.fast},
+    background ${({ theme }) => theme.transitions.fast};
+  -webkit-tap-highlight-color: transparent;
+
+  &:hover {
+    color: ${({ theme }) => theme.colors.textSecondary};
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: ${({ theme }) => theme.shadows.focus};
+  }
+`;
+
+export const Bubble = styled.div<{ $isOwn: boolean; $highlighted?: boolean }>`
+  padding: 11px 14px;
+  border-radius: 14px;
+  font-size: 14.5px;
+  line-height: 1.5;
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  box-shadow: ${({ theme }) => theme.glass.highlight};
+  animation: ${({ $highlighted }) => ($highlighted ? flashHighlight : 'none')}
+    1.4s ease-out;
+
+  ${({ $isOwn, theme }) =>
+    $isOwn
+      ? css`
+          /* Tinted glass: the accent stays readable, the backdrop shows through */
+          background: rgba(204, 34, 34, 0.72);
+          border: 1px solid rgba(229, 51, 51, 0.75);
+          border-bottom-right-radius: 4px;
+          color: #fff;
+
+          @supports (backdrop-filter: blur(1px)) or
+            (-webkit-backdrop-filter: blur(1px)) {
+            backdrop-filter: ${theme.glass.blur};
+            -webkit-backdrop-filter: ${theme.glass.blur};
+          }
+        `
+      : css`
+          ${glassSurfaceFlat};
+          border-bottom-left-radius: 4px;
+          color: ${theme.colors.textPrimary};
+        `}
 `;
 
-export const Actions = styled.div`
-  display: flex;
-  gap: 2px;
-  margin-left: 6px;
-  flex-shrink: 0;
-`;
-
-/* Neutral icon action — hover reveals a subtle border to signal it's clickable */
-export const EditIconBtn = styled(Button)`
-  padding: 3px 5px;
-
-  &:hover:not(:disabled) {
-    border-color: ${({ theme }) => theme.colors.borderHover};
-  }
-`;
-
-/* Destructive icon action — hover turns danger red instead of neutral */
-export const DeleteIconBtn = styled(EditIconBtn)`
-  &:hover:not(:disabled) {
-    color: ${({ theme }) => theme.colors.danger};
-    background: ${({ theme }) => theme.colors.accentDim};
-    border-color: transparent;
-  }
+/* Inline edit mode replaces the bubble body */
+export const EditBox = styled.div`
+  width: 100%;
+  min-width: min(78vw, 420px);
 `;
 
 export const EditRow = styled.div`
   display: flex;
   gap: 8px;
-  align-items: flex-end;
-  margin-top: 10px;
-  flex-wrap: wrap;
+  margin-top: 8px;
   justify-content: flex-end;
+`;
+
+export const SheetActions = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+`;
+
+export const SheetAction = styled.button<{ $danger?: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  text-align: left;
+  border-radius: 10px;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.colors.bgCard};
+  color: ${({ $danger, theme }) =>
+    $danger ? theme.colors.danger : theme.colors.textPrimary};
+  cursor: pointer;
+  transition: background ${({ theme }) => theme.transitions.fast},
+    border-color ${({ theme }) => theme.transitions.fast};
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.bgElevated};
+    border-color: ${({ theme }) => theme.colors.borderHover};
+  }
+
+  &:active {
+    opacity: 0.85;
+  }
 `;

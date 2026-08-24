@@ -2,20 +2,24 @@ import React, { useState } from "react";
 import { FiDownload, FiCalendar } from "react-icons/fi";
 import type { AppUser } from "@shared/types";
 import type { RangePreset } from "@features/hours/hooks/useHoursPage";
-import { FieldBtn } from "@features/hours/components/FieldBtn";
 import { MonthPickerSheet } from "@features/hours/components/MonthPickerSheet";
 import { PeriodPickerSheet } from "@features/hours/components/PeriodPickerSheet";
 import {
   Card,
-  FilterRow,
+  SectionHead,
+  Field,
+  FieldLabel,
   FilterUserSelect,
   RangeGroup,
   RangeBtn,
+  RangeBtnLabel,
+  RangeBtnLabelShort,
+  PeriodRow,
+  PeriodText,
+  PeriodAction,
+  ExportRow,
+  ExportMonthBtn,
   ExportBtn,
-  RowLabel,
-  RowGroup,
-  ExportFieldWrap,
-  ExportFilterRow,
 } from "./FilterBar.styles";
 
 const formatMonthDisplay = (yyyyMm: string): string => {
@@ -26,6 +30,8 @@ const formatMonthDisplay = (yyyyMm: string): string => {
 
 interface FilterBarProps {
   isAdmin: boolean;
+  /** Ausformulierter aktiver Zeitraum, z. B. "01.–31. August 2026" */
+  periodRange: string;
   range: RangePreset;
   setRange: (r: RangePreset) => void;
   pickedMonth: string;
@@ -43,6 +49,7 @@ interface FilterBarProps {
 
 export const FilterBar: React.FC<FilterBarProps> = ({
   isAdmin,
+  periodRange,
   range,
   setRange,
   pickedMonth,
@@ -70,70 +77,70 @@ export const FilterBar: React.FC<FilterBarProps> = ({
     setRange("pick");
   };
 
+  const openPeriodPicker = () => {
+    if (range !== "pick" && range !== "custom") setRange("pick");
+    setPeriodPickerOpen(true);
+  };
+
   return (
     <Card>
-      {/* Row 1: Filter */}
-      <RowGroup $elevated>
-        <RowLabel>Filter</RowLabel>
-        <FilterRow>
-          {isAdmin && (
-            <FilterUserSelect
-              value={selectedUser}
-              onChange={setSelectedUser}
-              options={userOptions}
-            />
-          )}
+      <SectionHead>Ansicht filtern</SectionHead>
 
-          <RangeGroup>
-            <RangeBtn
-              $active={range === "month"}
-              type="button"
-              onClick={() => setRange("month")}
-            >
-              Monat
-            </RangeBtn>
-
-            <RangeBtn
-              $active={range === "week"}
-              type="button"
-              onClick={() => setRange("week")}
-            >
-              Woche
-            </RangeBtn>
-
-            <RangeBtn
-              $active={range === "pick" || range === "custom"}
-              type="button"
-              onClick={() => {
-                if (range !== "pick" && range !== "custom") setRange("pick");
-                setPeriodPickerOpen(true);
-              }}
-            >
-              Andere ▾
-            </RangeBtn>
-          </RangeGroup>
-        </FilterRow>
-      </RowGroup>
-
-      {/* Row 2: Excel Export (admin only) */}
       {isAdmin && (
-        <RowGroup>
-          <RowLabel>Excel Export</RowLabel>
-          <ExportFilterRow>
-            <ExportFieldWrap>
-              <FieldBtn
-                label="Monat"
-                value={formatMonthDisplay(exportMonth)}
-                icon={<FiCalendar size={14} />}
-                onClick={() => setExportPickerOpen(true)}
-              />
-            </ExportFieldWrap>
-            <ExportBtn onClick={exportToExcel}>
-              <FiDownload size={13} />
+        <Field>
+          <FieldLabel>Mitarbeiter</FieldLabel>
+          <FilterUserSelect
+            value={selectedUser}
+            onChange={setSelectedUser}
+            options={userOptions}
+          />
+        </Field>
+      )}
+
+      <Field>
+        <FieldLabel>Zeitraum</FieldLabel>
+
+        <RangeGroup>
+          <RangeBtn $active={range === "month"} type="button" onClick={() => setRange("month")}>
+            Monat
+          </RangeBtn>
+
+          <RangeBtn $active={range === "week"} type="button" onClick={() => setRange("week")}>
+            Woche
+          </RangeBtn>
+
+          <RangeBtn
+            $active={range === "pick" || range === "custom"}
+            type="button"
+            onClick={openPeriodPicker}
+          >
+            <RangeBtnLabel>Anderer Monat</RangeBtnLabel>
+            <RangeBtnLabelShort>Andere</RangeBtnLabelShort>
+            <FiCalendar size={13} />
+          </RangeBtn>
+        </RangeGroup>
+
+        <PeriodRow type="button" onClick={openPeriodPicker}>
+          <FiCalendar size={15} />
+          <PeriodText>{periodRange}</PeriodText>
+          <PeriodAction>Ändern</PeriodAction>
+        </PeriodRow>
+      </Field>
+
+      {isAdmin && (
+        <Field>
+          <FieldLabel>Excel Export</FieldLabel>
+          <ExportRow>
+            <ExportMonthBtn type="button" onClick={() => setExportPickerOpen(true)}>
+              <FiCalendar size={15} />
+              <PeriodText>{formatMonthDisplay(exportMonth)}</PeriodText>
+            </ExportMonthBtn>
+            <ExportBtn type="button" onClick={exportToExcel}>
+              <FiDownload size={14} />
               Export
             </ExportBtn>
-          </ExportFilterRow>
-        </RowGroup>
+          </ExportRow>
+        </Field>
       )}
 
       <PeriodPickerSheet

@@ -1,8 +1,8 @@
 import styled, { css, keyframes } from 'styled-components';
 
 const fadeSlideOut = keyframes`
-  0%   { opacity: 1; transform: scale(1);    max-height: 400px; margin-bottom: 0; }
-  60%  { opacity: 0; transform: scale(0.96); max-height: 400px; }
+  0%   { opacity: 1; transform: scale(1);    max-height: 200px; margin-bottom: 0; }
+  60%  { opacity: 0; transform: scale(0.96); max-height: 200px; }
   100% { opacity: 0; transform: scale(0.96); max-height: 0;     margin-bottom: -14px; padding: 0; }
 `;
 
@@ -12,12 +12,14 @@ export const Card = styled.div<{ $archiving: boolean }>`
   -webkit-backdrop-filter: blur(14px);
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
-  border-radius: ${({ theme }) => theme.borderRadius};
+  border-radius: 14px;
   cursor: pointer;
   transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
   position: relative;
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
   overflow: hidden;
 
   &:hover {
@@ -47,24 +49,101 @@ export const Card = styled.div<{ $archiving: boolean }>`
     `}
 `;
 
-export const CardHeader = styled.div`
-  padding: 12px 14px 0;
+/** Square preview on the left. Holds a placeholder icon behind the map image. */
+export const Thumb = styled.div`
+  position: relative;
+  width: 76px;
+  height: 76px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: ${({ theme }) => theme.colors.textMuted};
+
+  img {
+    position: absolute;
+    inset: 0;
+  }
+
+  @media (max-width: 400px) {
+    width: 66px;
+    height: 66px;
+  }
 `;
 
-export const CardTop = styled.div`
+export const Content = styled.div`
+  flex: 1;
+  min-width: 0;
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 6px;
-  margin-bottom: 4px;
+  flex-direction: column;
+  gap: 3px;
 `;
 
 export const Title = styled.h3`
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   color: ${({ theme }) => theme.colors.textPrimary};
-  line-height: 1.3;
-  flex: 1;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+export const Location = styled.p`
+  font-size: 12px;
+  font-weight: 500;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  line-height: 1.35;
+  min-width: 0;
+
+  svg { flex-shrink: 0; }
+
+  span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+`;
+
+export const MetaRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 3px;
+`;
+
+export const MetaItem = styled.div<{ $warn?: boolean; $soon?: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  ${({ $warn, theme }) => $warn && css`color: ${theme.colors.accent};`}
+  ${({ $soon }) => $soon && css`color: #c9a84c;`}
+  ${({ $warn, $soon, theme }) => !$warn && !$soon && css`color: ${theme.colors.textSecondary};`}
+`;
+
+/** Right-hand column: admin menu (optional) + chevron */
+export const Actions = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+  color: ${({ theme }) => theme.colors.textMuted};
+`;
+
+export const Chevron = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: ${({ theme }) => theme.colors.textSecondary};
 `;
 
 export const MenuWrapper = styled.div`
@@ -127,55 +206,4 @@ export const DropdownItem = styled.button<{ $danger?: boolean; $success?: boolea
   & + & {
     border-top: 1px solid ${({ theme }) => theme.colors.border};
   }
-`;
-
-export const CardMeta = styled.div`
-  display: flex;
-  align-items: center;
-  margin-bottom: 12px;
-`;
-
-export const Location = styled.p`
-  font-size: 11px;
-  font-weight: 500;
-  color: ${({ theme }) => theme.colors.textMuted};
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  line-height: 1.4;
-  flex: 1;
-  min-width: 0;
-
-  svg { flex-shrink: 0; }
-`;
-
-export const CardBody = styled.div`
-  padding: 8px 14px 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-`;
-
-export const MetaRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-`;
-
-export const MetaItem = styled.div<{ $warn?: boolean; $soon?: boolean }>`
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 11px;
-  font-weight: 600;
-  ${({ $warn, theme }) => $warn && css`color: ${theme.colors.accent};`}
-  ${({ $soon }) => $soon && css`color: #c9a84c;`}
-  ${({ $warn, $soon, theme }) => !$warn && !$soon && css`color: ${theme.colors.textMuted};`}
-`;
-
-export const DeadlineGroup = styled.div`
-  display: flex;
-  gap: 10px;
-  align-items: center;
 `;

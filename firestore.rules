@@ -58,6 +58,25 @@ service cloud.firestore {
       }
     }
 
+    // Tasks collection
+    match /tasks/{taskId} {
+      allow read: if isActive();
+      allow create: if isAdmin();
+      // Admin can update anything. The assigned worker may only flip status to 'done'.
+      allow update: if isAdmin() ||
+        (isActive() && request.auth.uid == resource.data.workerId &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']) &&
+          request.resource.data.status == 'done');
+      allow delete: if isAdmin();
+
+      match /photos/{photoId} {
+        allow read: if isActive();
+        allow create: if isAdmin() ||
+          (isActive() && request.auth.uid == get(/databases/$(database)/documents/tasks/$(taskId)).data.workerId);
+        allow delete: if isAdmin() || (isActive() && resource.data.uploadedBy == request.auth.uid);
+      }
+    }
+
     // Work hours
     // Admin: read all, create for any worker. Cannot edit or delete anyone's entries.
     // Worker: full access to own entries only.

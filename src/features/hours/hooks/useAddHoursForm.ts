@@ -42,14 +42,12 @@ export const useAddHoursForm = ({ onAdded }: UseAddHoursFormProps) => {
   const [locationNote, setLocationNote] = useState('');
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [pendingEntry, setPendingEntry] = useState<QueuedEntry | null>(null);
-  const [modalObjectId, setModalObjectId] = useState('');
   const [showLongShiftConfirm, setShowLongShiftConfirm] = useState(false);
 
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [startPickerOpen, setStartPickerOpen] = useState(false);
   const [endPickerOpen, setEndPickerOpen] = useState(false);
   const [objectPickerOpen, setObjectPickerOpen] = useState(false);
-  const [modalObjectPickerOpen, setModalObjectPickerOpen] = useState(false);
 
   const { user, uid } = useAuth();
   const toast = useToast();
@@ -59,10 +57,6 @@ export const useAddHoursForm = ({ onAdded }: UseAddHoursFormProps) => {
   const selectedObjTitle = objectId
     ? (objects.find((o) => o.id === objectId)?.title ?? objectId)
     : '⚠ kein Objekt';
-
-  const modalObjTitle = modalObjectId
-    ? (objects.find((o) => o.id === modalObjectId)?.title ?? modalObjectId)
-    : '';
 
   const pendingCount = loadQueue().length;
 
@@ -117,7 +111,6 @@ export const useAddHoursForm = ({ onAdded }: UseAddHoursFormProps) => {
     setBreakMins(30);
     setObjectId('');
     setLocationNote('');
-    setModalObjectId('');
     setPendingEntry(null);
   };
 
@@ -147,7 +140,6 @@ export const useAddHoursForm = ({ onAdded }: UseAddHoursFormProps) => {
   const proceedWithEntry = async (entry: QueuedEntry) => {
     if (entry.objectId) { await saveEntry(entry); return; }
     setPendingEntry(entry);
-    setModalObjectId('');
     setLocationNote('');
     setShowLocationModal(true);
   };
@@ -181,13 +173,9 @@ export const useAddHoursForm = ({ onAdded }: UseAddHoursFormProps) => {
   };
 
   const handleLocationConfirm = async () => {
-    if (!pendingEntry) return;
-    const modalObj = objects.find((o) => o.id === modalObjectId);
-    await saveEntry({
-      ...pendingEntry,
-      objectId: modalObjectId || undefined,
-      objectTitle: modalObjectId ? modalObj?.title : locationNote.trim() || undefined,
-    });
+    const note = locationNote.trim();
+    if (!pendingEntry || !note) return;
+    await saveEntry({ ...pendingEntry, objectId: undefined, objectTitle: note });
     setShowLocationModal(false);
   };
 
@@ -204,16 +192,13 @@ export const useAddHoursForm = ({ onAdded }: UseAddHoursFormProps) => {
     locationNote, setLocationNote,
     showLocationModal, setShowLocationModal,
     pendingEntry,
-    modalObjectId, setModalObjectId,
     showLongShiftConfirm, setShowLongShiftConfirm,
     datePickerOpen, setDatePickerOpen,
     startPickerOpen, setStartPickerOpen,
     endPickerOpen, setEndPickerOpen,
     objectPickerOpen, setObjectPickerOpen,
-    modalObjectPickerOpen, setModalObjectPickerOpen,
     totalMins,
     selectedObjTitle,
-    modalObjTitle,
     pendingCount,
     uid,
     handleSubmit,

@@ -1,61 +1,97 @@
 import styled, { keyframes } from 'styled-components';
+import { glassSurface } from '../../../styles/glass';
 
 const pulse = keyframes`
   0%, 100% { opacity: 1; }
   50%       { opacity: 0.6; }
 `;
 
-export const PickerRow = styled.div`
-  display: flex;
-  gap: 8px;
+/* Desktop keeps the two pickers at their natural size, left-aligned */
+export const Root = styled.div`
+  @media (min-width: 769px) {
+    max-width: 640px;
+  }
 `;
 
-export const PickerBtn = styled.label`
+export const PickerRow = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+
+  @media (min-width: 769px) {
+    grid-template-columns: repeat(2, minmax(0, 210px));
+    justify-content: start;
+    gap: 8px;
+  }
+`;
+
+/* Primary = camera (accent filled), secondary = gallery (outlined) */
+export const PickerBtn = styled.label<{ $primary?: boolean }>`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 10px 18px;
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${({ theme }) => theme.borderRadiusSm};
-  background: ${({ theme }) => theme.colors.bgCard};
-  color: ${({ theme }) => theme.colors.textSecondary};
-  font-size: 12px;
+  gap: 9px;
+  min-height: 50px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 14px;
   font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
   cursor: pointer;
-  transition: border-color 0.15s, color 0.15s, background 0.15s;
   user-select: none;
+  text-align: center;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
   -webkit-tap-highlight-color: transparent;
 
+  background: ${({ $primary, theme }) =>
+    $primary ? theme.colors.accent : theme.glass.fill};
+  border: 1px solid
+    ${({ $primary, theme }) =>
+      $primary ? theme.colors.accent : theme.glass.border};
+  color: ${({ $primary, theme }) =>
+    $primary ? '#fff' : theme.colors.textPrimary};
+
+  @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+    backdrop-filter: ${({ $primary, theme }) =>
+      $primary ? 'none' : theme.glass.blur};
+    -webkit-backdrop-filter: ${({ $primary, theme }) =>
+      $primary ? 'none' : theme.glass.blur};
+  }
+
   &:hover {
-    border-color: ${({ theme }) => theme.colors.accent};
-    color: ${({ theme }) => theme.colors.accent};
-    background: ${({ theme }) => `${theme.colors.accent}08`};
+    background: ${({ $primary, theme }) =>
+      $primary ? theme.colors.accentHover : theme.glass.fillHover};
+    border-color: ${({ $primary, theme }) =>
+      $primary ? theme.colors.accentHover : theme.glass.borderHover};
   }
 
   &:active {
     opacity: 0.85;
   }
 
-  @media (max-width: 640px) {
-    flex: 1;
-    padding: 12px 16px;
+  &:focus-within {
+    box-shadow: ${({ theme }) => theme.shadows.focus};
+  }
+
+  @media (min-width: 769px) {
+    min-height: 42px;
+    padding: 10px 14px;
+    font-size: 13.5px;
+    border-radius: 9px;
+  }
+
+  @media (max-width: 400px) {
     font-size: 13px;
-    gap: 8px;
+    gap: 7px;
+    padding: 12px 10px;
   }
 `;
 
 export const PreviewBox = styled.div`
   position: relative;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  max-width: 100%;
+  ${glassSurface};
   border-radius: ${({ theme }) => theme.borderRadius};
   padding: 12px;
-  background: rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
   text-align: center;
 `;
 

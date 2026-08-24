@@ -1,11 +1,20 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 
-export const Img = styled.img<{ $height: number; $radiusTop: string }>`
+export const Img = styled.img<{ $height: number; $radiusTop: string; $fill?: boolean }>`
   width: 100%;
-  height: ${({ $height }) => $height}px;
   object-fit: cover;
   display: block;
-  border-radius: ${({ $radiusTop }) => $radiusTop} ${({ $radiusTop }) => $radiusTop} 0 0;
+
+  ${({ $fill, $height, $radiusTop }) =>
+    $fill
+      ? css`
+          height: 100%;
+          border-radius: inherit;
+        `
+      : css`
+          height: ${$height}px;
+          border-radius: ${$radiusTop} ${$radiusTop} 0 0;
+        `}
 `;
 
 export const MapLink = styled.a<{ $radiusTop: string }>`
