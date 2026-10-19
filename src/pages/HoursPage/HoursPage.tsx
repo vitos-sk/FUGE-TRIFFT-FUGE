@@ -9,16 +9,13 @@ import { ShiftList } from '@features/hours/components/ShiftList';
 import { FilterButton } from '@features/hours/components/FilterButton';
 import { OptionSheet } from '@features/hours/components/OptionSheet';
 import { OutlineBtn } from '@features/hours/components/hoursUi.styles';
-import { SegmentedControl, type SegOption } from '@shared/ui/SegmentedControl';
 import { OfflineBanner } from '@shared/ui/OfflineBanner';
-import type { HoursScope } from '@features/hours/types';
 import {
   Page,
   Header,
   Title,
   AddBtn,
   Controls,
-  ScopeWrap,
   Filters,
   ExportWrap,
   Layout,
@@ -30,17 +27,10 @@ import {
   TotalValue,
 } from './HoursPage.styles';
 
-const SCOPE_OPTIONS: SegOption<HoursScope>[] = [
-  { value: 'team', label: 'Team' },
-  { value: 'me', label: 'Ich' },
-];
-
 const HoursPage: React.FC = () => {
   const h = useHoursPage();
   const [userSheetOpen, setUserSheetOpen] = useState(false);
   const [objectSheetOpen, setObjectSheetOpen] = useState(false);
-
-  const showFilters = h.isAdmin && h.scope === 'team';
 
   return (
     <Page>
@@ -56,25 +46,20 @@ const HoursPage: React.FC = () => {
 
       {h.isAdmin && (
         <Controls>
-          <ScopeWrap>
-            <SegmentedControl options={SCOPE_OPTIONS} value={h.scope} onChange={h.changeScope} />
-          </ScopeWrap>
-          {showFilters && (
-            <Filters>
-              <FilterButton
-                icon={<FiUser size={14} />}
-                label={h.userFilterLabel}
-                active={!!h.userFilter}
-                onClick={() => setUserSheetOpen(true)}
-              />
-              <FilterButton
-                icon={<FiMapPin size={14} />}
-                label={h.objectFilterLabel}
-                active={!!h.objectFilter}
-                onClick={() => setObjectSheetOpen(true)}
-              />
-            </Filters>
-          )}
+          <Filters>
+            <FilterButton
+              icon={<FiUser size={14} />}
+              label={h.userFilterLabel}
+              active={!!h.userFilter}
+              onClick={() => setUserSheetOpen(true)}
+            />
+            <FilterButton
+              icon={<FiMapPin size={14} />}
+              label={h.objectFilterLabel}
+              active={!!h.objectFilter}
+              onClick={() => setObjectSheetOpen(true)}
+            />
+          </Filters>
           <ExportWrap>
             <OutlineBtn type="button" onClick={h.exportToExcel} disabled={h.visible.length === 0}>
               <FiDownload size={14} />

@@ -12,7 +12,7 @@ import { useHoursQueueSync } from './useHoursQueueSync';
 import { currentMonth, isValidMonth, formatMonthTitle, formatMonthRange } from '../utils/monthUtils';
 import { formatHM, formatShiftCount, parseIsoDate } from '../utils/timeUtils';
 import { buildReport, exportExcel, sumMinutes } from '../utils/hoursReport';
-import type { HoursScope, FilterOption } from '../types';
+import type { FilterOption } from '../types';
 
 export const PAGE_SIZE = 50;
 
@@ -47,7 +47,6 @@ export const useHoursPage = () => {
   const rawMonth = params.get('month');
   const month = isValidMonth(rawMonth) ? rawMonth : currentMonth();
 
-  const [scope, setScope] = useState<HoursScope>('team');
   const [userFilter, setUserFilter] = useState(ALL_USERS);
   const [objectFilter, setObjectFilter] = useState(ALL_OBJECTS);
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -68,12 +67,6 @@ export const useHoursPage = () => {
     resetList();
     setParams({ month: next }, { replace: true });
   };
-  const changeScope = (next: HoursScope) => {
-    resetList();
-    setScope(next);
-    setUserFilter(ALL_USERS);
-    setObjectFilter(ALL_OBJECTS);
-  };
   const changeUserFilter = (next: string) => {
     resetList();
     setUserFilter(next);
@@ -84,24 +77,19 @@ export const useHoursPage = () => {
   };
 
   // ── Derived data ───────────────────────────────────────────────────────────
-  const scoped = useMemo(
-    () => (isAdmin && scope === 'me' ? entries.filter((e) => e.userId === uid) : entries),
-    [entries, isAdmin, scope, uid],
-  );
-
   const visible = useMemo(
     () =>
-      scoped
+      entries
         .filter((e) => !userFilter || e.userId === userFilter)
         .filter((e) => !objectFilter || e.objectId === objectFilter)
         .sort(newestFirst),
-    [scoped, userFilter, objectFilter],
+    [entries, userFilter, objectFilter],
   );
 
   // The numbers in each filter depend on the other filter, so they always match
   // what the boss sees after tapping the row.
   const userOptions = useMemo<FilterOption[]>(() => {
-    const base = scoped.filter((e) => !objectFilter || e.objectId === objectFilter);
+    const base = entries.filter((e) => !objectFilter || e.objectId === objectFilter);
     const people = new Map<string, string>(users.map((u) => [u.uid, u.name]));
     base.forEach((e) => {
       if (!people.has(e.userId)) people.set(e.userId, e.userName);
@@ -117,17 +105,17 @@ export const useHoursPage = () => {
           sub: statsSub(base.filter((e) => e.userId === value)),
         })),
     ];
-  }, [scoped, users, objectFilter]);
+  }, [entries, users, objectFilter]);
 
   const objectOptions = useMemo<FilterOption[]>(() => {
-    const base = scoped.filter((e) => !userFilter || e.userId === userFilter);
+    const base = entries.filter((e) => !userFilter || e.userId === userFilter);
     const objects = new Map<string, string>();
     base.forEach((e) => {
       if (e.objectId) objects.set(e.objectId, e.objectTitle || e.objectId);
     });
     // keep the selected object visible even when the other filter hides all its shifts
     if (objectFilter && !objects.has(objectFilter)) {
-      const known = scoped.find((e) => e.objectId === objectFilter);
+      const known = entries.find((e) => e.objectId === objectFilter);
       objects.set(objectFilter, known?.objectTitle || objectFilter);
     }
     return [
@@ -140,7 +128,7 @@ export const useHoursPage = () => {
           sub: statsSub(base.filter((e) => e.objectId === value)),
         })),
     ];
-  }, [scoped, userFilter, objectFilter]);
+  }, [entries, userFilter, objectFilter]);
 
   const userFilterLabel = userOptions.find((o) => o.value === userFilter)?.label ?? 'Alle Mitarbeiter';
   const objectFilterLabel =
@@ -148,7 +136,7 @@ export const useHoursPage = () => {
 
   const totalMins = sumMinutes(visible);
   const isFiltered = !!userFilter || !!objectFilter;
-  const showWorker = isAdmin && scope === 'team' && !userFilter;
+  const showWorker = isAdmin && !userFilter;
 
   // ── Actions ────────────────────────────────────────────────────────────────
   const toggleExpanded = (id: string) => setExpandedId((cur) => (cur === id ? null : id));
@@ -183,7 +171,6 @@ export const useHoursPage = () => {
 
   const workerLabel = (): string => {
     if (!isAdmin) return user?.name ?? '';
-    if (scope === 'me') return user?.name ?? '';
     return userFilter ? userFilterLabel : '';
   };
 
@@ -209,8 +196,6 @@ export const useHoursPage = () => {
     uid,
     month,
     changeMonth,
-    scope,
-    changeScope,
     userFilter,
     changeUserFilter,
     objectFilter,

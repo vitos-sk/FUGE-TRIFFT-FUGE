@@ -34,7 +34,7 @@ export const AddBtn = styled(Button)`
   padding-right: 16px;
 `;
 
-// ── Boss row: Team | Ich, filters, export ─────────────────────────────────────
+// ── Boss row: filters, export ─────────────────────────────────────
 
 export const Controls = styled.div`
   display: flex;
@@ -44,18 +44,6 @@ export const Controls = styled.div`
   ${DESKTOP} {
     flex-direction: row;
     align-items: center;
-  }
-`;
-
-export const ScopeWrap = styled.div`
-  ${DESKTOP} {
-    width: 260px;
-    flex-shrink: 0;
-  }
-
-  button {
-    min-height: 36px;
-    font-size: 13px;
   }
 `;
 

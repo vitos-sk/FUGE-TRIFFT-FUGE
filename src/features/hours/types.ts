@@ -1,6 +1,3 @@
-/** Admin view of the hours screen: the whole team or only their own shifts. */
-export type HoursScope = 'team' | 'me';
-
 /** One row in a filter list (employee / object picker). */
 export interface FilterOption {
   value: string;
