@@ -57,7 +57,89 @@
       .sk-tl{width:28px;height:6px;border-radius:3px}
       @media(max-width:768px){#sk-tabs{display:flex}#sk-content{padding-bottom:calc(62px + env(safe-area-inset-bottom) + 16px)}}
       @media(min-width:769px){#sk-nav{display:flex}#sk-content{padding:28px 32px;max-width:960px;margin:0 auto;width:100%}}
+      /* Boot watchdog (shown only when the app did not start) */
+      #boot-fail{position:fixed;left:16px;right:16px;bottom:calc(62px + env(safe-area-inset-bottom) + 12px);z-index:9999;max-width:420px;margin:0 auto;padding:16px;background:#161616;border:1px solid #363636;border-radius:10px;font:14px/1.45 Inter,system-ui,sans-serif;color:#fff;box-shadow:0 8px 32px rgba(0,0,0,0.6)}
+      #boot-fail p{margin:0 0 6px}
+      #boot-fail .bf-sub{color:#8a8a8a;font-size:13px}
+      #boot-fail .bf-err{color:#cc2222;font-size:12px;word-break:break-word;margin-top:8px}
+      #boot-fail .bf-btns{display:flex;gap:8px;margin-top:12px}
+      #boot-fail button{flex:1;min-height:44px;border-radius:8px;border:1px solid #363636;background:transparent;color:#fff;font:600 13px Inter,system-ui,sans-serif;cursor:pointer}
+      #boot-fail button.bf-main{background:#cc2222;border-color:#cc2222}
+      @media(min-width:769px){#boot-fail{bottom:32px}}
     </style>
+    <!-- Boot watchdog: if the app has not replaced the skeleton after 15 s, offer a way out.
+         No automatic reloads (a slow connection must not end in a reload loop). -->
+    <script>
+      (function () {
+        var lastError = '';
+        function remember(msg) { if (!lastError && msg) lastError = String(msg).slice(0, 200); }
+        // capture = true also catches a <script> / <link> that failed to load
+        window.addEventListener('error', function (e) {
+          var t = e.target;
+          if (t && t !== window && t.tagName) {
+            // only app code matters here (a missing web font is normal offline)
+            if (t.tagName === 'SCRIPT' || (t.tagName === 'LINK' && /modulepreload/.test(t.rel))) {
+              remember('Datei nicht geladen: ' + (t.src || t.href || '').split('/').pop());
+            }
+          } else remember(e.message);
+        }, true);
+        window.addEventListener('unhandledrejection', function (e) {
+          remember(e.reason && e.reason.message ? e.reason.message : e.reason);
+        });
+
+        function clearCachesAndReload() {
+          var tasks = [];
+          if (navigator.serviceWorker && navigator.serviceWorker.getRegistrations) {
+            tasks.push(navigator.serviceWorker.getRegistrations().then(function (regs) {
+              return Promise.all(regs.map(function (r) { return r.unregister(); }));
+            }));
+          }
+          if (window.caches && caches.keys) {
+            tasks.push(caches.keys().then(function (keys) {
+              return Promise.all(keys.map(function (k) { return caches.delete(k); }));
+            }));
+          }
+          // The login stays (localStorage / IndexedDB are not touched)
+          Promise.all(tasks).catch(function () {}).then(function () { location.reload(); });
+        }
+
+        function el(tag, cls, text) {
+          var n = document.createElement(tag);
+          if (cls) n.className = cls;
+          if (text) n.textContent = text;
+          return n;
+        }
+
+        function showBox() {
+          if (document.getElementById('boot-fail')) return;
+          var box = el('div');
+          box.id = 'boot-fail';
+          box.setAttribute('role', 'alert');
+          box.appendChild(el('p', '', 'Die App lädt länger als gewöhnlich.'));
+          box.appendChild(el('p', 'bf-sub', 'Prüfe deine Internetverbindung. Wenn es so bleibt, tippe auf „Neu laden“ oder „Cache leeren“ (du bleibst angemeldet).'));
+          if (lastError) box.appendChild(el('p', 'bf-err', 'Fehler: ' + lastError));
+          var btns = el('div', 'bf-btns');
+          var reload = el('button', 'bf-main', 'Neu laden');
+          reload.type = 'button';
+          reload.onclick = function () { location.reload(); };
+          var clear = el('button', '', 'Cache leeren');
+          clear.type = 'button';
+          clear.onclick = function () { clear.disabled = true; clear.textContent = '…'; clearCachesAndReload(); };
+          btns.appendChild(reload);
+          btns.appendChild(clear);
+          box.appendChild(btns);
+          document.body.appendChild(box);
+          // the app may still finish loading (slow network): then the box disappears again
+          var timer = setInterval(function () {
+            if (!document.getElementById('sk')) { box.remove(); clearInterval(timer); }
+          }, 500);
+        }
+
+        setTimeout(function () {
+          if (document.getElementById('sk')) showBox();
+        }, 15000);
+      })();
+    </script>
   </head>
   <body>
     <div id="root">
