@@ -1,3 +1,3 @@
 export { useHoursPage } from './useHoursPage';
-export { useAddHoursForm } from './useAddHoursForm';
-export { useHoursTable } from './useHoursTable';
+export { useHoursEntryForm } from './useHoursEntryForm';
+export { useWageCalc } from './useWageCalc';

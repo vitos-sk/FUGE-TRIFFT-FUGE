@@ -26,7 +26,7 @@ const Tab: React.FC<TabProps> = ({ to, icon, label, active, badge }) => (
 export const MobileTabBar: React.FC = () => {
   const { isAdmin } = useAuth();
   const onObjects   = !!useMatch('/objects/*');
-  const onHours     = !!useMatch('/hours');
+  const onHours     = !!useMatch('/hours/*');
   const onDashboard = !!useMatch('/dashboard');
 
   return (

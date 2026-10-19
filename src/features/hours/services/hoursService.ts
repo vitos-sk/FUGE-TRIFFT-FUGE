@@ -4,6 +4,7 @@ import {
   query,
   where,
   orderBy,
+  getDoc,
   getDocs,
   getDocsFromCache,
   Timestamp,
@@ -85,6 +86,11 @@ export const getAllHours = async (from?: Date, to?: Date): Promise<WorkHourEntry
 export const getAllHoursFromCache = async (from?: Date, to?: Date): Promise<WorkHourEntry[]> =>
   mapSnap(await getDocsFromCache(buildAllQuery(from, to)));
 
+export const getHourEntry = async (id: string): Promise<WorkHourEntry | null> => {
+  const snap = await getDoc(doc(db, 'workHours', id));
+  return snap.exists() ? ({ id: snap.id, ...(snap.data() as object) } as WorkHourEntry) : null;
+};
+
 export const deleteHourEntry = async (id: string) => deleteDoc(doc(db, 'workHours', id));
 
 export const updateHourEntry = async (
@@ -93,4 +99,9 @@ export const updateHourEntry = async (
     objectId?: string | null;
     objectTitle?: string;
   }
-) => updateDoc(doc(db, 'workHours', id), data as Record<string, unknown>);
+) =>
+  // Firestore rejects `undefined` values — drop them (e.g. an unknown objectTitle)
+  updateDoc(
+    doc(db, 'workHours', id),
+    Object.fromEntries(Object.entries(data).filter(([, v]) => v !== undefined)),
+  );

@@ -1,244 +1,158 @@
-import React, { useState, useEffect } from "react";
-import { FiCopy, FiCheck, FiList } from "react-icons/fi";
-import { HiPlus } from "react-icons/hi";
-import { LuCalculator } from "react-icons/lu";
-import { format } from "date-fns";
-import { de } from "date-fns/locale";
-import { AddHoursForm } from "@features/hours/components/AddHoursForm";
-import { HoursTable } from "@features/hours/components/HoursTable";
-
-import { useHoursPage } from "@features/hours/hooks/useHoursPage";
-import { formatPeriodTitle, formatPeriodRange } from "@features/hours/utils/periodLabel";
-import { useOnlineStatus } from "@shared/hooks/useOnlineStatus";
-import { OfflineBanner } from "@shared/ui/OfflineBanner";
-import { SegmentedControl, type SegOption } from "@shared/ui/SegmentedControl";
-import type { WorkHourEntry } from "@shared/types";
-import { WageModal } from "./components/WageModal";
-import { FilterBar } from "./components/FilterBar";
-import { TableSkeleton } from "./components/TableSkeleton";
+import React, { useState } from 'react';
+import { FiCopy, FiCheck, FiDownload, FiUser, FiMapPin } from 'react-icons/fi';
+import { HiPlus } from 'react-icons/hi';
+import { LuCalculator } from 'react-icons/lu';
+import { useHoursPage } from '@features/hours/hooks/useHoursPage';
+import { formatHM } from '@features/hours/utils/timeUtils';
+import { MonthNav } from '@features/hours/components/MonthNav';
+import { ShiftList } from '@features/hours/components/ShiftList';
+import { FilterButton } from '@features/hours/components/FilterButton';
+import { OptionSheet } from '@features/hours/components/OptionSheet';
+import { OutlineBtn } from '@features/hours/components/hoursUi.styles';
+import { SegmentedControl, type SegOption } from '@shared/ui/SegmentedControl';
+import { OfflineBanner } from '@shared/ui/OfflineBanner';
+import type { HoursScope } from '@features/hours/types';
 import {
-  TabBarWrapper,
-  ViewPanel,
-  StatsCard,
-  StatsPeriod,
-  StatsLabel,
-  StatsValue,
-  StatsDivider,
-  StatsActions,
-  StatsBtn,
-  SectionTitle,
-  RefreshIndicator,
-  RefreshDot,
-} from "./HoursPage.styles";
+  Page,
+  Header,
+  Title,
+  AddBtn,
+  Controls,
+  ScopeWrap,
+  Filters,
+  ExportWrap,
+  Layout,
+  Side,
+  ListArea,
+  SideButtons,
+  TotalCard,
+  TotalLabel,
+  TotalValue,
+} from './HoursPage.styles';
 
-function buildReport(
-  entries: WorkHourEntry[],
-  periodLabel: string,
-  workerLabel: string,
-): string {
-  const sorted = [...entries].sort((a, b) => a.date.localeCompare(b.date));
-  const header = `Arbeitsbericht ${periodLabel}${workerLabel ? " – " + workerLabel : ""}`;
-  const lines = sorted.map((e) => {
-    const dateStr = format(new Date(e.date + "T12:00:00"), "dd.MM. EEE", { locale: de });
-    const time = `${e.startTime}–${e.endTime}`;
-    const pause = e.breakMinutes > 0 ? `-${e.breakMinutes}min` : "";
-    const obj = e.objectTitle || "–";
-    return [dateStr, time, pause, obj].filter(Boolean).join(" · ");
-  });
-  const totalMins = entries.reduce((acc, e) => acc + (e.totalMinutes || 0), 0);
-  const th = Math.floor(totalMins / 60);
-  const tm = totalMins % 60;
-  return `${header}\n\n${lines.join("\n")}\n\nGesamt: ${th}:${String(tm).padStart(2, "0")} h`;
-}
-
-// ─── Component ─────────────────────────────────────────────────────────────────
+const SCOPE_OPTIONS: SegOption<HoursScope>[] = [
+  { value: 'team', label: 'Team' },
+  { value: 'me', label: 'Ich' },
+];
 
 const HoursPage: React.FC = () => {
-  const {
-    isAdmin,
-    tab,
-    setTab,
-    entries,
-    users,
-    selectedUser,
-    setSelectedUser,
-    range,
-    setRange,
-    pickedMonth,
-    setPickedMonth,
-    customFrom,
-    customTo,
-    setCustomRange,
-    loading,
-    refreshing,
-    exportMonth,
-    setExportMonth,
-    load,
-    exportToExcel,
-  } = useHoursPage();
-  const isOnline = useOnlineStatus();
+  const h = useHoursPage();
+  const [userSheetOpen, setUserSheetOpen] = useState(false);
+  const [objectSheetOpen, setObjectSheetOpen] = useState(false);
 
-  const [copied, setCopied] = useState(false);
-  const [showWageModal, setShowWageModal] = useState(false);
-
-  useEffect(() => {
-    let startX = 0,
-      startY = 0;
-    const onStart = (e: TouchEvent) => {
-      startX = e.touches[0].clientX;
-      startY = e.touches[0].clientY;
-    };
-    const onEnd = (e: TouchEvent) => {
-      const dx = e.changedTouches[0].clientX - startX;
-      const dy = e.changedTouches[0].clientY - startY;
-      if (Math.abs(dx) < 60) return;
-      if (Math.abs(dy) > Math.abs(dx) * 0.75) return;
-      if ((e.target as Element).closest("table")) return;
-      if (dx < 0) setTab(isAdmin ? "add" : "view");
-      else setTab(isAdmin ? "view" : "add");
-    };
-    document.addEventListener("touchstart", onStart, { passive: true });
-    document.addEventListener("touchend", onEnd, { passive: true });
-    return () => {
-      document.removeEventListener("touchstart", onStart);
-      document.removeEventListener("touchend", onEnd);
-    };
-  }, [isAdmin, setTab]);
-
-  const totalMins = entries.reduce((acc, e) => acc + (e.totalMinutes || 0), 0);
-  const totalH = Math.floor(totalMins / 60);
-  const totalM = totalMins % 60;
-  const period = { range, pickedMonth, customFrom, customTo };
-  const periodTitle = formatPeriodTitle(period);
-  const periodRange = formatPeriodRange(period);
-
-  const getPeriodAndWorker = () => {
-    const periodLabel = periodRange;
-    const workerLabel = !isAdmin
-      ? (entries[0]?.userName ?? "")
-      : selectedUser
-        ? (users.find((u) => u.uid === selectedUser)?.name ?? "")
-        : "";
-    return { periodLabel, workerLabel };
-  };
-
-  const handleCopyReport = () => {
-    const { periodLabel, workerLabel } = getPeriodAndWorker();
-    navigator.clipboard.writeText(buildReport(entries, periodLabel, workerLabel));
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
-  };
-
-  const viewOption: SegOption<"view" | "add"> = {
-    value: "view",
-    label: "Übersicht",
-    icon: <FiList size={14} />,
-  };
-  const addOption: SegOption<"view" | "add"> = {
-    value: "add",
-    label: "Eintragen",
-    icon: <HiPlus size={16} />,
-  };
-  const tabOptions = isAdmin ? [viewOption, addOption] : [addOption, viewOption];
+  const showFilters = h.isAdmin && h.scope === 'team';
 
   return (
-    <>
-      {/* <PageTitle>Arbeitsstunden</PageTitle> */}
+    <Page>
+      <Header>
+        <Title>Stunden</Title>
+        <AddBtn type="button" onClick={h.goToNew}>
+          <HiPlus size={18} />
+          Eintragen
+        </AddBtn>
+      </Header>
 
-      <TabBarWrapper>
-        <SegmentedControl options={tabOptions} value={tab} onChange={setTab} variant="tabs" />
-      </TabBarWrapper>
+      <MonthNav month={h.month} onChange={h.changeMonth} />
 
-      {tab === "add" && (
-        <>
-          <SectionTitle>Stunden eintragen</SectionTitle>
-          <AddHoursForm
-            onAdded={() => {
-              load();
-              setTab("view");
-            }}
-          />
-        </>
-      )}
-
-      {tab === "view" && (
-        <>
-          <ViewPanel>
-            <StatsCard>
-              <StatsPeriod>{periodTitle}</StatsPeriod>
-              <StatsValue>
-                {totalH}:{String(totalM).padStart(2, "0")} h
-              </StatsValue>
-              <StatsLabel>Gesamtstunden</StatsLabel>
-
-              {!loading && entries.length > 0 && (
-                <>
-                  <StatsDivider />
-                  <StatsActions>
-                    <StatsBtn $done={copied} onClick={handleCopyReport}>
-                      {copied ? <FiCheck size={15} /> : <FiCopy size={15} />}
-                      {copied ? "Kopiert!" : "Bericht kopieren"}
-                    </StatsBtn>
-                    {isAdmin && (
-                      <StatsBtn onClick={() => setShowWageModal(true)}>
-                        <LuCalculator size={15} />
-                        Lohn berechnen
-                      </StatsBtn>
-                    )}
-                  </StatsActions>
-                </>
-              )}
-            </StatsCard>
-
-            <FilterBar
-              isAdmin={isAdmin}
-              periodRange={periodRange}
-              range={range}
-              setRange={setRange}
-              pickedMonth={pickedMonth}
-              setPickedMonth={setPickedMonth}
-              customFrom={customFrom}
-              customTo={customTo}
-              setCustomRange={setCustomRange}
-              selectedUser={selectedUser}
-              setSelectedUser={setSelectedUser}
-              users={users}
-              exportMonth={exportMonth}
-              setExportMonth={setExportMonth}
-              exportToExcel={exportToExcel}
-            />
-          </ViewPanel>
-
-          {!isOnline && !loading && entries.length === 0 && (
-            <OfflineBanner message="Kein Internet – Stunden können nicht geladen werden" />
-          )}
-          {loading ? (
-            <TableSkeleton />
-          ) : (
-            <>
-              <HoursTable
-                entries={entries}
-                showWorker={isAdmin && !selectedUser}
-                onDelete={load}
+      {h.isAdmin && (
+        <Controls>
+          <ScopeWrap>
+            <SegmentedControl options={SCOPE_OPTIONS} value={h.scope} onChange={h.changeScope} />
+          </ScopeWrap>
+          {showFilters && (
+            <Filters>
+              <FilterButton
+                icon={<FiUser size={14} />}
+                label={h.userFilterLabel}
+                active={!!h.userFilter}
+                onClick={() => setUserSheetOpen(true)}
               />
-              {refreshing && (
-                <RefreshIndicator>
-                  Aktualisierung
-                  <RefreshDot />
-                </RefreshIndicator>
-              )}
-            </>
+              <FilterButton
+                icon={<FiMapPin size={14} />}
+                label={h.objectFilterLabel}
+                active={!!h.objectFilter}
+                onClick={() => setObjectSheetOpen(true)}
+              />
+            </Filters>
           )}
-        </>
+          <ExportWrap>
+            <OutlineBtn type="button" onClick={h.exportToExcel} disabled={h.visible.length === 0}>
+              <FiDownload size={14} />
+              Export
+            </OutlineBtn>
+          </ExportWrap>
+        </Controls>
       )}
 
-      <WageModal
-        isOpen={showWageModal}
-        onClose={() => setShowWageModal(false)}
-        entries={entries}
-        getPeriodAndWorker={getPeriodAndWorker}
+      {!h.isOnline && <OfflineBanner message="Kein Internet – es werden die zuletzt gespeicherten Stunden gezeigt" />}
+      {h.pendingCount > 0 && (
+        <OfflineBanner
+          message={
+            h.isOnline
+              ? `${h.pendingCount} gespeicherte Einträge werden gerade übertragen…`
+              : `${h.pendingCount} gespeicherte Einträge werden übertragen, sobald du wieder online bist`
+          }
+        />
+      )}
+
+      <Layout>
+        <Side>
+          {!h.isAdmin && !h.loading && (
+            <TotalCard>
+              <TotalLabel>Gearbeitet im Monat</TotalLabel>
+              <TotalValue>{formatHM(h.totalMins)} h</TotalValue>
+            </TotalCard>
+          )}
+          <SideButtons>
+            <OutlineBtn type="button" onClick={h.goToWage}>
+              <LuCalculator size={15} />
+              Lohnrechner
+            </OutlineBtn>
+            <OutlineBtn type="button" $done={h.copied} onClick={h.copyReport} disabled={h.visible.length === 0}>
+              {h.copied ? <FiCheck size={14} /> : <FiCopy size={14} />}
+              {h.copied ? 'Kopiert!' : 'Bericht kopieren'}
+            </OutlineBtn>
+          </SideButtons>
+        </Side>
+
+        <ListArea>
+          <ShiftList
+            entries={h.visible}
+            limit={h.limit}
+            onShowMore={h.showMore}
+            totalMins={h.totalMins}
+            loading={h.loading}
+            refreshing={h.refreshing}
+            failed={h.failed}
+            onRetry={h.retry}
+            isFiltered={h.isFiltered}
+            showWorker={h.showWorker}
+            uid={h.uid}
+            expandedId={h.expandedId}
+            onToggle={h.toggleExpanded}
+            onEdit={h.goToEdit}
+            onDelete={h.deleteEntry}
+          />
+        </ListArea>
+      </Layout>
+
+      <OptionSheet
+        isOpen={userSheetOpen}
+        onClose={() => setUserSheetOpen(false)}
+        title="Mitarbeiter"
+        value={h.userFilter}
+        options={h.userOptions}
+        onChange={h.changeUserFilter}
       />
-    </>
+      <OptionSheet
+        isOpen={objectSheetOpen}
+        onClose={() => setObjectSheetOpen(false)}
+        title="Objekt"
+        value={h.objectFilter}
+        options={h.objectOptions}
+        onChange={h.changeObjectFilter}
+      />
+    </Page>
   );
 };
 

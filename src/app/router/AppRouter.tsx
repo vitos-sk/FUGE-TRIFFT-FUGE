@@ -11,6 +11,8 @@ const LoginPage = lazy(() => import('../../pages/LoginPage/LoginPage'));
 const BoardPage = lazy(() => import('../../pages/BoardPage/BoardPage'));
 const ObjectDetailPage = lazy(() => import('../../pages/ObjectDetailPage/ObjectDetailPage'));
 const HoursPage = lazy(() => import('../../pages/HoursPage/HoursPage'));
+const HoursFormPage = lazy(() => import('../../pages/HoursFormPage/HoursFormPage'));
+const WagePage = lazy(() => import('../../pages/WagePage/WagePage'));
 const DashboardPage = lazy(() => import('../../pages/DashboardPage/DashboardPage'));
 const ArchivePage = lazy(() => import('../../pages/ArchivePage/ArchivePage'));
 
@@ -83,6 +85,36 @@ export const AppRouter: React.FC = () => {
             <ProtectedRoute>
               <AppShell>
                 <HoursPage />
+              </AppShell>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/hours/new"
+          element={
+            <ProtectedRoute>
+              <AppShell>
+                <HoursFormPage />
+              </AppShell>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/hours/:id/edit"
+          element={
+            <ProtectedRoute>
+              <AppShell>
+                <HoursFormPage />
+              </AppShell>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/hours/wage"
+          element={
+            <ProtectedRoute>
+              <AppShell>
+                <WagePage />
               </AppShell>
             </ProtectedRoute>
           }
