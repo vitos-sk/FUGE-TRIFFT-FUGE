@@ -40,7 +40,7 @@ export const useFCM = (uid: string | null) => {
           new Notification(title, {
             body,
             icon: '/apple-touch-icon.png',
-            badge: '/apple-touch-icon.png',
+            badge: '/notification-badge.png',
           });
         }
       });

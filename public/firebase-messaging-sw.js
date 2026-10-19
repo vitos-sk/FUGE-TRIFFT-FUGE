@@ -18,7 +18,7 @@ messaging.onBackgroundMessage((payload) => {
     self.registration.showNotification(title, {
       body,
       icon: "/apple-touch-icon.png",
-      badge: "/apple-touch-icon.png",
+      badge: "/notification-badge.png",
     });
   }
 });
