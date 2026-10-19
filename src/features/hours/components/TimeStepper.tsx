@@ -10,10 +10,19 @@ const Col = styled.div`
   min-width: 0;
 `;
 
+// Narrow phones (320–360px) show two steppers side by side: arrows and digits shrink with the screen
 const Row = styled.div`
   display: grid;
-  grid-template-columns: 44px minmax(0, 1fr) 44px;
+  grid-template-columns: 36px minmax(0, 1fr) 36px;
   gap: 4px;
+
+  @media (max-width: 329px) {
+    grid-template-columns: 32px minmax(0, 1fr) 32px;
+  }
+
+  @media (min-width: 481px) {
+    grid-template-columns: 44px minmax(0, 1fr) 44px;
+  }
 `;
 
 const Arrow = styled.button<{ $invalid: boolean }>`
@@ -38,12 +47,20 @@ const Arrow = styled.button<{ $invalid: boolean }>`
 
 const Value = styled.button<{ $invalid: boolean }>`
   min-height: 52px;
+  min-width: 0;
+  padding: 0;
   border-radius: 8px;
   font-family: inherit;
-  font-size: 22px;
+  /* scales with the screen width: ~15px at 320px, ~18px at 390px, 22px on tablets/desktop */
+  font-size: clamp(14px, 4.6vw, 18px);
   font-weight: 700;
-  letter-spacing: 0.02em;
+  white-space: nowrap;
   font-variant-numeric: tabular-nums;
+
+  @media (min-width: 481px) {
+    font-size: 22px;
+    letter-spacing: 0.02em;
+  }
   color: ${({ theme }) => theme.colors.textPrimary};
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid ${({ $invalid, theme }) => ($invalid ? theme.colors.accent : 'rgba(255, 255, 255, 0.12)')};

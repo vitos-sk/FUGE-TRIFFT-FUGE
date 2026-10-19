@@ -135,12 +135,20 @@ export const TimeBody = styled.div`
   display: flex;
   flex-direction: column;
   gap: 14px;
+
+  @media (max-width: 359px) {
+    padding: 10px;
+  }
 `;
 
 export const TimeGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
+
+  @media (max-width: 359px) {
+    gap: 8px;
+  }
 `;
 
 export const BreakBody = styled.div`
