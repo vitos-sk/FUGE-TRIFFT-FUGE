@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
-import { FiBell, FiX, FiTrash2, FiCamera, FiMessageSquare } from 'react-icons/fi';
+import { FiBell, FiX, FiTrash2, FiCamera, FiMessageSquare, FiClock } from 'react-icons/fi';
 import { useNotifications } from '../hooks/useNotifications';
 import { markNotificationRead, markAllRead, deleteNotification, deleteAllNotifications } from '@features/notifications/services';
 import { NotifDot } from '@shared/ui/Badge';
@@ -31,7 +31,10 @@ const TITLE_ICONS: { prefix: string; icon: React.ReactNode }[] = [
   { prefix: 'Neue Notiz',  icon: <FiMessageSquare size={11} /> },
 ];
 
-function renderTitle(title: string) {
+function renderTitle(title: string, type?: string) {
+  if (type === 'hours-reminder') {
+    return <><FiClock size={11} /><NotifTitleText>{title}</NotifTitleText></>;
+  }
   for (const { prefix, icon } of TITLE_ICONS) {
     if (title.startsWith(prefix)) {
       return <>{icon}<NotifTitleText>{title.slice(prefix.length)}</NotifTitleText></>;
@@ -60,10 +63,12 @@ export const NotifBell: React.FC<Props> = ({ uid }) => {
     return () => document.removeEventListener('mousedown', handler);
   }, [open]);
 
-  const handleClick = async (n: { id: string; objectId?: string; photoId?: string; noteId?: string }) => {
+  const handleClick = async (n: { id: string; type?: string; objectId?: string; photoId?: string; noteId?: string }) => {
     await markNotificationRead(uid, n.id);
     setOpen(false);
-    if (n.objectId) {
+    if (n.type === 'hours-reminder') {
+      navigate('/hours');
+    } else if (n.objectId) {
       let url = `/objects/${n.objectId}`;
       if (n.photoId) {
         url += `?photo=${n.photoId}`;
@@ -87,7 +92,7 @@ export const NotifBell: React.FC<Props> = ({ uid }) => {
     notifications.map((n) => (
       <NotifItem key={n.id} $unread={!n.read}>
         <NotifContent onClick={() => handleClick(n)}>
-          <NotifTitle>{renderTitle(n.title)}</NotifTitle>
+          <NotifTitle>{renderTitle(n.title, n.type)}</NotifTitle>
           <NotifBody>{n.body}</NotifBody>
           <NotifTime>
             {n.createdAt?.toDate

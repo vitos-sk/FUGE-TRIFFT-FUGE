@@ -105,6 +105,7 @@ export interface Notification {
   taskId?: string;
   photoId?: string;
   noteId?: string;
+  type?: 'hours-reminder';
   read: boolean;
   createdAt: Timestamp;
 }
