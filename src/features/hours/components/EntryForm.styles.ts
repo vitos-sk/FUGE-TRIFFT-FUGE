@@ -176,20 +176,31 @@ export const NetTime = styled.span`
   }
 `;
 
+/* Five break options always share one row; the text size follows the row width */
 export const Chips = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(58px, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 6px;
+  container-type: inline-size;
 `;
 
 export const Chip = styled.button<{ $active: boolean }>`
   min-height: 44px;
-  padding: 0 6px;
+  min-width: 0;
+  padding: 0 2px;
   border-radius: 6px;
   font-family: inherit;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   cursor: pointer;
+
+  @supports (width: 1cqw) {
+    font-size: clamp(11px, 4.2cqw, 13px);
+  }
+
   transition:
     background 0.12s,
     border-color 0.12s;

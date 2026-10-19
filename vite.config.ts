@@ -13,8 +13,9 @@ export default defineConfig({
         name: 'Fuge trifft Fuge',
         short_name: 'FtF',
         description: 'Internes Arbeitssystem — Stunden, Objekte, Dashboard',
-        theme_color: '#191919',
-        background_color: '#191919',
+        // Matches the tab bar (see index.html): system bars and the launch splash blend into the app
+        theme_color: '#0a0706',
+        background_color: '#0a0706',
         display: 'standalone',
         orientation: 'portrait',
         start_url: '/hours',

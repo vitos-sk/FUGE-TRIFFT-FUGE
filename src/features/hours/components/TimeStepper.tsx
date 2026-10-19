@@ -3,25 +3,28 @@ import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import styled from 'styled-components';
 import { Caption } from './hoursUi.styles';
 
+/*
+ * Two steppers sit side by side, so the room per stepper depends on the phone.
+ * Sizes follow the width of the stepper's own column (container query units),
+ * not the screen: the digits and arrows shrink or grow with the space that is
+ * really there. Browsers without container units keep the fixed fallbacks.
+ */
 const Col = styled.div`
   display: flex;
   flex-direction: column;
   gap: 6px;
   min-width: 0;
+  container-type: inline-size;
 `;
 
-// Narrow phones (320–360px) show two steppers side by side: arrows and digits shrink with the screen
 const Row = styled.div`
+  --arrow: 36px;
   display: grid;
-  grid-template-columns: 36px minmax(0, 1fr) 36px;
+  grid-template-columns: var(--arrow) minmax(0, 1fr) var(--arrow);
   gap: 4px;
 
-  @media (max-width: 329px) {
-    grid-template-columns: 32px minmax(0, 1fr) 32px;
-  }
-
-  @media (min-width: 481px) {
-    grid-template-columns: 44px minmax(0, 1fr) 44px;
+  @supports (width: 1cqw) {
+    --arrow: clamp(28px, 22cqw, 44px);
   }
 `;
 
@@ -51,21 +54,20 @@ const Value = styled.button<{ $invalid: boolean }>`
   padding: 0;
   border-radius: 8px;
   font-family: inherit;
-  /* scales with the screen width: ~15px at 320px, ~18px at 390px, 22px on tablets/desktop */
   font-size: clamp(14px, 4.6vw, 18px);
   font-weight: 700;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
-
-  @media (min-width: 481px) {
-    font-size: 22px;
-    letter-spacing: 0.02em;
-  }
   color: ${({ theme }) => theme.colors.textPrimary};
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid ${({ $invalid, theme }) => ($invalid ? theme.colors.accent : 'rgba(255, 255, 255, 0.12)')};
   cursor: pointer;
   transition: background 0.15s;
+
+  @supports (width: 1cqw) {
+    /* "07:00" is about 2.85em wide: the digits never need more than ~60% of the box */
+    font-size: clamp(12px, 12.5cqw, 22px);
+  }
 
   &:hover {
     background: rgba(255, 255, 255, 0.08);
